@@ -1,6 +1,5 @@
 # Llvm.Libs Nuget Support
-Detached branch of Llvm.NET for building and publishing the LLVM libraries and
-header files.
+Build support for Llvm.Libs Nuget packages
 
 ## About
 LLVM is a large collection of libraries for building compiler back-ends that
