@@ -2,9 +2,6 @@
 Detached branch of Llvm.NET for building and publishing the LLVM libraries and
 header files.
 
-## Build Status
-[![Build status](https://ci.appveyor.com/api/projects/status/2oqp15olqxna55jj/branch/Llvm.Libs?svg=true)](https://ci.appveyor.com/project/StevenMaillet/llvm-net-3dmy2/branch/Llvm.Libs)
-
 ## About
 LLVM is a large collection of libraries for building compiler back-ends that
 supports a great deal of customization and extensibility. Using LLVM either
@@ -28,17 +25,16 @@ projects that reference them.
 The simplest usage is to use the public NuGet feed and add the "Llvm.Libs" package
 to your project. The package includes all the headers and libraries from LLVM.
 
-## Building the package localy
-The [Build-Llvm.ps1](scripts\Build-Llvm.md) script is used to build the LLVM libraries and
-bundle them into the nugetPackage.
 
-### Building the nuget packages only
-When working on a new version of LLVM it may be necessary to iterate on the props/targets
-provided in the NuGet packages without rebuilding the LLVM libraries too. This is easily
-accomplished with the following PowerShell command.
+## Building the packages localy
+### Pre-requisites
+The build requires the MSVC CMAKE with Ninja support along with Python 2.7. These are
+all available as components for the VisualStudio 2017 15.3+ Community installation. According
+to the documentation they should all be available from the VisualStudio 2017 build tools installer
+as well, though that hasn't been tested. 
 
+### Running a local build
 ```PowerShell
-.\scripts\Build-Llvm.ps1 -Pack
+.\scripts\Initialize-BuildEnv.ps1
+build
 ```
- (Of course you should substitute the paths in the example command to match your own system.)
-
