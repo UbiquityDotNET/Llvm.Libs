@@ -26,7 +26,6 @@ function New-LlvmCmakeConfig([string]$platform,
         LLVM_OPTIMIZED_TABLEGEN = "ON"
         LLVM_REVERSE_ITERATION = "ON"
         LLVM_TARGETS_TO_BUILD  = "all"
-        LLVM_DEFAULT_TARGET_TRIPLE="thumbv7m-none--eabi"
         CMAKE_MAKE_PROGRAM=Join-Path $RepoInfo.VSInstance.InstallationPath 'COMMON7\IDE\COMMONEXTENSIONS\MICROSOFT\CMAKE\Ninja\ninja.exe'
     }
     return $cmakeConfig
@@ -188,6 +187,9 @@ function Invoke-Build
 
 .PARAMETER Pack
     Set this flag to generate the NuGet packages for the libraries and headers
+
+.PARAMETER Clean
+    Clean all output folders to force a complete rebuild
 #>
 
     [CmdletBinding(DefaultParameterSetName="buildall")]
@@ -211,7 +213,10 @@ function Invoke-Build
        $Configuration,
 
        [Parameter(ParameterSetName="pack")]
-       [switch]$Pack
+       [switch]$Pack,
+
+       [Parameter(ParameterSetName="clean")]
+       [switch]$Clean
      )
 
     $version = (Get-LlvmVersion (Join-Path $RepoInfo.LlvmRoot 'CMakeLists.txt'))
@@ -252,6 +257,13 @@ function Invoke-Build
                 BuildPlatformConfigPackage $cmakeConfig $version $PackOutputPath $NuspecOutputPath
             }
             GenerateMultiPack $version $RepoInfo.LlvmRoot $RepoInfo.BuildOutputPath $RepoInfo.PackOutputPath $RepoInfo.NuspecOutputPath
+        }
+        "clean" {
+            rd -Recurse -Force $RepoInfo.NuspecPath
+            rd -Recurse -Force $RepoInfo.ToolsPath
+            rd -Recurse -Force $RepoInfo.BuildOutputPath
+            rd -Recurse -Force $RepoInfo.PackOutputPath
+            $script:RepoInfo = Get-RepoInfo
         }
         default {
             Write-Error "Unknown parameter set '$PsCmdlet.ParameterSetName'"
