@@ -8,6 +8,9 @@
     [ValidateSet('Debug','Release')]
     [string]$Configuration;
 
+    [ValidateSet('Debug', 'Release', 'MinSizeRel', 'RelWithDebInfo')]
+    [string]$ConfigurationType;
+
     [string]$BuildRoot;
     [string]$SrcRoot;
     [string]$Generator;
@@ -18,22 +21,40 @@
 
     CMakeConfig([string]$plat, [string]$config, [string]$baseBuild, [string]$srcRoot)
     {
-        $this.Generator = "Ninja"
         $this.Platform = $Plat.ToLowerInvariant()
-        $this.InheritEnvironments = "msvc_$()"
-        switch($this.Platform)
+        if( $this.Platform -eq "x64")
         {
-            "x86" {$this.InheritEnvironments = @("msvc_x86")}
-            "x64" {$this.InheritEnvironments = @("msvc_x64")}
-            default { }
+            $this.Generator = "Visual Studio 15 2017 Win64"
+        }
+        else
+        {
+            $this.Generator = "Visual Studio 15 2017"
         }
 
+        #Ninja build only
+        #$this.InheritEnvironments = "msvc_$($this.Platform)"
         $this.Name="$($this.Platform)-$config"
-        $this.Configuration = $config;
+        $this.Configuration = $config
+        if( $config -eq "Debug")
+        {
+            $this.ConfigurationType = "RelWithDebInfo"
+        }
+        else
+        {
+            $this.ConfigurationType = $config
+        }
         $this.BuildRoot = Join-Path $baseBuild $this.Name
         $this.SrcRoot = $srcRoot
-        $this.CMakeCommandArgs = @()
-        $this.BuildCommandArgs = @()
+        if([Environment]::Is64BitOperatingSystem)
+        {
+            $this.CMakeCommandArgs = @('-Thost=x64')
+        }
+        else
+        {
+            $this.CMakeCommandArgs = @()
+        }
+
+        $this.BuildCommandArgs = @('/m')
         $this.CMakeBuildVariables = @{}
     }
 
@@ -134,8 +155,8 @@ function Invoke-CMakeGenerate( [CMakeConfig]$config )
 
     $cmakeArgs.Add( $config.SrcRoot ) | Out-Null
 
-    pushd $config.BuildRoot
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
+    pushd $config.BuildRoot
     try
     {
         Write-Verbose "cmake $cmakeArgs"
@@ -149,9 +170,8 @@ function Invoke-CMakeGenerate( [CMakeConfig]$config )
     finally
     {
         $timer.Stop()
-        Write-Progress -Activity $activity -Completed
-        Write-Verbose "Generation Time: $($timer.Elapsed.ToString())"
         popd
+        Write-Verbose "Generation Time: $($timer.Elapsed.ToString())"
     }
 }
 Export-ModuleMember -Function Generate-CMake

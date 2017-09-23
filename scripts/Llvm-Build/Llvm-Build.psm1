@@ -6,27 +6,31 @@ Set-StrictMode -Version Latest
 function New-LlvmCmakeConfig([string]$platform,
                              [string]$config,
                              [string]$baseBuild = (Join-Path (Get-Location) BuildOutput),
-                             [string]$srcRoot = (Join-Path (Get-Location) llvm)
+                             [string]$srcRoot = (Join-Path (Get-Location) 'llvm\lib')
                             )
 {
-    #TODO: Need to set LLVM_TARGET_ARCH for JIT support as it will default to that of "host" at build time
-    # which means JIT can only target one platform... (also should check for LLVM_ENABLE_JIT_EVENTS)
-    # Longer term need to determine better way of handling these options with pure interface based implementation
-    # and MEF/Linq searching to find matching implementation for desired use at run time. This could keep the
-    # actual DLLs smaller at the expense of making the initialization a bit more complex (Though, it could
-    # use a disposable to expose the outer most layer APIs that would handle the static init and shutdown along
-    # with command line option parsing for LLVM args... )
     [CMakeConfig]$cmakeConfig = New-Object CMakeConfig -ArgumentList $platform, $config, $baseBuild, $srcRoot
     $cmakeConfig.CMakeBuildVariables = @{
         LLVM_ENABLE_RTTI = "ON"
         LLVM_ENABLE_CXX1Y = "ON"
         LLVM_BUILD_TOOLS = "OFF"
+        LLVM_BUILD_UTILS = "OFF"
         LLVM_BUILD_DOCS = "OFF"
         LLVM_BUILD_RUNTIME = "OFF"
+        LLVM_BUILD_RUNTIMES = "OFF"
         LLVM_OPTIMIZED_TABLEGEN = "ON"
         LLVM_REVERSE_ITERATION = "ON"
         LLVM_TARGETS_TO_BUILD  = "all"
-        CMAKE_MAKE_PROGRAM=Join-Path $RepoInfo.VSInstance.InstallationPath 'COMMON7\IDE\COMMONEXTENSIONS\MICROSOFT\CMAKE\Ninja\ninja.exe'
+        LLVM_INCLUDE_DOCS = "OFF"
+        LLVM_INCLUDE_EXAMPLES = "OFF"
+        LLVM_INCLUDE_GO_TESTS = "OFF"
+        LLVM_INCLUDE_RUNTIMES = "OFF"
+        LLVM_INCLUDE_TESTS = "OFF"
+        LLVM_INCLUDE_TOOLS = "OFF"
+        LLVM_INCLUDE_UTILS = "OFF"
+        LLVM_ADD_NATIVE_VISUALIZERS_TO_SOLUTION = "ON"
+
+        #CMAKE_MAKE_PROGRAM=Join-Path $RepoInfo.VSInstance.InstallationPath 'COMMON7\IDE\COMMONEXTENSIONS\MICROSOFT\CMAKE\Ninja\ninja.exe'
     }
     return $cmakeConfig
 }
@@ -144,7 +148,7 @@ function Invoke-Build
 {
 <#
 .SYNOPSIS
-    Wraps CMake Visual Studio (Ninja) generation and build for LLVM as used by the LLVM.NET project
+    Wraps CMake generation and build for LLVM as used by the LLVM.NET project
 
 .DESCRIPTION
     This script is used to build LLVM libraries for Windows and bundle the results into a NuGet package.
@@ -242,6 +246,7 @@ function Invoke-Build
                 {
                     LlvmBuildConfig $cmakeConfig
                 }
+
                 GenerateMultiPack $version $RepoInfo.LlvmRoot $RepoInfo.BuildOutputPath $RepoInfo.PackOutputPath $RepoInfo.NuspecPath
             }
             finally
@@ -326,9 +331,9 @@ function Initialize-BuildEnvironment
     else
     {
         $env:Path="$(Join-Path $RepoInfo.VsInstance.InstallationPath 'COMMON7\IDE\COMMONEXTENSIONS\MICROSOFT\CMAKE\CMake\bin');$env:Path"
-        $env:Path="$(Join-Path $RepoInfo.VsInstance.InstallationPath 'COMMON7\IDE\COMMONEXTENSIONS\MICROSOFT\CMAKE\Ninja');$env:Path"
-        Write-Host "Initializing VCVARS"
-        Initialize-VCVars $RepoInfo.VsInstance
+        #$env:Path="$(Join-Path $RepoInfo.VsInstance.InstallationPath 'COMMON7\IDE\COMMONEXTENSIONS\MICROSOFT\CMAKE\Ninja');$env:Path"
+        #Write-Host "Initializing VCVARS"
+        #Initialize-VCVars $RepoInfo.VsInstance
     }
 }
 Export-ModuleMember -Function Initialize-BuildEnvironment
