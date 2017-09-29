@@ -1,7 +1,7 @@
 # use VS provided PS Module to locate VS installed instances
-function Find-VSInstance([switch]$PreRelease)
+function Find-VSInstance([switch]$PreRelease, [switch]$Force)
 {
-    Install-Module VSSetup -Scope CurrentUser | Out-Null
+    Install-Module VSSetup -Scope CurrentUser -Force:$Force | Out-Null
     Get-VSSetupInstance -Prerelease:$PreRelease |
         Select-VSSetupInstance -Require 'Microsoft.Component.MSBuild', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', 'Microsoft.VisualStudio.Component.VC.CMake.Project' |
         select -First 1
@@ -64,7 +64,7 @@ function Invoke-MSBuild([string]$project, [hashtable]$properties, [string[]]$tar
 }
 Export-ModuleMember -Function Invoke-MSBuild
 
-function Initialize-VCVars($vsInstance = (Find-VSInstance))
+function Initialize-VCVars([switch]$Force, $vsInstance = (Find-VSInstance -Force:$Force))
 {
     if($vsInstance)
     {

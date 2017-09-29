@@ -295,7 +295,7 @@ function EnsureBuildPath([string]$path)
     }
 }
 
-function Get-RepoInfo
+function Get-RepoInfo([switch]$Force)
 {
     return @{
         NuspecPath = EnsureBuildPath 'nuspec'
@@ -303,7 +303,7 @@ function Get-RepoInfo
         BuildOutputPath = EnsureBuildPath 'BuildOutput'
         PackOutputPath = EnsureBuildPath 'packages'
         LlvmRoot = (Get-Item $([System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'llvm')))
-        VsInstance = Find-VSInstance
+        VsInstance = Find-VSInstance -Force:$Force
     }
 }
 
@@ -339,7 +339,8 @@ function Initialize-BuildEnvironment
 Export-ModuleMember -Function Initialize-BuildEnvironment
 
 # --- Module init script
-$RepoInfo = Get-RepoInfo
+$isCI = !!$env:CI
+$RepoInfo = Get-RepoInfo  -Force:$isCI
 Export-ModuleMember -Variable RepoInfo
 
 New-Alias -Name build -Value Invoke-Build
