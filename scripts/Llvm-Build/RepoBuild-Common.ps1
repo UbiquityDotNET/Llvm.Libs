@@ -3,7 +3,7 @@
 function Update-Repository
 {
     Write-Information "Updating submodules"
-    git submodule update --init --recursive
+    git submodule -q update --init --recursive
 }
 Export-ModuleMember -Function Update-Repository
 
