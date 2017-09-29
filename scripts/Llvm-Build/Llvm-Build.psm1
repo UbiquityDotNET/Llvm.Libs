@@ -58,7 +58,7 @@ function BuildPlatformConfigPackage([CmakeConfig]$config, $version, $packOutputP
                                       }
 
     Invoke-Nuget pack Llvm.Libs.core.Platform-Configuration.nuspec -properties $properties -OutputDirectory $packOutputPath
-    if( $config -ieq "Debug")
+    if( $config.Configuration -ieq "Debug")
     {
         Invoke-Nuget pack Llvm.Libs.core.pdbs.Platform-Configuration.nuspec -properties $properties -OutputDirectory $packOutputPath
     }
@@ -71,11 +71,11 @@ function BuildPlatformConfigPackage([CmakeConfig]$config, $version, $packOutputP
     $files = $nuspec | Select-Xml "//nuspec:files" -Namespace $ns
     foreach( $arch in $architectures)
     {
-        foreach( $item in (Get-ChildItem -Path (join-path $config.BuildRoot 'lib') -Filter "Llvm$arch*"))
+        foreach( $item in (Get-ChildItem -Path ([System.IO.Path]::Combine($config.BuildRoot, $config.Configuration, 'lib')) -Filter "Llvm$arch*"))
         {
             $fileElement = $nuspec.CreateElement("file",$nuspecNamespace);
             $srcAttrib = $nuspec.CreateAttribute("src")
-            $srcAttrib.InnerText = "`$llvmbuildroot`$\lib\$($item.Name)"
+            $srcAttrib.InnerText = "`$llvmbuildroot`$\$($config.Configuration)\lib\$($item.Name)"
             $targetAttrib = $nuspec.CreateAttribute("target")
             $targetAttrib.InnerText = 'lib\native\lib'
             $fileElement.Attributes.Append( $srcAttrib )  | Out-Null
@@ -259,9 +259,9 @@ function Invoke-Build
         "pack" {
             foreach( $cmakeConfig in (Get-AllCmakeConfigs) )
             {
-                BuildPlatformConfigPackage $cmakeConfig $version $PackOutputPath $NuspecOutputPath
+                BuildPlatformConfigPackage $cmakeConfig $version $RepoInfo.PackOutputPath $RepoInfo.NuspecPath
             }
-            GenerateMultiPack $version $RepoInfo.LlvmRoot $RepoInfo.BuildOutputPath $RepoInfo.PackOutputPath $RepoInfo.NuspecOutputPath
+            GenerateMultiPack $version $RepoInfo.LlvmRoot $RepoInfo.BuildOutputPath $RepoInfo.PackOutputPath $RepoInfo.NuspecPath
         }
         "clean" {
             rd -Recurse -Force $RepoInfo.NuspecPath
