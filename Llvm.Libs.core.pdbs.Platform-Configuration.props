@@ -10,7 +10,7 @@
         <LLVM_PLATFORM_CONFIG Condition="'$(LLVM_PLATFORM_CONFIG)'==''">$(LLVM_PLATFORM)-$(Configuration)</LLVM_PLATFORM_CONFIG>
     </PropertyGroup>
     <Choose>
-        <When Condition="'Llvm.Libs.pdbs.$(LLVM_PLATFORM_CONFIG).symbols'=='$(MSBuildThisFileName)'">
+        <When Condition="'Llvm.Libs.core.pdbs.$(LLVM_PLATFORM_CONFIG)'=='$(MSBuildThisFileName)'">
             <PropertyGroup>
                 <LlvmCoreSymbolsPkgRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\..'))</LlvmCoreSymbolsPkgRoot>
             </PropertyGroup>
@@ -19,7 +19,7 @@
             </PropertyGroup>
         </When>
     </Choose>
-    <ItemDefinitionGroup Condition="'Llvm.Libs.pdbs.$(LLVM_PLATFORM_CONFIG)'=='$(MSBuildThisFileName)'">
+    <ItemDefinitionGroup Condition="'Llvm.Libs.core.pdbs.$(LLVM_PLATFORM_CONFIG)'=='$(MSBuildThisFileName)'">
         <Link>
             <AdditionalLibraryDirectories>$(LLVM_CORE_SYMBOLS_DIR);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
         </Link>

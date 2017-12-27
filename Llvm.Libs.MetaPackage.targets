@@ -1,10 +1,10 @@
 ﻿<Project>
     <Target Name="VerifyLlvmVersion">
-        <Error Condition="'$(LlvmVersionMajor)!='5' OR $(LlvmVersionMinor)!='0' OR $(LlvmVersionPatch)!='0'"
+        <Error Condition="'$(LlvmVersionMajor)!='5' OR $(LlvmVersionMinor)!='0' OR $(LlvmVersionPatch)!='1'"
                Text="Llvm Version property was altered, this will likely cause broken builds or runtime failures"
                />
     </Target>
-    
+
     <Target Name="MakeLLvmLibsProp" BeforeTargets="Link">
         <!--
         The AllLlvmLibs ItemGroup will contain the Full path on each library.

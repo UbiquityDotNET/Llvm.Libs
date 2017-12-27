@@ -115,15 +115,15 @@ function Assert-CmakeInfo([Version]$minVersion)
     }
 
     $cmakeInfo = cmake.exe -E capabilities | ConvertFrom-Json
+    if(!$cmakeInfo)
+    {
+        throw "CMake version not supported. 'cmake -E capabilities' returned nothing"
+    }
+
     $cmakeVer = [Version]::new($cmakeInfo.version.major,$cmakeInfo.version.minor,$cmakeInfo.version.patch)
     if( $cmakeVer -lt $minVersion )
     {
         throw "CMake version not supported. Found: $cmakeVer; Require >= $($minVersion)"
-    }
-
-    if( !($cmakeInfo.version.string.Contains('MSVC') ) )
-    {
-        throw "This build requires the MSVC specific version of cmake (included with the VC build tools)"
     }
 }
 Export-ModuleMember -Function Assert-CmakeInfo

@@ -6,7 +6,7 @@
         -->
         <LlvmVersionMajor>5</LlvmVersionMajor>
         <llvmVersionMinor>0</llvmVersionMinor>
-        <LlvmVersionBuild>0</LlvmVersionBuild>
+        <LlvmVersionBuild>1</LlvmVersionBuild>
         <LlvmLibsNugetPkgRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\..'))</LlvmLibsNugetPkgRoot>
 
         <!--

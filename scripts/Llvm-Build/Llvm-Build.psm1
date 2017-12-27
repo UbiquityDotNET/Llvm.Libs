@@ -13,7 +13,7 @@ function New-LlvmCmakeConfig([string]$platform,
     $cmakeConfig.CMakeBuildVariables = @{
         LLVM_ENABLE_RTTI = "ON"
         LLVM_ENABLE_CXX1Y = "ON"
-        LLVM_BUILD_TOOLS = "OFF"
+        LLVM_BUILD_TOOLS = "ON"
         LLVM_BUILD_UTILS = "OFF"
         LLVM_BUILD_DOCS = "OFF"
         LLVM_BUILD_RUNTIME = "OFF"
@@ -26,7 +26,7 @@ function New-LlvmCmakeConfig([string]$platform,
         LLVM_INCLUDE_GO_TESTS = "OFF"
         LLVM_INCLUDE_RUNTIMES = "OFF"
         LLVM_INCLUDE_TESTS = "OFF"
-        LLVM_INCLUDE_TOOLS = "OFF"
+        LLVM_INCLUDE_TOOLS = "ON"
         LLVM_INCLUDE_UTILS = "OFF"
         LLVM_ADD_NATIVE_VISUALIZERS_TO_SOLUTION = "ON"
 
@@ -324,17 +324,6 @@ function Initialize-BuildEnvironment
         Write-Warning "NUMBER_OF_PROCESSORS{ $env:NUMBER_OF_PROCESSORS } < 6;"
     }
 
-    if(!$RepoInfo.VsInstance)
-    {
-        Write-Error "No VisualStudio or Build tools instances found"
-    }
-    else
-    {
-        $env:Path="$(Join-Path $RepoInfo.VsInstance.InstallationPath 'COMMON7\IDE\COMMONEXTENSIONS\MICROSOFT\CMAKE\CMake\bin');$env:Path"
-        #$env:Path="$(Join-Path $RepoInfo.VsInstance.InstallationPath 'COMMON7\IDE\COMMONEXTENSIONS\MICROSOFT\CMAKE\Ninja');$env:Path"
-        #Write-Host "Initializing VCVARS"
-        #Initialize-VCVars $RepoInfo.VsInstance
-    }
 }
 Export-ModuleMember -Function Initialize-BuildEnvironment
 
