@@ -337,3 +337,8 @@ Export-ModuleMember -Alias build -Variable RepoInfo
 
 Write-Information "Build Info:`n $($RepoInfo | Out-String )"
 
+$cmake = where.exe cmake.exe 2>$null
+if( !$cmake )
+{
+    $env:Path = "$($env:Path);$(Join-Path $RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin')"
+}
