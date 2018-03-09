@@ -35,14 +35,14 @@
         #$this.InheritEnvironments = "msvc_$($this.Platform)"
         $this.Name="$($this.Platform)-$config"
         $this.Configuration = $config
-        if( $config -eq "Debug")
-        {
-            $this.ConfigurationType = "RelWithDebInfo"
-        }
-        else
-        {
+        #if( $config -eq "Debug")
+        #{
+        #    $this.ConfigurationType = "RelWithDebInfo"
+        #}
+        #else
+        #{
             $this.ConfigurationType = $config
-        }
+        #}
         $this.BuildRoot = Join-Path $baseBuild $this.Name
         $this.SrcRoot = $srcRoot
         if([Environment]::Is64BitOperatingSystem)
