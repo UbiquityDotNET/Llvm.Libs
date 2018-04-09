@@ -104,9 +104,7 @@ function GenerateMultiPack($version, $srcRoot, $buildOutput, $packOutputPath)
 function Get-AllCmakeConfigs
 {
     # Construct array of configurations to deal with
-    return @( (New-LlvmCmakeConfig x86 "Debug" $RepoInfo.BuildOutputPath $RepoInfo.LlvmRoot),
-              (New-LlvmCmakeConfig x86 "Release" $RepoInfo.BuildOutputPath $RepoInfo.LlvmRoot),
-              (New-LlvmCmakeConfig x64 "Debug" $RepoInfo.BuildOutputPath $RepoInfo.LlvmRoot),
+    return @( (New-LlvmCmakeConfig x64 "Debug" $RepoInfo.BuildOutputPath $RepoInfo.LlvmRoot),
               (New-LlvmCmakeConfig x64 "Release" $RepoInfo.BuildOutputPath $RepoInfo.LlvmRoot)
             )
 }
@@ -160,17 +158,12 @@ function Invoke-Build
     level (Nuget.org tops out at 250MB). So the NuGet Packaging supports splitting out the libraries,
     headers and symbols into smaller packages with a top level "MetaPackage" that lists all the others
     as dependencies. The complete set of packages is:
-       - Llvm.Libs.<Version>.nupkg
+       - Llvm.Libs.x64.<Version>.nupkg
        - Llvm.Libs.core.pdbs.x64-Debug.<Version>.nupkg
-       - Llvm.Libs.core.pdbs.x86-Debug.<Version>.nupkg
        - Llvm.Libs.core.x64-Debug.<Version>.nupkg
        - Llvm.Libs.core.x64-Release.<Version>.nupkg
-       - Llvm.Libs.core.x86-Debug.<Version>.nupkg
-       - Llvm.Libs.core.x86-Release.<Version>.nupkg
        - Llvm.Libs.targets.x64-Debug.<Version>.nupkg
        - Llvm.Libs.targets.x64-Release.<Version>.nupkg
-       - Llvm.Libs.targets.x86-Debug.<Version>.nupkg
-       - Llvm.Libs.targets.x86-Release.<Version>.nupkg
 
 .PARAMETER BuildAll
     Switch to enable building all the platform configurations in a single run.
@@ -202,20 +195,6 @@ function Invoke-Build
        [switch]
        $BuildAll,
 
-       [Parameter(ParameterSetName="build")]
-       [switch]
-       $Build,
-
-       [Parameter(ParameterSetName="build")]
-       [ValidateSet('x86','x64','AnyCPU')]
-       [string]
-       $Platform,
-
-       [Parameter(ParameterSetName="build")]
-       [ValidateSet('Release','Debug')]
-       [string]
-       $Configuration,
-
        [Parameter(ParameterSetName="pack")]
        [switch]$Pack,
 
@@ -227,17 +206,6 @@ function Invoke-Build
 
     switch( $PsCmdlet.ParameterSetName )
     {
-        "build" {
-            if( $Platform -eq "AnyCPU" )
-            {
-                GenerateMultiPack $version $RepoInfo.LlvmRoot $RepoInfo.BuildOutputPath $PackOutputPath $NuspecOutputPath
-            }
-            else
-            {
-                $cmakeConfig = New-LlvmCmakeConfig $Platform $Configuration $RepoInfo.BuildOutputPath $RepoInfo.LlvmRoot
-                LlvmBuildConfig $cmakeConfig
-            }
-        }
         "buildall" {
             try
             {
@@ -324,6 +292,16 @@ function Initialize-BuildEnvironment
         Write-Warning "NUMBER_OF_PROCESSORS{ $env:NUMBER_OF_PROCESSORS } < 6;"
     }
 
+    Write-Information "Searching for cmake.exe"
+    $cmakePath = Find-OnPath 'cmake.exe'
+    if(!$cmakePath)
+    {
+        $env:Path = "$env:Path;$(Join-Path $RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin' )"
+    }
+    else
+    {
+        Write-Information "cmake: $cmakePath"
+    }
 }
 Export-ModuleMember -Function Initialize-BuildEnvironment
 
@@ -336,4 +314,3 @@ New-Alias -Name build -Value Invoke-Build
 Export-ModuleMember -Alias build -Variable RepoInfo
 
 Write-Information "Build Info:`n $($RepoInfo | Out-String )"
-
