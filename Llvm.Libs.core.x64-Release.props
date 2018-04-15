@@ -1,0 +1,21 @@
+﻿<Project>
+    <PropertyGroup>
+        <LlvmLibsCorex64ReleasePkgRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\..'))</LlvmLibsCorex64ReleasePkgRoot>
+    </PropertyGroup>
+    <ItemGroup>
+        <LlvmLibsCorex64Release Include="$(LlvmLibsCorex64ReleasePkgRoot)lib\native\lib\*.lib"/>
+    </ItemGroup>
+    <ItemGroup>
+        <LlvmLibsPackage Include="$(MSBuildThisFileName)">
+            <PlatformConfig>x64-Release</PlatformConfig>
+            <AdditionalIncludeDirectories>$(LlvmLibsCorex64ReleasePkgRoot)lib\native\include</AdditionalIncludeDirectories>
+            <!--
+            The total number of libs and full path from the MSBuild item will generate insanely long command
+            line args. (So much so that it exceeds the length limits for the linker response file) This resolves
+            the length by listing only the base file name and adding the directory to the list of library paths.
+            -->
+            <AdditionalDependencies>@(LlvmLibsCorex64Release->'%(filename)%(extension)')</AdditionalDependencies>
+            <AdditionalLibraryDirectories>$(LlvmLibsCorex64ReleasePkgRoot)lib\native\lib</AdditionalLibraryDirectories>
+        </LlvmLibsPackage>
+    </ItemGroup>
+</Project>

@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata minClientVersion="4.0">
+        <id>Ubiquity.Net.Llvm.Libs.core.x64-Debug</id>
+        <version>$version$</version>
+        <authors>UbiquityDotNet</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Libraries and configuration headers for LLVM $llvmversion$ (x64-Debug)</description>
+        <summary>Do not add this package directly, use Llvm.Libs instead</summary>
+        <developmentDependency>true</developmentDependency>
+        <projectUrl>http://www.llvm.org</projectUrl>
+        <licenseUrl>http://Debugs.llvm.org/$llvmversion$/LICENSE.TXT</licenseUrl>
+        <tags>LLVM,compiler,native</tags>
+    </metadata>
+    <files>
+        <file src="Llvm.Libs.core.x64-Debug.props" target="build\native\Ubiquity.Net.Llvm.Libs.core.x64-Debug.props" />
+        <file src="$buildoutput$\x64-Debug\include\**\*.h"   target="lib\native\include" />
+        <file src="$buildoutput$\x64-Debug\include\**\*.gen" target="lib\native\include" />
+        <file src="$buildoutput$\x64-Debug\include\**\*.def" target="lib\native\include" />
+
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMAnalysis.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMAsmParser.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMAsmPrinter.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMBinaryFormat.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMBitReader.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMBitWriter.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMCodeGen.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMCore.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMCoroutines.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMCoverage.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMDebugInfoCodeView.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMDebugInfoDWARF.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMDebugInfoMSF.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMDebugInfoPDB.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMDemangle.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMDlltoolDriver.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMExecutionEngine.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMGlobalISel.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMInstCombine.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMInstrumentation.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMInterpreter.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMipo.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMIRReader.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMLibDriver.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMLineEditor.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMLinker.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMLTO.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMMC.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMMCDisassembler.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMMCJIT.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMMCParser.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMMIRParser.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMObjCARCOpts.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMObject.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMObjectYAML.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMOption.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMOrcJIT.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMPasses.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMProfileData.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMRuntimeDyld.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMScalarOpts.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMSelectionDAG.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMSupport.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMSymbolize.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMTableGen.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMTarget.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMTransformUtils.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMVectorize.lib" target="lib\native\lib"/>
+        <file src="$buildoutput$\x64-Debug\Debug\lib\LLVMXRay.lib" target="lib\native\lib"/>
+    </files>
+</package>

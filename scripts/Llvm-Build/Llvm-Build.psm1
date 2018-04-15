@@ -1,6 +1,5 @@
 #Requires -Version 5.0
 
-# ensure the output locations exist
 Set-StrictMode -Version Latest
 
 function New-LlvmCmakeConfig([string]$platform,
@@ -13,7 +12,7 @@ function New-LlvmCmakeConfig([string]$platform,
     $cmakeConfig.CMakeBuildVariables = @{
         LLVM_ENABLE_RTTI = "ON"
         LLVM_ENABLE_CXX1Y = "ON"
-        LLVM_BUILD_TOOLS = "ON"
+        LLVM_BUILD_TOOLS = "OFF"
         LLVM_BUILD_UTILS = "OFF"
         LLVM_BUILD_DOCS = "OFF"
         LLVM_BUILD_RUNTIME = "OFF"
@@ -26,10 +25,10 @@ function New-LlvmCmakeConfig([string]$platform,
         LLVM_INCLUDE_GO_TESTS = "OFF"
         LLVM_INCLUDE_RUNTIMES = "OFF"
         LLVM_INCLUDE_TESTS = "OFF"
-        LLVM_INCLUDE_TOOLS = "ON"
+        LLVM_INCLUDE_TOOLS = "OFF"
         LLVM_INCLUDE_UTILS = "OFF"
         LLVM_ADD_NATIVE_VISUALIZERS_TO_SOLUTION = "ON"
-
+        CMAKE_CXX_FLAGS_RELEASE = '/MD /O2 /Ob2 /DNDEBUG /Zi /Fd$(OutDir)$(ProjectName).pdb'
         #CMAKE_MAKE_PROGRAM=Join-Path $RepoInfo.VSInstance.InstallationPath 'COMMON7\IDE\COMMONEXTENSIONS\MICROSOFT\CMAKE\Ninja\ninja.exe'
     }
     return $cmakeConfig
@@ -42,103 +41,48 @@ function Get-LlvmVersion( [string] $cmakeListPath )
     $matches = Select-String -Path $cmakeListPath -Pattern "set\(LLVM_VERSION_(MAJOR|MINOR|PATCH) ([0-9])+\)" |
         %{ $_.Matches } |
         %{ $props.Add( $_.Groups[1].Value, [Convert]::ToInt32($_.Groups[2].Value) ) }
-    "$($props.Major).$($props.Minor).$($props.Patch)"
+    return $props
 }
 Export-ModuleMember -Function Get-LlvmVersion
 
-function BuildPlatformConfigPackage([CmakeConfig]$config, $version, $packOutputPath, $nuspecOutputPath)
+function BuildPlatformConfigPackage([CmakeConfig]$config, $repoInfo)
 {
     Write-Information "Generating Llvm.Libs.$($config.Name).nupkg"
-    $properties = ConvertTo-PropList @{ llvmsrcroot=$RepoInfo.LlvmRoot
-                                        llvmbuildroot=$config.BuildRoot
-                                        version=$version
+    $properties = ConvertTo-PropList @{ llvmsrcroot=$repoInfo.LlvmRoot
+                                        buildoutput=$repoInfo.BuildOutputPath
+                                        version=$repoInfo.Version
+                                        llvmversion=$repoInfo.Llvmversion
                                         platform=$config.Platform
                                         configuration=$config.Configuration
-                                        nugetsrcdir=(ConvertTo-NormalizedPath (Get-Location))
                                       }
-
-    Invoke-Nuget pack Llvm.Libs.core.Platform-Configuration.nuspec -properties $properties -OutputDirectory $packOutputPath
-    if( $config.Configuration -ieq "Debug")
-    {
-        Invoke-Nuget pack Llvm.Libs.core.pdbs.Platform-Configuration.nuspec -properties $properties -OutputDirectory $packOutputPath
-    }
-
-    # generate nuspec for each target arch, platform, config from the template
-    $nuspec = [xml](Get-Content Llvm.Libs.targets.nuspec.template)
-    $nuspecNamespace = 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'
-    $ns = @{nuspec=$nuspecNamespace}
-    $architectures = ("AArch64","AMDGPU","ARM","BPF","Hexagon","Lanai","Mips","MSP430","NVPTX","PowerPC","RISCV","Sparc","SystemZ","X86","XCore")
-    $files = $nuspec | Select-Xml "//nuspec:files" -Namespace $ns
-    foreach( $arch in $architectures)
-    {
-        foreach( $item in (Get-ChildItem -Path ([System.IO.Path]::Combine($config.BuildRoot, $config.Configuration, 'lib')) -Filter "Llvm$arch*"))
-        {
-            $fileElement = $nuspec.CreateElement("file",$nuspecNamespace);
-            $srcAttrib = $nuspec.CreateAttribute("src")
-            $srcAttrib.InnerText = "`$llvmbuildroot`$\$($config.Configuration)\lib\$($item.Name)"
-            $targetAttrib = $nuspec.CreateAttribute("target")
-            $targetAttrib.InnerText = 'lib\native\lib'
-            $fileElement.Attributes.Append( $srcAttrib )  | Out-Null
-            $fileElement.Attributes.Append( $targetAttrib )  | Out-Null
-            $files.Node.AppendChild( $fileElement )  | Out-Null
-        }
-    }
-
-    # generate nuget package from the generated nuspec file
-    $generatedNuSpec = join-path $nuspecOutputPath "Llvm.Libs.targets.$($config.Name).nuspec"
-    $nuspec.Save($generatedNuSpec) | Out-Null
-    Invoke-Nuget pack $generatedNuSpec -properties $properties -OutputDirectory $packOutputPath
+    $platormconfig = "$($config.Platform)-$($config.Configuration)"
+    Invoke-Nuget pack "Llvm.Libs.core.$platormconfig.nuspec" -properties $properties -OutputDirectory $repoInfo.PackOutputPath
+    Invoke-Nuget pack "Llvm.Libs.core.pdbs.$platormconfig.nuspec" -properties $properties -OutputDirectory $repoInfo.PackOutputPath
+    Invoke-Nuget pack "Llvm.Libs.targets.$platormconfig.nuspec" -properties $properties -OutputDirectory $repoInfo.PackOutputPath
+    Invoke-Nuget pack "Llvm.Libs.targets.pdbs.$platormconfig.nuspec" -properties $properties -OutputDirectory $repoInfo.PackOutputPath
 }
 
-function GenerateMultiPack($version, $srcRoot, $buildOutput, $packOutputPath)
+function GenerateMultiPack($repoInfo)
 {
     Write-Information "Generating meta-package"
-    $properties = ConvertTo-PropList @{ llvmsrcroot=$srcRoot
-                                        llvmbuildroot=$buildOutput;
-                                        version=$version
+    $properties = ConvertTo-PropList @{ llvmsrcroot=$repoInfo.LlvmRoot
+                                        buildoutput=$repoInfo.BuildOutputPath
+                                        version=$repoInfo.Version
+                                        llvmversion=$repoInfo.Llvmversion
                                       }
 
-    Invoke-Nuget pack .\Llvm.Libs.MetaPackage.nuspec -Properties $properties -OutputDirectory $packOutputPath
+    Invoke-Nuget pack 'Llvm.Libs.MetaPackage.nuspec' -Properties $properties -OutputDirectory $repoInfo.PackOutputPath
 }
-
-function Get-AllCmakeConfigs
-{
-    # Construct array of configurations to deal with
-    return @( (New-LlvmCmakeConfig x64 "Debug" $RepoInfo.BuildOutputPath $RepoInfo.LlvmRoot),
-              (New-LlvmCmakeConfig x64 "Release" $RepoInfo.BuildOutputPath $RepoInfo.LlvmRoot)
-            )
-}
-Export-ModuleMember -Function Get-AllCmakeConfigs
 
 function LlvmBuildConfig([CMakeConfig]$configuration)
 {
     Invoke-CMakeGenerate $configuration
     Invoke-CmakeBuild $configuration
-    BuildPlatformConfigPackage $configuration $version $RepoInfo.PackOutputPath $RepoInfo.NuspecPath
 }
-
-function Invoke-CMakeGenerator
-{
-    param(
-           [Parameter(Mandatory=$true)]
-           [ValidateSet('x86','x64')]
-           [string]
-           $Platform,
-
-           [Parameter(Mandatory=$true)]
-           [ValidateSet('Release','Debug')]
-           [string]
-           $Configuration
-    )
-
-    $cmakeConfig = New-LlvmCmakeConfig $Platform $Configuration $RepoInfo.BuildOutputPath $RepoInfo.LlvmRoot
-    Invoke-CMakeGenerate $cmakeConfig
-}
-Export-ModuleMember -Function Invoke-CMakeGenerator
 
 function New-CMakeSettingsJson
 {
-    Get-AllCmakeConfigs | New-CmakeSettings | Format-Json
+    $RepoInfo.CMakeConfigurations.GetEnumerator() | New-CmakeSettings | Format-Json
 }
 Export-ModuleMember -Function New-CMakeSettingsJson
 
@@ -202,37 +146,34 @@ function Invoke-Build
        [switch]$Clean
      )
 
-    $version = (Get-LlvmVersion (Join-Path $RepoInfo.LlvmRoot 'CMakeLists.txt'))
-
     switch( $PsCmdlet.ParameterSetName )
     {
         "buildall" {
             try
             {
                 $timer = [System.Diagnostics.Stopwatch]::StartNew()
-                foreach( $cmakeConfig in (Get-AllCmakeConfigs) )
+                foreach( $cmakeConfig in $RepoInfo.CMakeConfigurations )
                 {
                     LlvmBuildConfig $cmakeConfig
+                    BuildPlatformConfigPackage $cmakeConfig $RepoInfo
                 }
 
-                GenerateMultiPack $version $RepoInfo.LlvmRoot $RepoInfo.BuildOutputPath $RepoInfo.PackOutputPath $RepoInfo.NuspecPath
+                GenerateMultiPack $RepoInfo
             }
             finally
             {
                 $timer.Stop()
                 Write-Information "Finished: Time: $($timer.Elapsed.ToString())"
             }
-
         }
         "pack" {
-            foreach( $cmakeConfig in (Get-AllCmakeConfigs) )
+            foreach( $cmakeConfig in $RepoInfo.CMakeConfigurations )
             {
-                BuildPlatformConfigPackage $cmakeConfig $version $RepoInfo.PackOutputPath $RepoInfo.NuspecPath
+                BuildPlatformConfigPackage $cmakeConfig $RepoInfo
             }
-            GenerateMultiPack $version $RepoInfo.LlvmRoot $RepoInfo.BuildOutputPath $RepoInfo.PackOutputPath $RepoInfo.NuspecPath
+            GenerateMultiPack $RepoInfo
         }
         "clean" {
-            rd -Recurse -Force $RepoInfo.NuspecPath
             rd -Recurse -Force $RepoInfo.ToolsPath
             rd -Recurse -Force $RepoInfo.BuildOutputPath
             rd -Recurse -Force $RepoInfo.PackOutputPath
@@ -265,13 +206,26 @@ function EnsureBuildPath([string]$path)
 
 function Get-RepoInfo([switch]$Force)
 {
+    $llvmroot = (Get-Item $([System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'llvm')))
+    $llvmversionInfo = (Get-LlvmVersion (Join-Path $llvmroot 'CMakeLists.txt'))
+    $llvmversion = "$($llvmversionInfo.Major).$($llvmversionInfo.Minor).$($llvmversionInfo.Patch)"
+    $toolsPath = EnsureBuildPath 'tools'
+    $buildOuputPath = EnsureBuildPath 'BuildOutput'
+    $packOutputPath = EnsureBuildPath 'packages'
+    $vsInstance = Find-VSInstance -Force:$Force
+
     return @{
-        NuspecPath = EnsureBuildPath 'nuspec'
-        ToolsPath =  EnsureBuildPath 'tools'
-        BuildOutputPath = EnsureBuildPath 'BuildOutput'
-        PackOutputPath = EnsureBuildPath 'packages'
-        LlvmRoot = (Get-Item $([System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'llvm')))
-        VsInstance = Find-VSInstance -Force:$Force
+        ToolsPath =  $toolsPath
+        BuildOutputPath = $buildOuputPath
+        PackOutputPath = $packOutputPath
+        LlvmRoot = $llvmroot
+        LlvmVersion = $llvmversion
+        Version = $llvmversion # this is may be differ from the LLVM Version if the packaging infrastructure is "patched"
+        VsInstanceName = $vsInstance.DisplayName
+        VsInstance = $vsInstance
+        CMakeConfigurations = @( (New-LlvmCmakeConfig x64 'Release' $buildOuputPath $llvmroot),
+                                 (New-LlvmCmakeConfig x64 'Debug' $buildOuputPath $llvmroot)
+                               )
     }
 }
 
@@ -313,4 +267,5 @@ Export-ModuleMember -Variable RepoInfo
 New-Alias -Name build -Value Invoke-Build
 Export-ModuleMember -Alias build -Variable RepoInfo
 
+New-CMakeSettingsJson | Out-File llvm\cmakesettings.json
 Write-Information "Build Info:`n $($RepoInfo | Out-String )"

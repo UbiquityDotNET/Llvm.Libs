@@ -1,0 +1,11 @@
+﻿<Project>
+    <PropertyGroup>
+        <LlvmLibsTargetsPdbsx64DebugPackageRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\..'))</LlvmLibsTargetsPdbsx64DebugPackageRoot>
+    </PropertyGroup>
+    <ItemGroup>
+        <LlvmLibsPackage Include="$(MSBuildThisFileName)">
+            <PlatformConfig>x64-Debug</PlatformConfig>
+            <AdditionalLibraryDirectories>$(LlvmLibsTargetsPdbsx64DebugPackageRoot)lib\native\lib\</AdditionalLibraryDirectories>
+        </LlvmLibsPackage>
+    </ItemGroup>
+</Project>

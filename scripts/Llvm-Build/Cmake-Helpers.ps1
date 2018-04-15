@@ -31,27 +31,21 @@
             $this.Generator = "Visual Studio 15 2017"
         }
 
-        #Ninja build only
-        #$this.InheritEnvironments = "msvc_$($this.Platform)"
         $this.Name="$($this.Platform)-$config"
         $this.Configuration = $config
-        if( $config -eq "Debug")
-        {
-            $this.ConfigurationType = "RelWithDebInfo"
-        }
-        else
-        {
-            $this.ConfigurationType = $config
-        }
+        $this.ConfigurationType = $config
         $this.BuildRoot = Join-Path $baseBuild $this.Name
         $this.SrcRoot = $srcRoot
+        $this.CMakeCommandArgs = @()
+        $this.InheritEnvironments =@()
         if([Environment]::Is64BitOperatingSystem)
         {
             $this.CMakeCommandArgs = @('-Thost=x64')
+            $this.InheritEnvironments = @("msvc_x64_x64")
         }
         else
         {
-            $this.CMakeCommandArgs = @()
+            $this.InheritEnvironments = @("msvc_x64")
         }
 
         $this.BuildCommandArgs = @('/m')
@@ -90,7 +84,7 @@
             name = $this.Name
             generator = $this.Generator
             inheritEnvironments = $this.InheritEnvironments
-            configurationType = @($this.Configuration, 'RelWithDebInfo')[[int]( $this.Configuration -ieq "Release" )]
+            configurationType = $this.ConfigurationType
             buildRoot = "$baseBuild`${name}"
             cmakeCommandArgs = $this.CMakeCommandArgs -join ' '
             buildCommandArgs = $this.BuildCommandArgs -join ' '
