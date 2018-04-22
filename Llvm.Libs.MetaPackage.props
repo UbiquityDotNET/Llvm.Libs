@@ -1,35 +1,23 @@
 ﻿<Project>
-    <PropertyGroup>
+    <PropertyGroup Label="UserMacros">
         <!--
         These are not conditional and are verified in the targets file to ensure they reflect the actual LLVM version
         contained in this package
         -->
-        <LlvmVersionMajor>5</LlvmVersionMajor>
+        <LlvmVersionMajor>6</LlvmVersionMajor>
         <llvmVersionMinor>0</llvmVersionMinor>
-        <LlvmVersionBuild>1</LlvmVersionBuild>
-        <LlvmLibsNugetPkgRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\..'))</LlvmLibsNugetPkgRoot>
-
-        <!--
-        Classic VS installations don't have an "x86" platform - the official name of the platform is Win32,
-        However, the default VS 2017 CMake support uses x86 as a platform name. So this adapts and adjusts
-        to allow for compatibility across VS tool versions.
-        -->
-        <LLVM_PLATFORM Condition="'$(LLVM_PLATFORM)'==''">$(Platform)</LLVM_PLATFORM>
-        <LLVM_PLATFORM Condition="'$(LLVM_PLATFORM)'=='Win32'">x86</LLVM_PLATFORM>
-        <LLVM_PLATFORM_CONFIG Condition="'$(LLVM_PLATFORM_CONFIG)'==''">$(LLVM_PLATFORM)-$(Configuration)</LLVM_PLATFORM_CONFIG>
+        <LlvmVersionBuild>0</LlvmVersionBuild>
+        <LlvmVersion>$(LlvmVersionMajor).$(LlvmVersionMinor).$(LlvmVersionBuild)</LlvmVersion>
+        <LlvmLibsMetaPackageRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\..'))</LlvmLibsMetaPackageRoot>
     </PropertyGroup>
-    <PropertyGroup Label="UserMacros">
-        <LLVM_VERSION>$(LlvmVersionMajor).$(llvmVersionMinor).$(LlvmVersionBuild)</LLVM_VERSION>
-
-        <LLVM_SRCROOT_DIR>$(LlvmLibsNugetPkgRoot)lib\native\</LLVM_SRCROOT_DIR>
-
-        <!-- Standard LLVM common Include path-->
-        <LLVM_INCLUDE>$(LLVM_SRCROOT_DIR)Include\</LLVM_INCLUDE>
-    </PropertyGroup>
+    <ItemGroup>
+        <LlvmLibsPackage Include="$(MSBuildThisFileName)">
+            <AdditionalIncludeDirectories>$(LlvmLibsMetaPackageRoot)lib\native\include</AdditionalIncludeDirectories>
+        </LlvmLibsPackage>
+    </ItemGroup>
     <ItemDefinitionGroup>
         <ClCompile>
             <AdditionalOptions>%(AdditionalOptions) /Zc:sizedDealloc-</AdditionalOptions>
-            <AdditionalIncludeDirectories>$(LLVM_INCLUDE);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
             <DisableSpecificWarnings>4141;4146;4267;4244;4800;4291;4996;4624;%(DisableSpecificWarnings)</DisableSpecificWarnings>
         </ClCompile>
     </ItemDefinitionGroup>

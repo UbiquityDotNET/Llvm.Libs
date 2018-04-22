@@ -1,0 +1,15 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+
+nuget:
+  account_feed: true
+  disable_publish_on_pr: true
+
+install:
+  - ps: .\scripts\Update-SubModules.ps1
+
+build_script:
+  - ps: .\scripts\Build-CI.ps1
+
+artifacts:
+  - path: packages\*.nupkg

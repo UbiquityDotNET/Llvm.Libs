@@ -5,6 +5,33 @@ VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F5034706-568F-408A-B7B3-4D38C6DB8A32}") = "Llvm-Build", "Llvm-Build.pssproj", "{6CAFC0C6-A428-4D30-A9F9-700E829FEA51}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Repo Items", "Repo Items", "{B01F5573-6F31-4B36-8BD0-DF30EC430628}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\appveyor.yml = ..\..\appveyor.yml
+		..\..\Llvm.Libs.core.pdbs.x64-Debug.nuspec = ..\..\Llvm.Libs.core.pdbs.x64-Debug.nuspec
+		..\..\Llvm.Libs.core.pdbs.x64-Release.nuspec = ..\..\Llvm.Libs.core.pdbs.x64-Release.nuspec
+		..\..\Llvm.Libs.core.x64-Debug.nuspec = ..\..\Llvm.Libs.core.x64-Debug.nuspec
+		..\..\Llvm.Libs.core.x64-Release.nuspec = ..\..\Llvm.Libs.core.x64-Release.nuspec
+		..\..\Llvm.Libs.MetaPackage.nuspec = ..\..\Llvm.Libs.MetaPackage.nuspec
+		..\..\Llvm.Libs.targets.pdbs.x64-Debug.nuspec = ..\..\Llvm.Libs.targets.pdbs.x64-Debug.nuspec
+		..\..\Llvm.Libs.targets.pdbs.x64-Release.nuspec = ..\..\Llvm.Libs.targets.pdbs.x64-Release.nuspec
+		..\..\Llvm.Libs.targets.x64-Debug.nuspec = ..\..\Llvm.Libs.targets.x64-Debug.nuspec
+		..\..\Llvm.Libs.targets.x64-Release.nuspec = ..\..\Llvm.Libs.targets.x64-Release.nuspec
+		..\..\ReadMe.md = ..\..\ReadMe.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PackageContent", "PackageContent", "{E8744802-7C8A-4600-87E1-E7BFE6105E54}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\Llvm.Libs.core.pdbs.x64-Debug.props = ..\..\Llvm.Libs.core.pdbs.x64-Debug.props
+		..\..\Llvm.Libs.core.pdbs.x64-Release.props = ..\..\Llvm.Libs.core.pdbs.x64-Release.props
+		..\..\Llvm.Libs.core.x64-Debug.props = ..\..\Llvm.Libs.core.x64-Debug.props
+		..\..\Llvm.Libs.core.x64-Release.props = ..\..\Llvm.Libs.core.x64-Release.props
+		..\..\Llvm.Libs.MetaPackage.props = ..\..\Llvm.Libs.MetaPackage.props
+		..\..\Llvm.Libs.MetaPackage.targets = ..\..\Llvm.Libs.MetaPackage.targets
+		..\..\Llvm.Libs.targets.x64-Debug.props = ..\..\Llvm.Libs.targets.x64-Debug.props
+		..\..\Llvm.Libs.targets.x64-Release.props = ..\..\Llvm.Libs.targets.x64-Release.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,6 +45,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E8744802-7C8A-4600-87E1-E7BFE6105E54} = {B01F5573-6F31-4B36-8BD0-DF30EC430628}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F814394D-252C-4B62-A247-EF3A9FEE9729}

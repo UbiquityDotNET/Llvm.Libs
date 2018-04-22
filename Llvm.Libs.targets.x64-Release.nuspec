@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata minClientVersion="4.0">
+    <id>Ubiquity.Net.Llvm.Libs.targets.x64-Release</id>
+    <version>$version$</version>
+    <authors>UbiquityDotNet</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Target specific Libraries for LLVM $llvmversion$ (x64-Release)</description>
+    <summary>Do not add this package directly, use the Llvm.Libs metapackage instead</summary>
+    <developmentDependency>true</developmentDependency>
+    <projectUrl>http://www.llvm.org</projectUrl>
+    <licenseUrl>http://releases.llvm.org/$llvmversion$/LICENSE.TXT</licenseUrl>
+    <tags>LLVM,compiler,native</tags>
+  </metadata>
+  <files>
+    <file src="$nugetsrcdir$Llvm.Libs.targets.x64-Release.props" target="build\native\Ubiquity.Net.Llvm.Libs.targets.x64-Release.props" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAArch64AsmParser.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAArch64AsmPrinter.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAArch64CodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAArch64Desc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAArch64Disassembler.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAArch64Info.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAArch64Utils.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAMDGPUAsmParser.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAMDGPUAsmPrinter.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAMDGPUCodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAMDGPUDesc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAMDGPUDisassembler.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAMDGPUInfo.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMAMDGPUUtils.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMARMAsmParser.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMARMAsmPrinter.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMARMCodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMARMDesc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMARMDisassembler.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMARMInfo.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMARMUtils.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMBPFAsmParser.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMBPFAsmPrinter.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMBPFCodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMBPFDesc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMBPFDisassembler.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMBPFInfo.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMHexagonAsmParser.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMHexagonCodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMHexagonDesc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMHexagonDisassembler.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMHexagonInfo.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMLanaiAsmParser.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMLanaiAsmPrinter.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMLanaiCodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMLanaiDesc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMLanaiDisassembler.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMLanaiInfo.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMMipsAsmParser.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMMipsAsmPrinter.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMMipsCodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMMipsDesc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMMipsDisassembler.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMMipsInfo.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMMSP430AsmPrinter.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMMSP430CodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMMSP430Desc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMMSP430Info.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMNVPTXAsmPrinter.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMNVPTXCodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMNVPTXDesc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMNVPTXInfo.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMPowerPCAsmParser.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMPowerPCAsmPrinter.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMPowerPCCodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMPowerPCDesc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMPowerPCDisassembler.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMPowerPCInfo.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMSparcAsmParser.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMSparcAsmPrinter.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMSparcCodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMSparcDesc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMSparcDisassembler.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMSparcInfo.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMSystemZAsmParser.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMSystemZAsmPrinter.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMSystemZCodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMSystemZDesc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMSystemZDisassembler.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMSystemZInfo.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMX86AsmParser.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMX86AsmPrinter.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMX86CodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMX86Desc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMX86Disassembler.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMX86Info.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMX86Utils.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMXCoreAsmPrinter.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMXCoreCodeGen.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMXCoreDesc.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMXCoreDisassembler.lib" target="lib\native\lib" />
+    <file src="$buildoutput$\x64-Release\Release\lib\LLVMXCoreInfo.lib" target="lib\native\lib" />
+  </files>
+</package>

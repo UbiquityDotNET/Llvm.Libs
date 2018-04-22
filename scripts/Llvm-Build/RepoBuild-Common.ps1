@@ -1,4 +1,4 @@
-﻿# Common functions shared via dot sourcing
+﻿# Common functions pulled in a a nested module from the psd1
 
 function Update-Repository
 {

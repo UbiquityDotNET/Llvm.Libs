@@ -1,25 +1,57 @@
-﻿<Project>
+﻿<Project InitialTargets="VerifyLlvmVersion">
+    <!-- Ideally these properties would go into a *.props file, however the NuGet support for native projects will 
+    forcibly place the import of any *.props files at the very beginning of the project file such that they are
+    imported BEFORE any other content. Thus, nothing from the standard build is imported before the NuGet Imports.
+    The result of that is that any NuGet imports cannot depend on standard properties since they may not even exist.
+    The NuGet targets file is imported just ahead of any "property" sheets, which is after importing the standard
+    C++ build props. Thus, the imported NueGet props files only set properties that describe themselves and their
+    locations without any dependencies on standard properties. This target is then sets the properties that are
+    dependent on the standard properties.
+    -->
+    <PropertyGroup>
+        <!--
+        Classic VS installations don't have an "x86" platform - the official name of the platform is Win32,
+        However, the default VS 2017 CMake support uses x86 as a platform name. So this adapts and adjusts
+        to allow for compatibility across VS tool versions.
+        -->
+        <LLVM_PLATFORM Condition="'$(LLVM_PLATFORM)'==''">$(Platform)</LLVM_PLATFORM>
+        <LLVM_PLATFORM Condition="'$(LLVM_PLATFORM)'=='Win32'">x86</LLVM_PLATFORM>
+        <LLVM_PLATFORM_CONFIG Condition="'$(LLVM_PLATFORM_CONFIG)'==''">$(LLVM_PLATFORM)-$(Configuration)</LLVM_PLATFORM_CONFIG>
+    </PropertyGroup>
+
     <Target Name="VerifyLlvmVersion">
-        <Error Condition="'$(LlvmVersionMajor)!='5' OR $(LlvmVersionMinor)!='0' OR $(LlvmVersionPatch)!='1'"
+        <Error Condition="'$(LlvmVersionMajor)'!='6' OR $(LlvmVersionMinor)!='0' OR $(LlvmVersionPatch)!='0'"
                Text="Llvm Version property was altered, this will likely cause broken builds or runtime failures"
                />
+        <Error Condition="'$(LlvmVersion)'!='6.0.0'"/>
     </Target>
 
-    <Target Name="MakeLLvmLibsProp" BeforeTargets="Link">
-        <!--
-        The AllLlvmLibs ItemGroup will contain the Full path on each library.
-        Unfortunately, that makes the final linker command REALLY long. For
-        cases when the packages are installed into a deep path, with build
-        using a linker response file, the line ends up too long. So, this
-        strips the paths to leave only the file name. The path is added to
-        the linker as an entry in the AdditionalLibraryDirectories property
-        -->
-        <PropertyGroup>
-            <LLvmLibs>@(AllLlvmLibs->'%(filename)%(extension)')</LLvmLibs>
-        </PropertyGroup>
+    <Target Name="LLvmLibsPrepareForCompile" BeforeTargets="CLCompile">
+        <ItemGroup>
+            <LlvmLibsAdditionalIncludeDirectories Include="%(LlvmLibsPackage.AdditionalIncludeDirectories)"
+                                                  Condition="'%(LlvmLibsPackage.PlatformConfig)'=='' OR '%(LlvmLibsPackage.PlatformConfig)'=='$(LLVM_PLATFORM_CONFIG)'"/>
+        </ItemGroup>
+        <ItemGroup>
+            <CLCompile>
+                <AdditionalIncludeDirectories>@(LlvmLibsAdditionalIncludeDirectories);%(CLCompile.AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            </CLCompile>
+        </ItemGroup>
+    </Target>
+    
+    <Target Name="LLvmLibsPrepareForLink" BeforeTargets="Link">
+        <ItemGroup>
+            <LlvmLibsAdditionalDependencies Include="%(LlvmLibsPackage.AdditionalDependencies)"
+                                           Condition="'%(LlvmLibsPackage.PlatformConfig)'=='$(LLVM_PLATFORM_CONFIG)'"/>
+        </ItemGroup>
+
+        <ItemGroup>
+            <LlvmAdditonalLibraryDirectories Include="%(LlvmLibsPackage.AdditionalLibraryDirectories)"
+                                             Condition="'%(LlvmLibsPackage.PlatformConfig)'=='$(LLVM_PLATFORM_CONFIG)'"/>
+        </ItemGroup>
         <ItemGroup>
             <Link>
-                <AdditionalDependencies>$(LLvmLibs);%(AdditionalDependencies)</AdditionalDependencies>
+                <AdditionalDependencies>@(LlvmLibsAdditionalDependencies);%(Link.AdditionalDependencies)</AdditionalDependencies>
+                <AdditionalLibraryDirectories>@(LlvmAdditonalLibraryDirectories);%(Link.AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
             </Link>
         </ItemGroup>
     </Target>

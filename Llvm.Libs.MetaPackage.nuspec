@@ -1,33 +1,35 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata minClientVersion="4.0">
-        <id>Llvm.Libs</id>
+        <id>Ubiquity.Net.Llvm.Libs</id>
         <version>$version$</version>
-        <authors>smaillet</authors>
+        <authors>UbiquityDotNet;Ubiquity.NET</authors>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Pre-built LLVM libraries and headers for LLVM $version$</description>
+        <summary>Windows x64 Pre-built LLVM static libraries and headers for LLVM $llvmversion$</summary>
+        <description>
+        Windows x64 Pre-built LLVM libraries and headers for LLVM $llvmversion$.
+        This package contains the base LLVM static libraries built from the official source. They are
+        primarily used to support building the Ubiquity.NET LibLLVM DLL which exposes an extended 
+        LLVM-C API used for creating new language bindings/projections for LLVM.
+        </description>
         <developmentDependency>true</developmentDependency>
-        <projectUrl>http://www.llvm.org</projectUrl>
+        <projectUrl>https://github.com/UbiquityDotNET/Llvm.Libs</projectUrl>
         <licenseUrl>http://releases.llvm.org/$version$/LICENSE.TXT</licenseUrl>
         <tags>LLVM,compiler,native</tags>
         <dependencies>
-            <dependency id="Llvm.Libs.core.x86-Release" version="[$version$]"/>
-            <dependency id="Llvm.Libs.core.x86-Debug" version="[$version$]"/>
-            <dependency id="Llvm.Libs.core.x64-Release" version="[$version$]"/>
-            <dependency id="Llvm.Libs.core.x64-Debug" version="[$version$]"/>
-
-            <dependency id="Llvm.Libs.core.pdbs.x86-Debug" version="[$version$]"/>
-            <dependency id="Llvm.Libs.core.pdbs.x64-Debug" version="[$version$]"/>
-
-            <dependency id="Llvm.Libs.targets.x86-Release" version="[$version$]"/>
-            <dependency id="Llvm.Libs.targets.x86-Debug" version="[$version$]"/>
-            <dependency id="Llvm.Libs.targets.x64-Release" version="[$version$]"/>
-            <dependency id="Llvm.Libs.targets.x64-Debug" version="[$version$]"/>
+            <dependency id="Ubiquity.Net.Llvm.Libs.core.x64-Release" version="[$version$]"/>
+            <dependency id="Ubiquity.Net.Llvm.Libs.core.x64-Debug" version="[$version$]"/>
+            <dependency id="Ubiquity.Net.Llvm.Libs.targets.x64-Release" version="[$version$]"/>
+            <dependency id="Ubiquity.Net.Llvm.Libs.targets.x64-Debug" version="[$version$]"/>
+            <dependency id="Ubiquity.Net.Llvm.Libs.core.pdbs.x64-Debug" version="[$version$]"/>
+            <dependency id="Ubiquity.Net.Llvm.Libs.core.pdbs.x64-Release" version="[$version$]"/>
+            <dependency id="Ubiquity.Net.Llvm.Libs.targets.pdbs.x64-Release" version="[$version$]"/>
+            <dependency id="Ubiquity.Net.Llvm.Libs.targets.pdbs.x64-Debug" version="[$version$]"/>
         </dependencies>
     </metadata>
     <files>
-        <file src="Llvm.Libs.MetaPackage.props" target="build\native\Llvm.Libs.props" />
-        <file src="Llvm.Libs.MetaPackage.targets" target="build\native\Llvm.Libs.targets" />
+        <file src="Llvm.Libs.MetaPackage.props" target="build\native\Ubiquity.Net.Llvm.Libs.props" />
+        <file src="Llvm.Libs.MetaPackage.targets" target="build\native\Ubiquity.Net.Llvm.Libs.targets" />
         <file src="$llvmsrcroot$\include\**" target="lib\native\include" exclude="**\CMakeLists.txt" />
     </files>
 </package>
