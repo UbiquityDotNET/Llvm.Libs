@@ -8,8 +8,7 @@ nuget:
 
 install:
 - ps: >-
-    .\scripts\Initialize-BuildEnv.ps1
-    Update-Repository
+    git submodule -q update --init --recursive
 
 build_script:
 - ps: >-
