@@ -1,5 +1,11 @@
-$InformationPreference = Continue
-Write-Information "Initializing Build Environment..."
+$ErrorActionPreference = "Stop"
+$InformationPreference = "Continue"
+
+Add-AppveyorCompilationMessage -Message 'Updating sub-modules for repository...'
+git submodule -q update --init --recursive
+
+Add-AppveyorCompilationMessage -Message 'Initializing Build Environment...'
 .\Initialize-BuildEnv.ps1
-Write-Information "Building..."
+
+Add-AppveyorCompilationMessage -Message 'Building...'
 Invoke-Build -Publish Project

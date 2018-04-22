@@ -307,6 +307,9 @@ function Initialize-BuildEnvironment
 Export-ModuleMember -Function Initialize-BuildEnvironment
 
 # --- Module init script
+$ErrorActionPreference = "Stop"
+$InformationPreference = "Continue"
+
 $isCI = !!$env:CI
 $RepoInfo = Get-RepoInfo  -Force:$isCI
 Export-ModuleMember -Variable RepoInfo
