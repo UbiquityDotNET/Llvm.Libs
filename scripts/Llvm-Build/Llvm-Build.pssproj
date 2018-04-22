@@ -42,6 +42,7 @@
     <Compile Include="..\Initialize-BuildEnv.ps1">
       <Link>Initialize-BuildEnv.ps1</Link>
     </Compile>
+    <Compile Include="Build-CI.ps1" />
     <Compile Include="Cmake-Helpers.ps1" />
     <Compile Include="RepoBuild-Common.ps1" />
     <Compile Include="Llvm-Build.psd1" />
