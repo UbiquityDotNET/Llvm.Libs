@@ -1,11 +1,7 @@
 $ErrorActionPreference = "Stop"
 $InformationPreference = "Continue"
 
-Add-AppveyorCompilationMessage -Message 'Updating sub-modules for repository...'
-git submodule -q update --init --recursive
+Write-Information "This is a test message - it is supposed to appear in the AppVeyor console log"
+Add-AppveyorMessage -Message 'Test Message - it should appear in the Messages tab of the build'
+Add-AppveyorCompilationMessage -Message 'Test Compilation Message - It should appear in the console log'
 
-Add-AppveyorCompilationMessage -Message 'Initializing Build Environment...'
-.\Initialize-BuildEnv.ps1
-
-Add-AppveyorCompilationMessage -Message 'Building...'
-Invoke-Build -Publish Project
