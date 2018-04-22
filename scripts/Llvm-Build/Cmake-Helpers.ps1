@@ -41,11 +41,10 @@
         if([Environment]::Is64BitOperatingSystem)
         {
             $this.CMakeCommandArgs = @('-Thost=x64')
-            $this.InheritEnvironments = @("msvc_x64_x64")
         }
         else
         {
-            $this.InheritEnvironments = @("msvc_x64")
+            $this.CMakeCommandArgs = @()
         }
 
         $this.BuildCommandArgs = @('/m')
