@@ -155,6 +155,19 @@ function Invoke-Build
     switch( $PsCmdlet.ParameterSetName )
     {
         "build" {
+            <#
+            NUMBER_OF_PROCESSORS < 6;
+            This is generally an inefficient number of cores available (Ideally 6-8 are needed for a timely build)
+            On an automated build service this may cause the build to exceed the time limit allocated for a build
+            job. (As an example AppVeyor has a 1hr per job limit with VMs containing only 2 cores, which is
+            unfortunately just not capable of completing the build for a single platform+config in time, let alone multiple combinations.)
+            #>
+
+            if( ([int]$env:NUMBER_OF_PROCESSORS) -lt 6 )
+            {
+                Write-Warning "NUMBER_OF_PROCESSORS{ $env:NUMBER_OF_PROCESSORS } < 6;"
+            }
+
             try
             {
                 $timer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -215,11 +228,14 @@ function Invoke-Build
                         Write-Error "ApiSetKey is required for publishing to account feed"
                         return
                     }
+
+                    Write-Information "Publishing packages to account feed"
                     Get-ChildItem $RepoInfo.PackOutputPath -Filter '*.nupkg' |
                         %{ Invoke-Nuget push $_.FullName -Timeout 900 -ApiKey $ApiSetKey -Source https://ci.appveyor.com/nuget/UbiquityDotNet/api/v2/package }
                 }
                 "Project" {
-                    Invoke-NuGet install Ubiquity.NET.Llvm.Libs  -OutputDirectory $RepoInfo.PackOutputPath -Source https://ci.appveyor.com/nuget/UbiquityDotNet/api/v2/package -DirectDownload -NoCache -NonInteractive
+                    Write-Information "Installing packages from account feed as artifacts"
+                    Invoke-NuGet install Ubiquity.NET.Llvm.Libs  -OutputDirectory $RepoInfo.PackOutputPath -Source https://ci.appveyor.com/nuget/UbiquityDotNet/api/v2/package -DirectDownload -NoCache
                 }
             }
         }
@@ -277,29 +293,16 @@ function Initialize-BuildEnvironment
 {
     $env:__LLVM_BUILD_INITIALIZED=1
     $env:Path = "$($RepoInfo.ToolsPath);$env:Path"
-    <#
-    NUMBER_OF_PROCESSORS < 6;
-    This is generally an inefficient number of cores available (Ideally 6-8 are needed for a timely build)
-    On an automated build service this may cause the build to exceed the time limit allocated for a build
-    job. (As an example AppVeyor has a 1hr per job limit with VMs containing only 2 cores, which is
-    unfortunately just not capable of completing the build for a single platform+config in time, let alone multiple combinations.)
-    #>
-
-    if( ([int]$env:NUMBER_OF_PROCESSORS) -lt 6 )
-    {
-        Write-Warning "NUMBER_OF_PROCESSORS{ $env:NUMBER_OF_PROCESSORS } < 6;"
-    }
 
     Write-Information "Searching for cmake.exe"
     $cmakePath = Find-OnPath 'cmake.exe'
     if(!$cmakePath)
     {
-        $env:Path = "$env:Path;$(Join-Path $RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin' )"
+        $cmakePath = $(Join-Path $RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin' )
+        $env:Path = "$env:Path;$cmakePath"
     }
-    else
-    {
-        Write-Information "cmake: $cmakePath"
-    }
+
+    Write-Information "cmake: $cmakePath"
 }
 Export-ModuleMember -Function Initialize-BuildEnvironment
 

@@ -12,6 +12,7 @@ install:
 
 build_script:
 - ps: >-
+    $InformationPreference = Continue
     .\scripts\Initialize-BuildEnv.ps1
     build -Publish Project
 
