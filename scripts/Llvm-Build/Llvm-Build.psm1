@@ -133,51 +133,95 @@ function Invoke-Build
     Clean all output folders to force a complete rebuild
 #>
 
-    [CmdletBinding(DefaultParameterSetName="buildall")]
+    [CmdletBinding(DefaultParameterSetName="build")]
     param(
-       [Parameter(ParameterSetName="buildall")]
-       [switch]
-       $BuildAll,
+       [Parameter(ParameterSetName="build")]
+       [switch]$Libs,
 
        [Parameter(ParameterSetName="pack")]
        [switch]$Pack,
 
        [Parameter(ParameterSetName="clean")]
-       [switch]$Clean
+       [switch]$Clean,
+
+       [Parameter(ParameterSetName="publish")]
+       [ValidateSet('Account','Project')]
+       [string]$Publish,
+
+       [Parameter(ParameterSetName="publish")]
+       [string]$ApiSetKey = $null
      )
 
     switch( $PsCmdlet.ParameterSetName )
     {
-        "buildall" {
+        "build" {
             try
             {
                 $timer = [System.Diagnostics.Stopwatch]::StartNew()
                 foreach( $cmakeConfig in $RepoInfo.CMakeConfigurations )
                 {
                     LlvmBuildConfig $cmakeConfig
-                    BuildPlatformConfigPackage $cmakeConfig $RepoInfo
+                }
+            }
+            finally
+            {
+                $timer.Stop()
+                Write-Information "Build Finished - Elapsed Time: $($timer.Elapsed.ToString())"
+            }
+        }
+        "pack" {
+            try
+            {
+                $timer = [System.Diagnostics.Stopwatch]::StartNew()
+                if($env:APPVEYOR)
+                {
+                    Write-Error "Cannot pack LLVM libraries in APPVEYOR build as it requires the built libraries and the total time required will exceed the limits of an APPVEYOR Job"
                 }
 
+                #use nuget to pack the content in a nupkg in the output packages location
+                #-Publish 'Account' command can then publish the packages to the account feed so that the
+                #AppVeyor build can retrieve it and publish in the project feed (AppVeyor does not allow
+                #direct publishing to the project feed when not published as an artifact from a build)
+                foreach( $cmakeConfig in $RepoInfo.CMakeConfigurations )
+                {
+                    BuildPlatformConfigPackage $cmakeConfig $RepoInfo
+                }
                 GenerateMultiPack $RepoInfo
             }
             finally
             {
                 $timer.Stop()
-                Write-Information "Finished: Time: $($timer.Elapsed.ToString())"
+                Write-Information "Pack Finished - Elapsed Time: $($timer.Elapsed.ToString())"
             }
-        }
-        "pack" {
-            foreach( $cmakeConfig in $RepoInfo.CMakeConfigurations )
-            {
-                BuildPlatformConfigPackage $cmakeConfig $RepoInfo
-            }
-            GenerateMultiPack $RepoInfo
         }
         "clean" {
             rd -Recurse -Force $RepoInfo.ToolsPath
             rd -Recurse -Force $RepoInfo.BuildOutputPath
             rd -Recurse -Force $RepoInfo.PackOutputPath
             $script:RepoInfo = Get-RepoInfo
+        }
+        "publish" {
+            switch($Publish)
+            {
+                "Account" {
+                    if($env:APPVEYOR)
+                    {
+                        Write-Error "Cannot publish to account feed from an AppVeyor build Job"
+                        return
+                    }
+
+                    if([string]::IsNullOrWhiteSpace($ApiSetKey))
+                    {
+                        Write-Error "ApiSetKey is required for publishing to account feed"
+                        return
+                    }
+                    Get-ChildItem $RepoInfo.PackOutputPath -Filter '*.nupkg' |
+                        %{ Invoke-Nuget push $_.FullName -Timeout 900 -ApiKey $ApiSetKey -Source https://ci.appveyor.com/nuget/UbiquityDotNet/api/v2/package }
+                }
+                "Project" {
+                    Invoke-NuGet install Ubiquity.NET.Llvm.Libs  -OutputDirectory $RepoInfo.PackOutputPath -Source https://ci.appveyor.com/nuget/UbiquityDotNet/api/v2/package -DirectDownload -NoCache -NonInteractive
+                }
+            }
         }
         default {
             Write-Error "Unknown parameter set '$PsCmdlet.ParameterSetName'"
@@ -238,7 +282,7 @@ function Initialize-BuildEnvironment
     This is generally an inefficient number of cores available (Ideally 6-8 are needed for a timely build)
     On an automated build service this may cause the build to exceed the time limit allocated for a build
     job. (As an example AppVeyor has a 1hr per job limit with VMs containing only 2 cores, which is
-    unfortunately just not capable of completing the build for a single platform+config in time.)
+    unfortunately just not capable of completing the build for a single platform+config in time, let alone multiple combinations.)
     #>
 
     if( ([int]$env:NUMBER_OF_PROCESSORS) -lt 6 )
@@ -267,5 +311,4 @@ Export-ModuleMember -Variable RepoInfo
 New-Alias -Name build -Value Invoke-Build
 Export-ModuleMember -Alias build -Variable RepoInfo
 
-New-CMakeSettingsJson | Out-File llvm\cmakesettings.json
 Write-Information "Build Info:`n $($RepoInfo | Out-String )"

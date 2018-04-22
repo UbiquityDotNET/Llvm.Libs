@@ -7,6 +7,7 @@ Project("{F5034706-568F-408A-B7B3-4D38C6DB8A32}") = "Llvm-Build", "Llvm-Build.ps
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Repo Items", "Repo Items", "{B01F5573-6F31-4B36-8BD0-DF30EC430628}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\appveyor.yml = ..\..\appveyor.yml
 		..\..\Llvm.Libs.core.pdbs.x64-Debug.nuspec = ..\..\Llvm.Libs.core.pdbs.x64-Debug.nuspec
 		..\..\Llvm.Libs.core.pdbs.x64-Release.nuspec = ..\..\Llvm.Libs.core.pdbs.x64-Release.nuspec
 		..\..\Llvm.Libs.core.x64-Debug.nuspec = ..\..\Llvm.Libs.core.x64-Debug.nuspec
