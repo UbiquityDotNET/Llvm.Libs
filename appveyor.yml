@@ -6,7 +6,7 @@ nuget:
   disable_publish_on_pr: true
 
 install:
-  - git submodule -q update --init --recursive
+  - ps: .\scripts\Update-SubModules.ps1
 
 build_script:
   - ps: .\scripts\Build-CI.ps1

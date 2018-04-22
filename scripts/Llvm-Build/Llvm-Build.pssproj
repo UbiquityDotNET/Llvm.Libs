@@ -48,6 +48,7 @@
     <Compile Include="Llvm-Build.psd1" />
     <Compile Include="Llvm-Build.psm1" />
     <Compile Include="LlvmBuild-PreReqTools.ps1" />
+    <Compile Include="Update-SubModules.ps1" />
     <Compile Include="VSSetup-Instances.ps1" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
