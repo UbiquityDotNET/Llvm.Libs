@@ -39,9 +39,6 @@
   </PropertyGroup>
   <ItemGroup />
   <ItemGroup>
-    <Compile Include="..\Build-CI.ps1">
-      <Link>Build-CI.ps1</Link>
-    </Compile>
     <Compile Include="..\Initialize-BuildEnv.ps1">
       <Link>Initialize-BuildEnv.ps1</Link>
     </Compile>

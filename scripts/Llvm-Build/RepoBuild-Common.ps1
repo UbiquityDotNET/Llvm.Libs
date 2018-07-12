@@ -11,14 +11,21 @@ function Find-OnPath
 {
     [CmdletBinding()]
     Param( [Parameter(Mandatory=$True,Position=0)][string]$exeName)
-    $path = where.exe $exeName 2>$null
+    $path = $null
+    Write-Information "Searching for $exeName..."
+    try
+    {
+        $path = where.exe $exeName 2>$null
+    }
+    catch
+    {}
     if(!$path)
     {
-        Write-Verbose "'$exeName' not found on PATH"
+        Write-Information "'$exeName' not found on PATH"
     }
     else
     {
-        Write-Verbose "Found: '$path'"
+        Write-Information "Found $exeName at: '$path'"
     }
     return $path
 }
@@ -153,3 +160,55 @@ function Merge-Environment( [hashtable]$OtherEnv, [string[]]$IgnoreNames )
 }
 Export-ModuleMember -Function Merge-Environment
 
+function Expand-ArchiveStream([Parameter(Mandatory=$true, ValueFromPipeLine)]$src, [Parameter(Mandatory=$true)]$OutputPath)
+{
+    $zipArchive = [System.IO.Compression.ZipArchive]::new($src)
+    [System.IO.Compression.ZipFileExtensions]::ExtractToDirectory( $zipArchive, $OutputPath)
+}
+
+function Download-AndExpand([Parameter(Mandatory=$true, ValueFromPipeLine)]$uri, [Parameter(Mandatory=$true)]$OutputPath)
+{
+    $strm = (Invoke-WebRequest -UseBasicParsing -Uri $uri).RawContentStream
+    Expand-ArchiveStream $strm $OutputPath
+}
+Export-ModuleMember -Function Download-AndExpand
+
+# invokes NuGet.exe, handles downloading it to the script root if it isn't already on the path
+function Invoke-NuGet
+{
+    $NuGetPaths = Find-OnPath NuGet.exe -ErrorAction Continue
+    if( !$NuGetPaths )
+    {
+        $nugetToolsPath = "$($RepoInfo.ToolsPath)\NuGet.exe"
+        if( !(Test-Path $nugetToolsPath))
+        {
+            # Download it from official NuGet release location
+            Write-Verbose "Downloading Nuget.exe to $nugetToolsPath"
+            Invoke-WebRequest -UseBasicParsing -Uri https://dist.NuGet.org/win-x86-commandline/latest/NuGet.exe -OutFile $nugetToolsPath
+        }
+    }
+    Write-Information "NuGet $args"
+    NuGet $args
+    $err = $LASTEXITCODE
+    if($err -ne 0)
+    {
+        throw "Error running NuGet: $err"
+    }
+}
+Export-ModuleMember -Function Invoke-NuGet
+
+function Get-GitHubReleases($org, $project)
+{
+    $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$org/$project/releases"
+    foreach($r in $releases)
+    {
+        $r
+    }
+}
+Export-ModuleMember -Function Get-GitHubReleases
+
+function Get-GitHubTaggedRelease($org, $project, $tag)
+{
+    Get-GithubReleases $org $project | ?{$_.tag_name -eq $tag}
+}
+Export-ModuleMember -Function Get-GitHubTaggedRelease

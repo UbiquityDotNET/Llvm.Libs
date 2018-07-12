@@ -52,39 +52,3 @@ function Install-Python
     return $PythonPath
 }
 Export-ModuleMember -Function Install-Python
-
-# invokes NuGet.exe, handles downloading it to the script root if it isn't already on the path
-function Invoke-NuGet
-{
-    $NuGetPaths = Find-OnPath NuGet.exe -ErrorAction Continue
-    if( !$NuGetPaths )
-    {
-        $nugetToolsPath = "$($RepoInfo.ToolsPath)\NuGet.exe"
-        if( !(Test-Path $nugetToolsPath))
-        {
-            # Download it from official NuGet release location
-            Write-Verbose "Downloading Nuget.exe to $nugetToolsPath"
-            Invoke-WebRequest -UseBasicParsing -Uri https://dist.NuGet.org/win-x86-commandline/latest/NuGet.exe -OutFile $nugetToolsPath
-        }
-    }
-    Write-Information "NuGet $args"
-    NuGet $args
-    $err = $LASTEXITCODE
-    if($err -ne 0)
-    {
-        throw "Error running NuGet: $err"
-    }
-}
-Export-ModuleMember -Function Invoke-NuGet
-
-function Expand-ArchiveStream([Parameter(Mandatory=$true, ValueFromPipeLine)]$src, [Parameter(Mandatory=$true)]$OutputPath)
-{
-    $zipArchive = [System.IO.Compression.ZipArchive]::new($src)
-    [System.IO.Compression.ZipFileExtensions]::ExtractToDirectory( $zipArchive, $OutputPath)
-}
-
-function Download-AndExpand([Parameter(Mandatory=$true, ValueFromPipeLine)]$uri, [Parameter(Mandatory=$true)]$OutputPath)
-{
-    $strm = (Invoke-WebRequest -UseBasicParsing -Uri $uri).RawContentStream
-    Expand-ArchiveStream $strm $OutputPath
-}

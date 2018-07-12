@@ -1,0 +1,37 @@
+﻿<Project InitialTargets="VerifyLlvmVersion">
+    <Target Name="VerifyLlvmVersion">
+        <Error Condition="'$(LlvmVersionMajor)'!='6' OR $(LlvmVersionMinor)!='0' OR $(LlvmVersionPatch)!='0'"
+               Text="Llvm Version property was altered, this will likely cause broken builds or runtime failures"
+               />
+    </Target>
+
+    <Target Name="LLvmLibsPrepareForCompile" BeforeTargets="CLCompile">
+        <ItemGroup>
+            <LlvmLibsAdditionalIncludeDirectories Include="%(LlvmLibsPackage.AdditionalIncludeDirectories)"
+                                                  Condition="'%(LlvmLibsPackage.PlatformConfig)'=='' OR '%(LlvmLibsPackage.PlatformConfig)'=='$(LlvmPlatformConfig)'"/>
+        </ItemGroup>
+        <ItemGroup>
+            <CLCompile>
+                <AdditionalIncludeDirectories>@(LlvmLibsAdditionalIncludeDirectories);%(CLCompile.AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            </CLCompile>
+        </ItemGroup>
+    </Target>
+    
+    <Target Name="LLvmLibsPrepareForLink" BeforeTargets="Link">
+        <ItemGroup>
+            <LlvmLibsAdditionalDependencies Include="%(LlvmLibsPackage.AdditionalDependencies)"
+                                           Condition="'%(LlvmLibsPackage.PlatformConfig)'=='$(LlvmPlatformConfig)'"/>
+        </ItemGroup>
+
+        <ItemGroup>
+            <LlvmAdditonalLibraryDirectories Include="%(LlvmLibsPackage.AdditionalLibraryDirectories)"
+                                             Condition="'%(LlvmLibsPackage.PlatformConfig)'=='$(LlvmPlatformConfig)'"/>
+        </ItemGroup>
+        <ItemGroup>
+            <Link>
+                <AdditionalDependencies>@(LlvmLibsAdditionalDependencies);%(Link.AdditionalDependencies)</AdditionalDependencies>
+                <AdditionalLibraryDirectories>@(LlvmAdditonalLibraryDirectories);%(Link.AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+            </Link>
+        </ItemGroup>
+    </Target>
+</Project>

@@ -1,0 +1,54 @@
+﻿<Project>
+    <!-- VS doesn't like user macros in a property sheet with conditions -->
+    <PropertyGroup>
+        <!--
+        Classic VS installations don't have an "x86" platform - the official name of the platform is Win32,
+        However, the default VS 2017 CMake support uses x86 as a platform name. So this adapts and adjusts
+        to allow for compatibility across VS tool versions.
+        -->
+        <LlvmPlatform Condition="'$(LlvmPlatform)'==''">$(Platform)</LlvmPlatform>
+        <LlvmPlatform Condition="'$(LlvmPlatform)'=='Win32'">x86</LlvmPlatform>
+        <LlvmPlatformConfig Condition="'$(LlvmPlatformConfig)'==''">$(LlvmPlatform)-$(Configuration)</LlvmPlatformConfig>
+    </PropertyGroup>
+    <PropertyGroup Label="UserMacros">
+        <!-- These are not conditional as the version is bound directly to the version of LLVM built into the libraries -->
+        <LlvmVersionMajor>6</LlvmVersionMajor>
+        <llvmVersionMinor>0</llvmVersionMinor>
+        <LlvmVersionBuild>0</LlvmVersionBuild>
+        <LlvmVersion>$(LlvmVersionMajor).$(LlvmVersionMinor).$(LlvmVersionBuild)</LlvmVersion>
+        <LlvmLibsMetaPackageRoot>$(MSBuildThisFileDirectory)</LlvmLibsMetaPackageRoot>
+    </PropertyGroup>
+    <!--
+        The total number of libs and full path from the MSBuild item will generate insanely long command
+        line arguments. (So much so that it actually exceeds the length limits for the linker response file designed
+        to handle longer command lines!) This resolves the length by listing only the base file name and adding
+        the directory to the list of library paths.
+    -->
+    <ItemGroup>
+        <LlvmLibs64Debug Include="$(LlvmLibsMetaPackageRoot)x64-Debug\Debug\lib\*.lib"/>
+        <LlvmLibsx64Release Include="$(LlvmLibsMetaPackageRoot)x64-Release\Release\lib\*.lib"/>
+    </ItemGroup>
+    <ItemGroup>
+        <LlvmLibsPackage Include="llvm-pkg-Common">
+            <AdditionalIncludeDirectories>$(LlvmLibsMetaPackageRoot)include</AdditionalIncludeDirectories>
+        </LlvmLibsPackage>
+        <LlvmLibsPackage Include="llvm-pkg-x64-Debug">
+            <PlatformConfig>x64-Debug</PlatformConfig>
+            <AdditionalLibraryDirectories>$(LlvmLibsMetaPackageRoot)x64-Debug\Debug\lib\</AdditionalLibraryDirectories>
+            <AdditionalIncludeDirectories>$(LlvmLibsMetaPackageRoot)x64-Debug\include\</AdditionalIncludeDirectories>
+            <AdditionalDependencies>@(LlvmLibsx64Debug->'%(filename)%(extension)')</AdditionalDependencies>
+        </LlvmLibsPackage>
+        <LlvmLibsPackage Include="llvm-pkg-x64-Release">
+            <PlatformConfig>x64-Release</PlatformConfig>
+            <AdditionalLibraryDirectories>$(LlvmLibsMetaPackageRoot)x64-Release\Release\lib\</AdditionalLibraryDirectories>
+            <AdditionalIncludeDirectories>$(LlvmLibsMetaPackageRoot)x64-Release\include\</AdditionalIncludeDirectories>
+            <AdditionalDependencies>@(LlvmLibsx64Release->'%(filename)%(extension)')</AdditionalDependencies>
+        </LlvmLibsPackage>
+    </ItemGroup>
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <AdditionalOptions>%(AdditionalOptions) /Zc:sizedDealloc-</AdditionalOptions>
+            <DisableSpecificWarnings>4141;4146;4267;4244;4800;4291;4996;4624;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+        </ClCompile>
+    </ItemDefinitionGroup>
+</Project>
