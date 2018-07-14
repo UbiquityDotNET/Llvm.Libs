@@ -1,6 +1,6 @@
 ﻿<Project InitialTargets="VerifyLlvmVersion">
     <Target Name="VerifyLlvmVersion">
-        <Error Condition="'$(LlvmVersionMajor)'!='6' OR $(LlvmVersionMinor)!='0' OR $(LlvmVersionPatch)!='0'"
+        <Error Condition="'$(LlvmVersionMajor)'!='6' OR $(LlvmVersionMinor)!='0' OR $(LlvmVersionPatch)!='1'"
                Text="Llvm Version property was altered, this will likely cause broken builds or runtime failures"
                />
     </Target>
