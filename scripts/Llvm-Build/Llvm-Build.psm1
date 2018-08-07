@@ -208,12 +208,12 @@ function Initialize-BuildEnvironment
     $cmakePath = Find-OnPath 'cmake.exe'
     if(!$cmakePath)
     {
-        $cmakePath = $(Join-Path $RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin' )
+        $cmakePath = $(Join-Path $RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe' )
         Write-Information "Using cmake from VS Instance"
-        $env:Path = "$env:Path;$cmakePath"
+        $env:Path = "$env:Path;$([System.IO.Path]::GetDirectoryName($cmakePath))"
     }
 
-    if( !(Test-Path -PathType Leaf (Join-Path $cmakePath 'cmake.exe')))
+    if( !(Test-Path -PathType Leaf $cmakePath))
     {
         Write-Error "cmake.exe was not found!"
     }
