@@ -56,11 +56,34 @@ function New-CMakeSettingsJson
 }
 Export-ModuleMember -Function New-CMakeSettingsJson
 
+function mkpathinfo($basePath, $path)
+{
+    $relativePath = ($path.FullName.Substring($basePath.Trim('\').Length + 1))
+    @{
+        FullPath=$path.FullName;
+        RelativePath=$relativePath;
+        RelativeDir=[System.IO.Path]::GetDirectoryName($relativePath);
+        FileName=[System.IO.Path]::GetFileName($path.FullName);
+    }
+}
+
+function LinkFile($archiveVersionName, $info)
+{
+    $linkPath = join-Path $archiveVersionName $info.RelativeDir
+    if(!(Test-Path -PathType Container $linkPath))
+    {
+        md $linkPath | out-null
+    }
+
+    New-Item -ItemType HardLink -Path $linkPath -Name $info.FileName -Value $info.FullPath
+}
+
 function Compress-BuildOutput
 {
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     $oldPath = $env:Path
-    $archivePath = Join-Path $RepoInfo.BuildOutputPath "llvm-libs-$($RepoInfo.LlvmVersion)-msvc-$($RepoInfo.VsInstance.InstallationVersion.Major).$($RepoInfo.VsInstance.InstallationVersion.Minor).7z"
+    $archiveVersionName = "llvm-libs-$($RepoInfo.LlvmVersion)-msvc-$($RepoInfo.VsInstance.InstallationVersion.Major).$($RepoInfo.VsInstance.InstallationVersion.Minor)"
+    $archivePath = Join-Path $RepoInfo.BuildOutputPath "$archiveVersionName.7z"
     try
     {
         if($env:APPVEYOR)
@@ -69,26 +92,22 @@ function Compress-BuildOutput
         }
 
         pushd $RepoInfo.BuildOutputPath
-        try
-        {
-            # TODO: include targets and props files in the package so that consumers
-            # can simply reference a properysheet (The way NuGet should have done it)
+        # to simplify building the 7z archive with the desired structure
+        # create the layout desired using hardlinks, and zip the result in a single operation
+        # this also allows local testing of the package without needing to publish, download and unpack the archive
 
-            7z.exe a $archivePath -t7z -mx=9 x64-Debug\Debug\lib\ x64-Release\Release\lib\
-            7z.exe a $archivePath -t7z -mx=9 -r x64-Debug\include\*.h x64-Debug\include\*.gen x64-Debug\include\*.def
-            7z.exe a $archivePath -t7z -mx=9 -r x64-Release\include\*.h x64-Release\include\*.gen x64-Release\include\*.def
+        md $archiveVersionName
+        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug\Debug') -Name lib -Value (Join-Path $RepoInfo.BuildOutputPath 'x64-Debug\Debug\lib')
+        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release\Release') -Name lib -Value (Join-Path $RepoInfo.BuildOutputPath 'x64-Release\Release\lib')
 
-            cd $RepoInfo.LlvmRoot
-            7z.exe a '-xr!*.txt' '-xr!.*' -t7z -mx=9 $archivePath include\
-            7z.exe a '-xr!*.txt' '-xr!.*' -t7z -mx=9 $archivePath include\
-            
-            cd $RepoInfo.RepoRoot
-            7z.exe a -t7z -mx=9 $archivePath Llvm-Libs.*
-        }
-        finally
-        {
-            popd
-        }
+        $commonIncPath = join-Path $RepoInfo.LlvmRoot include
+        & {
+            dir -r x64*\include | ?{$_ -is [System.IO.FileInfo]} | ?{ ('.h', '.gen', '.def') -contains $_.Extension} | %{ mkpathinfo $RepoInfo.BuildOutputPath.FullName $_}
+            dir -r $commonIncPath | ?{$_ -is [System.IO.FileInfo]} | ?{ $_.Extension -ine '.txt' } | %{ mkpathinfo $RepoInfo.LlvmRoot.FullName $_ }
+            dir $RepoInfo.RepoRoot -Filter Llvm-Libs.* | ?{$_ -is [System.IO.FileInfo]} | %{ mkpathinfo $RepoInfo.RepoRoot.FullName $_ }
+        } | %{ LinkFile $archiveVersionName $_ }
+
+        Compress-7Zip -ArchiveFileName $archivePath -Format SevenZip -CompressionLevel Ultra "$archiveVersionName\"
     }
     finally
     {
@@ -204,6 +223,7 @@ function Initialize-BuildEnvironment
 {
     $env:__LLVM_BUILD_INITIALIZED=1
     $env:Path = "$($RepoInfo.ToolsPath);$env:Path"
+    $isCI = !!$env:CI
 
     $cmakePath = Find-OnPath 'cmake.exe'
     if(!$cmakePath)
@@ -222,33 +242,7 @@ function Initialize-BuildEnvironment
         Write-Information "cmake: $cmakePath"
     }
 
-    $path7Z = Find-OnPath '7z.exe'
-    if(!$path7Z)
-    {
-        if( Test-Path -PathType Container HKLM:\SOFTWARE\7-Zip )
-        {
-            $path7Z = Join-Path (Get-ItemProperty HKLM:\SOFTWARE\7-Zip\ 'Path').Path '7z.exe'
-        }
-
-        if( !$path7Z -and ($env:PROCESSOR_ARCHITEW6432 -eq "AMD64") )
-        {
-            $hklm = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64)
-            $subKey = $hklm.OpenSubKey("SOFTWARE\7-Zip")
-            $root = $subKey.GetValue("Path")
-            if($root)
-            {
-                $path7Z = Join-Path $root '7z.exe'
-            }
-        }
-    }
-
-    if(!$path7Z -or !(Test-Path -PathType Leaf $path7Z ) )
-    {
-        throw "Can't find 7-zip command line executable"
-    }
-
-    Write-Information "Using 7-zip from: $path7Z"
-    $env:Path="$env:Path;$([System.IO.Path]::GetDirectoryName($path7Z))"
+    Install-Module -Name 7Zip4Powershell -Scope CurrentUser -Force:$isCI
 }
 Export-ModuleMember -Function Initialize-BuildEnvironment
 
@@ -257,6 +251,7 @@ $ErrorActionPreference = "Stop"
 $InformationPreference = "Continue"
 
 $isCI = !!$env:CI
+
 $RepoInfo = Get-RepoInfo  -Force:$isCI
 Export-ModuleMember -Variable RepoInfo
 
