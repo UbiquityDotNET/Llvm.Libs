@@ -136,10 +136,6 @@ function Invoke-Build
 .DESCRIPTION
     This script is used to build LLVM libraries
 #>
-
-    [CmdletBinding(DefaultParameterSetName="build")]
-    param( )
-
     if($env:APPVEYOR)
     {
         Write-Error "Cannot build LLVM libraries in APPVEYOR build as the total time required will exceed the limits of an APPVEYOR Job"

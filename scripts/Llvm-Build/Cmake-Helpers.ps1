@@ -5,9 +5,6 @@
     [ValidateSet('x86','x64')]
     [string]$Platform;
 
-    [ValidateSet('Debug','Release')]
-    [string]$Configuration;
-
     [ValidateSet('Debug', 'Release', 'MinSizeRel', 'RelWithDebInfo')]
     [string]$ConfigurationType;
 
@@ -32,7 +29,6 @@
         }
 
         $this.Name="$($this.Platform)-$config"
-        $this.Configuration = $config
         $this.ConfigurationType = $config
         $this.BuildRoot = Join-Path $baseBuild $this.Name
         $this.SrcRoot = $srcRoot
@@ -180,8 +176,8 @@ function Invoke-CmakeBuild([CMakeConfig]$config)
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     try
     {
-        Write-Verbose "cmake --build $config.BuildRoot --config $config.Configuration -- $config.BuildCommandArgs"
-        cmake --build $config.BuildRoot --config $config.Configuration -- $config.BuildCommandArgs
+        Write-Verbose "cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs"
+        cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs
         if($LASTEXITCODE -ne 0 )
         {
             throw "Cmake build exited with non-zero exit code: $LASTEXITCODE"

@@ -14,41 +14,163 @@
         <!-- These are not conditional as the version is bound directly to the version of LLVM built into the libraries -->
         <LlvmVersionMajor>6</LlvmVersionMajor>
         <llvmVersionMinor>0</llvmVersionMinor>
-        <LlvmVersionBuild>0</LlvmVersionBuild>
+        <LlvmVersionBuild>1</LlvmVersionBuild>
         <LlvmVersion>$(LlvmVersionMajor).$(LlvmVersionMinor).$(LlvmVersionBuild)</LlvmVersion>
         <LlvmLibsMetaPackageRoot>$(MSBuildThisFileDirectory)</LlvmLibsMetaPackageRoot>
+        <LlvmPlatformConfigLibRoot>$(LlvmLibsMetaPackageRoot)$(LlvmPlatformConfig)\$(Configuration)\lib\</LlvmPlatformConfigLibRoot>
+        <LlvmPlatformConfigIncRoot>$(LlvmLibsMetaPackageRoot)$(LlvmPlatformConfig)\include\</LlvmPlatformConfigIncRoot>
+        <LlvmCommonIncRoot>$(LlvmLibsMetaPackageRoot)include\</LlvmCommonIncRoot>
     </PropertyGroup>
-    <!--
-        The total number of libs and full path from the MSBuild item will generate insanely long command
-        line arguments. (So much so that it actually exceeds the length limits for the linker response file designed
-        to handle longer command lines!) This resolves the length by listing only the base file name and adding
-        the directory to the list of library paths.
-    -->
-    <ItemGroup>
-        <LlvmLibs64Debug Include="$(LlvmLibsMetaPackageRoot)x64-Debug\Debug\lib\*.lib"/>
-        <LlvmLibsx64Release Include="$(LlvmLibsMetaPackageRoot)x64-Release\Release\lib\*.lib"/>
-    </ItemGroup>
-    <ItemGroup>
-        <LlvmLibsPackage Include="llvm-pkg-Common">
-            <AdditionalIncludeDirectories>$(LlvmLibsMetaPackageRoot)include</AdditionalIncludeDirectories>
-        </LlvmLibsPackage>
-        <LlvmLibsPackage Include="llvm-pkg-x64-Debug">
-            <PlatformConfig>x64-Debug</PlatformConfig>
-            <AdditionalLibraryDirectories>$(LlvmLibsMetaPackageRoot)x64-Debug\Debug\lib\</AdditionalLibraryDirectories>
-            <AdditionalIncludeDirectories>$(LlvmLibsMetaPackageRoot)x64-Debug\include\</AdditionalIncludeDirectories>
-            <AdditionalDependencies>@(LlvmLibsx64Debug->'%(filename)%(extension)')</AdditionalDependencies>
-        </LlvmLibsPackage>
-        <LlvmLibsPackage Include="llvm-pkg-x64-Release">
-            <PlatformConfig>x64-Release</PlatformConfig>
-            <AdditionalLibraryDirectories>$(LlvmLibsMetaPackageRoot)x64-Release\Release\lib\</AdditionalLibraryDirectories>
-            <AdditionalIncludeDirectories>$(LlvmLibsMetaPackageRoot)x64-Release\include\</AdditionalIncludeDirectories>
-            <AdditionalDependencies>@(LlvmLibsx64Release->'%(filename)%(extension)')</AdditionalDependencies>
-        </LlvmLibsPackage>
-    </ItemGroup>
     <ItemDefinitionGroup>
         <ClCompile>
             <AdditionalOptions>%(AdditionalOptions) /Zc:sizedDealloc-</AdditionalOptions>
             <DisableSpecificWarnings>4141;4146;4267;4244;4800;4291;4996;4624;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+            <AdditionalIncludeDirectories>$(LlvmCommonIncRoot)$(LlvmPlatformConfigIncRoot);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
         </ClCompile>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup>
+        <!--
+        The total number of libs and full path from the MSBuild item will generate insanely long command
+        line arguments. (So much so that it actually exceeds the length limits for the linker response file designed
+        to handle longer command lines!) This resolves the length by listing only the base file name and adding
+        the directory to the list of library paths.
+        -->
+        <Link>
+            <AdditionalLibraryDirectories>$(LlvmPlatformConfigLibRoot);%(Link.AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+            <AdditionalDependencies>LLVMAArch64AsmParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAArch64AsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAArch64CodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAArch64Desc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAArch64Disassembler.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAArch64Info.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAArch64Utils.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAMDGPUAsmParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAMDGPUAsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAMDGPUCodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAMDGPUDesc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAMDGPUDisassembler.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAMDGPUInfo.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAMDGPUUtils.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAnalysis.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMARMAsmParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMARMAsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMARMCodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMARMDesc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMARMDisassembler.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMARMInfo.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMARMUtils.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAsmParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMAsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMBinaryFormat.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMBitReader.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMBitWriter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMBPFAsmParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMBPFAsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMBPFCodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMBPFDesc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMBPFDisassembler.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMBPFInfo.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMCodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMCore.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMCoroutines.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMCoverage.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMDebugInfoCodeView.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMDebugInfoDWARF.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMDebugInfoMSF.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMDebugInfoPDB.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMDemangle.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMDlltoolDriver.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMExecutionEngine.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMFuzzMutate.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMGlobalISel.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMHexagonAsmParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMHexagonCodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMHexagonDesc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMHexagonDisassembler.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMHexagonInfo.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMInstCombine.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMInstrumentation.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMInterpreter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMipo.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMIRReader.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMLanaiAsmParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMLanaiAsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMLanaiCodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMLanaiDesc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMLanaiDisassembler.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMLanaiInfo.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMLibDriver.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMLineEditor.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMLinker.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMLTO.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMC.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMCDisassembler.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMCJIT.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMCParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMipsAsmParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMipsAsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMipsCodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMipsDesc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMipsDisassembler.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMipsInfo.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMIRParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMSP430AsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMSP430CodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMSP430Desc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMMSP430Info.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMNVPTXAsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMNVPTXCodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMNVPTXDesc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMNVPTXInfo.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMObjCARCOpts.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMObject.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMObjectYAML.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMOption.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMOrcJIT.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMPasses.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMPowerPCAsmParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMPowerPCAsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMPowerPCCodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMPowerPCDesc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMPowerPCDisassembler.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMPowerPCInfo.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMProfileData.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMRuntimeDyld.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMScalarOpts.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSelectionDAG.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSparcAsmParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSparcAsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSparcCodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSparcDesc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSparcDisassembler.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSparcInfo.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSupport.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSymbolize.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSystemZAsmParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSystemZAsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSystemZCodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSystemZDesc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSystemZDisassembler.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMSystemZInfo.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMTableGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMTarget.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMTestingSupport.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMTransformUtils.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMVectorize.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMWindowsManifest.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMX86AsmParser.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMX86AsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMX86CodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMX86Desc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMX86Disassembler.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMX86Info.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMX86Utils.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMXCoreAsmPrinter.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMXCoreCodeGen.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMXCoreDesc.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMXCoreDisassembler.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMXCoreInfo.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies>LLVMXRay.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
+        </Link>
     </ItemDefinitionGroup>
 </Project>
