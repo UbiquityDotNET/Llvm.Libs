@@ -25,7 +25,7 @@
         <ClCompile>
             <AdditionalOptions>%(AdditionalOptions) /Zc:sizedDealloc-</AdditionalOptions>
             <DisableSpecificWarnings>4141;4146;4267;4244;4800;4291;4996;4624;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-            <AdditionalIncludeDirectories>$(LlvmCommonIncRoot)$(LlvmPlatformConfigIncRoot);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>$(LlvmCommonIncRoot);$(LlvmPlatformConfigIncRoot);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
         </ClCompile>
     </ItemDefinitionGroup>
     <ItemDefinitionGroup>
