@@ -1,7 +1,5 @@
 # Ubiquity.Net.Llvm.Libs Support
 Build support for Ubiquity.Net Llvm static libraries
-### Latest Download
-[![GitHub Releases (by Asset)](https://img.shields.io/github/downloads/UbiquityDotNet/Llvm.Libs/v6.0.1-msvc-15.8/llvm-libs-6.0.1-msvc-15.8.7z.svg)](https://github.com/UbiquityDotNET/Llvm.Libs/releases/download/v6.0.1-msvc-15.8/llvm-libs-6.0.1-msvc-15.8.7z)
 
 ## About
 LLVM is a large collection of libraries for building compiler back-ends that
@@ -30,6 +28,9 @@ C# wrapper for the native DLL.) The only reason for publishing the libraries is 
 the automated builds of Llvm.NET to have access to the pre-built libraries. Thus, these
 two repositories are closely related and the static library and compiler version 
 dependencies are manageable.
+
+### Latest Download
+[![GitHub Releases (by Asset)](https://img.shields.io/github/downloads/UbiquityDotNet/Llvm.Libs/v6.0.1-msvc-15.8/llvm-libs-6.0.1-msvc-15.8.7z.svg)](https://github.com/UbiquityDotNET/Llvm.Libs/releases/download/v6.0.1-msvc-15.8/llvm-libs-6.0.1-msvc-15.8.7z)
 
 ## Building the 7-Zip packages locally
 ### Pre-requisites
