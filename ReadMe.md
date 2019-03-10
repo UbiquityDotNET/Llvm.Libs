@@ -1,4 +1,4 @@
-# Ubiquity.Net.Llvm.Libs Nuget Support
+# Ubiquity.Net.Llvm.Libs Support
 Build support for Ubiquity.Net Llvm static libraries
 
 ## About
