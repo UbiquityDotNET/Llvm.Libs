@@ -39,7 +39,7 @@ components for the VisualStudio 2017 15.7+ Community installation. According to 
 they should all be available from the VisualStudio 2017 build tools installer as well, though that
 hasn't been tested.
 
-### Running a local build
+### Running a local build from PowerShell
 ```PowerShell
 .\scripts\Initialize-BuildEnv.ps1
 build

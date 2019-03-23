@@ -19,6 +19,9 @@
     <Guid>207c729c-60f2-4577-8add-7660550e41ff</Guid>
     <PowerShellVersion>5</PowerShellVersion>
     <ProcessorArchitecture />
+    <PackageEntryPoint>D:\GitHub\Ubiquity.NET\Llvm.Libs\scripts\Initialize-BuildEnv.ps1</PackageEntryPoint>
+    <DotNetVersion>v4.7.2</DotNetVersion>
+    <PackageType>Console</PackageType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,9 +44,6 @@
   <ItemGroup>
     <Compile Include="..\Initialize-BuildEnv.ps1">
       <Link>Initialize-BuildEnv.ps1</Link>
-    </Compile>
-    <Compile Include="..\Update-SubModules.ps1">
-      <Link>Update-SubModules.ps1</Link>
     </Compile>
     <Compile Include="Cmake-Helpers.ps1" />
     <Compile Include="RepoBuild-Common.ps1" />

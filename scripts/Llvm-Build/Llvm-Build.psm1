@@ -93,9 +93,9 @@ function Compress-BuildOutput
 
         pushd $RepoInfo.BuildOutputPath
         # to simplify building the 7z archive with the desired structure
-        # create the layout desired using hardlinks, and zip the result in a single operation
+        # create the layout desired using hard-links, and zip the result in a single operation
         # this also allows local testing of the package without needing to publish, download and unpack the archive
-
+        # while avoiding unnecessary file copies
         md $archiveVersionName
         New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug\Debug') -Name lib -Value (Join-Path $RepoInfo.BuildOutputPath 'x64-Debug\Debug\lib')
         New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release\Release') -Name lib -Value (Join-Path $RepoInfo.BuildOutputPath 'x64-Release\Release\lib')
@@ -146,7 +146,7 @@ function Invoke-Build
     This is generally an inefficient number of cores available (Ideally 6-8 are needed for a timely build)
     On an automated build service this may cause the build to exceed the time limit allocated for a build
     job. (As an example AppVeyor has a 1hr per job limit with VMs containing only 2 cores, which is
-    unfortunately just not capable of completing the build for a single platform+config in time, let alone multiple combinations.)
+    unfortunately just not capable of completing the build for a single platform+configuration in time, let alone multiple combinations.)
     #>
 
     if( ([int]$env:NUMBER_OF_PROCESSORS) -lt 6 )
@@ -191,7 +191,7 @@ function EnsureBuildPath([string]$path)
 function Get-RepoInfo([switch]$Force)
 {
     $repoRoot = (Get-Item $([System.IO.Path]::Combine($PSScriptRoot, '..', '..')))
-    $llvmroot = (Get-Item $([System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'llvm')))
+    $llvmroot = (Get-Item $([System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'llvm', 'llvm')))
     $llvmversionInfo = (Get-LlvmVersion (Join-Path $llvmroot 'CMakeLists.txt'))
     $llvmversion = "$($llvmversionInfo.Major).$($llvmversionInfo.Minor).$($llvmversionInfo.Patch)"
     $toolsPath = EnsureBuildPath 'tools'
@@ -221,10 +221,17 @@ function Initialize-BuildEnvironment
     $env:Path = "$($RepoInfo.ToolsPath);$env:Path"
     $isCI = !!$env:CI
 
+    $msBuildInfo = Find-MsBuild
+    if( !$msBuildInfo.FoundOnPath )
+    {
+        Write-Information "Using MSBuild from: $($msBuildInfo.BinPath)"
+        $env:Path = "$($env:Path);$($msBuildInfo.BinPath)"
+    }
+
     $cmakePath = Find-OnPath 'cmake.exe'
     if(!$cmakePath)
     {
-        $cmakePath = $(Join-Path $RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe' )
+        $cmakePath = $(Join-Path $RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe')
         Write-Information "Using cmake from VS Instance"
         $env:Path = "$env:Path;$([System.IO.Path]::GetDirectoryName($cmakePath))"
     }

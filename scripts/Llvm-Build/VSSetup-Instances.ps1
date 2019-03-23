@@ -40,26 +40,18 @@ function Find-MSBuild
 Export-ModuleMember -Function Find-MSBuild
 
 function Invoke-MSBuild([string]$project, [hashtable]$properties, [string[]]$targets, [string[]]$loggerArgs=@(), [string[]]$additionalArgs=@())
-{ 
-    $oldPath = $env:Path
-    try
+{
+    $msbuildArgs = @($project, "/nr:false") + @("/t:$($targets -join ';')") + $loggerArgs + $additionalArgs
+    if( $properties )
     {
-        $msbuildArgs = @($project, "/nr:false") + @("/t:$($targets -join ';')") + $loggerArgs + $additionalArgs
-        if( $properties )
-        {
-            $msbuildArgs += @( "/p:$(ConvertTo-PropertyList $properties)" ) 
-        }
-
-        Write-Information "msbuild $($msbuildArgs -join ' ')"
-        msbuild $msbuildArgs
-        if($LASTEXITCODE -ne 0)
-        {
-            throw "Error running msbuild: $LASTEXITCODE"
-        }
+        $msbuildArgs += @( "/p:$(ConvertTo-PropertyList $properties)" )
     }
-    finally
+
+    Write-Information "msbuild $($msbuildArgs -join ' ')"
+    msbuild $msbuildArgs
+    if($LASTEXITCODE -ne 0)
     {
-        $env:Path = $oldPath
+        throw "Error running msbuild: $LASTEXITCODE"
     }
 }
 Export-ModuleMember -Function Invoke-MSBuild

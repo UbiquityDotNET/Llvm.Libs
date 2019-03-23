@@ -67,10 +67,10 @@
         "baz":  "boo",
         "foo":  "bar"
     }
-    This is likely due to deserializing to a strong type, though there are ways
+    This is likely due to de-serializing to a strong type, though there are ways
     to do that and keep the simpler form. This method deals with that by doing
     a conversion to a custom object with the variables nested such that conversion
-    into json with ConvertTo-Json works correctly. This also filters the properties
+    into JSON with ConvertTo-JSON works correctly. This also filters the properties
     to only those used in the JSON file.
     #>
     hidden [hashtable] ToCMakeSettingsJsonifiable()
@@ -89,7 +89,7 @@
         }
     }
 
-    #convert hashtable into an array of hash tables as needed by conversion to CMakeSettings.Json
+    #convert hash table into an array of hash tables as needed by conversion to CMakeSettings.Json
     hidden [hashtable[]]GetVariablesForConversionToJson()
     {
         return $this.CMakeBuildVariables.GetEnumerator() | %{ @{name=$_.Key; value=$_.Value} }
