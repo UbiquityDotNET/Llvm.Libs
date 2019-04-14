@@ -28,8 +28,6 @@ function New-LlvmCmakeConfig([string]$platform,
         LLVM_INCLUDE_TOOLS = "OFF"
         LLVM_INCLUDE_UTILS = "OFF"
         LLVM_ADD_NATIVE_VISUALIZERS_TO_SOLUTION = "ON"
-        CMAKE_CXX_FLAGS_DEBUG = '/Zi /Fd$(OutDir)$(ProjectName).pdb'
-        CMAKE_CXX_FLAGS_RELEASE = '/Zi /Fd$(OutDir)$(ProjectName).pdb'
     }
     return $cmakeConfig
 }
@@ -92,18 +90,22 @@ function Compress-BuildOutput
         }
 
         pushd $RepoInfo.BuildOutputPath
-        # to simplify building the 7z archive with the desired structure
+        # To simplify building the 7z archive with the desired structure
         # create the layout desired using hard-links, and zip the result in a single operation
         # this also allows local testing of the package without needing to publish, download and unpack the archive
         # while avoiding unnecessary file copies
-        md $archiveVersionName
+        if(!(Test-Path -PathType Container $archiveVersionName))
+        {
+            md $archiveVersionName
+        }
+
         New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug\Debug') -Name lib -Value (Join-Path $RepoInfo.BuildOutputPath 'x64-Debug\Debug\lib')
-        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release\Release') -Name lib -Value (Join-Path $RepoInfo.BuildOutputPath 'x64-Release\Release\lib')
+        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release\Release') -Name lib -Value (Join-Path $RepoInfo.BuildOutputPath 'x64-Release\RelWithDebInfo\lib')
 
         $commonIncPath = join-Path $RepoInfo.LlvmRoot include
         & {
-            dir -r x64*\include | ?{$_ -is [System.IO.FileInfo]} | ?{ ('.h', '.gen', '.def') -contains $_.Extension} | %{ mkpathinfo $RepoInfo.BuildOutputPath.FullName $_}
-            dir -r $commonIncPath | ?{$_ -is [System.IO.FileInfo]} | ?{ $_.Extension -ine '.txt' } | %{ mkpathinfo $RepoInfo.LlvmRoot.FullName $_ }
+            dir -r x64*\include -Include ('*.h', '*.gen', '*.def', '*.inc')| %{ mkpathinfo $RepoInfo.BuildOutputPath.FullName $_}
+            dir -r $commonIncPath -Exclude ('*.txt')| ?{$_ -is [System.IO.FileInfo]} | %{ mkpathinfo $RepoInfo.LlvmRoot.FullName $_ }
             dir $RepoInfo.RepoRoot -Filter Llvm-Libs.* | ?{$_ -is [System.IO.FileInfo]} | %{ mkpathinfo $RepoInfo.RepoRoot.FullName $_ }
         } | %{ LinkFile $archiveVersionName $_ }
 

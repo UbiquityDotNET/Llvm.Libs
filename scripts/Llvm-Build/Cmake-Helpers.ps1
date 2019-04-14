@@ -29,7 +29,15 @@
         }
 
         $this.Name="$($this.Platform)-$config"
-        $this.ConfigurationType = $config
+        if($config -ieq "Release" )
+        {
+            $this.ConfigurationType = "RelWithDebInfo"
+        }
+        else
+        {
+            $this.ConfigurationType = $config
+        }
+
         $this.BuildRoot = Join-Path $baseBuild $this.Name
         $this.SrcRoot = $srcRoot
         $this.CMakeCommandArgs = @()
@@ -62,7 +70,7 @@
             "name":  "foo"
         }
     ]
-    instead of say:
+    instead of just:
     {
         "baz":  "boo",
         "foo":  "bar"
