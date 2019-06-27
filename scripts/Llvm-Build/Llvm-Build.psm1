@@ -107,7 +107,12 @@ function Compress-BuildOutput
             dir -r x64*\include -Include ('*.h', '*.gen', '*.def', '*.inc')| %{ mkpathinfo $RepoInfo.BuildOutputPath.FullName $_}
             dir -r $commonIncPath -Exclude ('*.txt')| ?{$_ -is [System.IO.FileInfo]} | %{ mkpathinfo $RepoInfo.LlvmRoot.FullName $_ }
             dir $RepoInfo.RepoRoot -Filter Llvm-Libs.* | ?{$_ -is [System.IO.FileInfo]} | %{ mkpathinfo $RepoInfo.RepoRoot.FullName $_ }
+            dir (join-path $RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{mkpathinfo $RepoInfo.LlvmRoot.FullName $_}
         } | %{ LinkFile $archiveVersionName $_ }
+
+        # Link RelWithDebInfo PDBs into the 7z package so that symbols are available for the release build too.
+        $pdbLibDir = Join-Path $RepoInfo.BuildOutputPath 'x64-Release\RelWithDebInfo\lib'
+        dir -r x64-Release\lib -Include *.pdb | %{ New-Item -ItemType HardLink -Path $pdbLibDir -Name $_.Name -Value $_.FullName}
 
         Compress-7Zip -ArchiveFileName $archivePath -Format SevenZip -CompressionLevel Ultra "$archiveVersionName\"
     }

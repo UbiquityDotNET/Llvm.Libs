@@ -21,11 +21,11 @@
         $this.Platform = $Plat.ToLowerInvariant()
         if( $this.Platform -eq "x64")
         {
-            $this.Generator = "Visual Studio 15 2017 Win64"
+            $this.Generator = "Visual Studio 16 2019 Win64"
         }
         else
         {
-            $this.Generator = "Visual Studio 15 2017"
+            $this.Generator = "Visual Studio 16 2019"
         }
 
         $this.Name="$($this.Platform)-$config"

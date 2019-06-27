@@ -20,6 +20,7 @@
         <LlvmPlatformConfigLibRoot>$(LlvmLibsMetaPackageRoot)$(LlvmPlatformConfig)\$(Configuration)\lib\</LlvmPlatformConfigLibRoot>
         <LlvmPlatformConfigIncRoot>$(LlvmLibsMetaPackageRoot)$(LlvmPlatformConfig)\include\</LlvmPlatformConfigIncRoot>
         <LlvmCommonIncRoot>$(LlvmLibsMetaPackageRoot)include\</LlvmCommonIncRoot>
+        <LlvmExecutionEngineOrcRoot>$(LlvmLibsMetaPackageRoot)lib\ExecutionEngine\Orc</LlvmExecutionEngineOrcRoot>
     </PropertyGroup>
     <PropertyGroup>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64AsmParser.lib</AllLlvmLibs>
@@ -173,7 +174,7 @@
         <ClCompile>
             <AdditionalOptions>%(AdditionalOptions) /Zc:sizedDealloc-</AdditionalOptions>
             <DisableSpecificWarnings>4141;4146;4267;4244;4800;4291;4996;4624;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-            <AdditionalIncludeDirectories>$(LlvmCommonIncRoot);$(LlvmPlatformConfigIncRoot);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>$(LlvmCommonIncRoot);$(LlvmPlatformConfigIncRoot);$(LlvmExecutionEngineOrcRoot)%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
         </ClCompile>
     </ItemDefinitionGroup>
     <ItemDefinitionGroup>
