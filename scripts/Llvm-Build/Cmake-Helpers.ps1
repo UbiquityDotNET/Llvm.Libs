@@ -11,22 +11,15 @@
     [string]$BuildRoot;
     [string]$SrcRoot;
     [string]$Generator;
-    [string[]]$CMakeCommandArgs;
-    [string[]]$BuildCommandArgs;
-    [string[]]$InheritEnvironments;
+    [System.Collections.ArrayList]$CMakeCommandArgs;
+    [System.Collections.ArrayList]$BuildCommandArgs;
+    [System.Collections.ArrayList]$InheritEnvironments;
     [hashtable]$CMakeBuildVariables;
 
     CMakeConfig([string]$plat, [string]$config, [string]$baseBuild, [string]$srcRoot)
     {
         $this.Platform = $Plat.ToLowerInvariant()
-        if( $this.Platform -eq "x64")
-        {
-            $this.Generator = "Visual Studio 16 2019 Win64"
-        }
-        else
-        {
-            $this.Generator = "Visual Studio 16 2019"
-        }
+        $this.Generator = "Visual Studio 16 2019"
 
         $this.Name="$($this.Platform)-$config"
         if($config -ieq "Release" )
@@ -40,19 +33,26 @@
 
         $this.BuildRoot = Join-Path $baseBuild $this.Name
         $this.SrcRoot = $srcRoot
-        $this.CMakeCommandArgs = @()
-        $this.InheritEnvironments =@()
+        $this.CMakeCommandArgs = [System.Collections.ArrayList]@()
+        $this.BuildCommandArgs = [System.Collections.ArrayList]@()
+        $this.InheritEnvironments = [System.Collections.ArrayList]@()
+
+        if( $this.Platform -eq "x64" )
+        {
+            $this.CMakeCommandArgs.Add('x64')
+        }
+
         if([Environment]::Is64BitOperatingSystem)
         {
-            $this.CMakeCommandArgs = @('-Thost=x64')
-            $this.InheritEnvironments = @("msvc_x64_x64")
+            $this.CMakeCommandArgs.Add('-Thost=x64')
+            $this.InheritEnvironments.Add('msvc_x64_x64')
         }
         else
         {
-            $this.InheritEnvironments = @("msvc_x64")
+            $this.InheritEnvironments.Add('msvc_x64')
         }
 
-        $this.BuildCommandArgs = @('/m')
+        $this.BuildCommandArgs.Add('/m')
         $this.CMakeBuildVariables = @{}
     }
 

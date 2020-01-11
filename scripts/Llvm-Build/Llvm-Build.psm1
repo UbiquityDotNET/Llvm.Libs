@@ -204,7 +204,12 @@ function Get-RepoInfo([switch]$Force)
     $toolsPath = EnsureBuildPath 'tools'
     $buildOuputPath = EnsureBuildPath 'BuildOutput'
     $packOutputPath = EnsureBuildPath 'packages'
-    $vsInstance = Find-VSInstance -Force:$Force
+    $vsInstance = Find-VSInstance -Force:$Force -Version '[16.0, 17.0)'
+
+    if(!$vsInstance)
+    {
+        throw "No VisualStudion 2019 instance found! This build requires VS2019 build tools to function"
+    }
 
     return @{
         RepoRoot = $repoRoot
@@ -213,8 +218,9 @@ function Get-RepoInfo([switch]$Force)
         PackOutputPath = $packOutputPath
         LlvmRoot = $llvmroot
         LlvmVersion = $llvmversion
-        Version = $llvmversion # this is may be differ from the LLVM Version if the packaging infrastructure is "patched"
+        Version = $llvmversion # this may differ from the LLVM Version if the packaging infrastructure is "patched"
         VsInstanceName = $vsInstance.DisplayName
+        VsVersion = $vsInstance.InstallationVersion
         VsInstance = $vsInstance
         CMakeConfigurations = @( (New-LlvmCmakeConfig x64 'Release' $buildOuputPath $llvmroot),
                                  (New-LlvmCmakeConfig x64 'Debug' $buildOuputPath $llvmroot)
@@ -224,9 +230,10 @@ function Get-RepoInfo([switch]$Force)
 
 function Initialize-BuildEnvironment
 {
-    $env:__LLVM_BUILD_INITIALIZED=1
     $env:Path = "$($RepoInfo.ToolsPath);$env:Path"
     $isCI = !!$env:CI
+
+    Write-Information "Build Info:`n $($RepoInfo | Out-String )"
 
     $msBuildInfo = Find-MsBuild
     if( !$msBuildInfo.FoundOnPath )
@@ -262,7 +269,7 @@ $InformationPreference = "Continue"
 
 $isCI = !!$env:CI
 
-$RepoInfo = Get-RepoInfo  -Force:$isCI
+$RepoInfo = Get-RepoInfo -Force:$isCI
 Export-ModuleMember -Variable RepoInfo
 
 New-Alias -Name build -Value Invoke-Build
@@ -273,5 +280,3 @@ Export-ModuleMember -Alias pack
 
 New-Alias -Name clean -Value Clear-BuildOutput
 Export-ModuleMember -Alias clean
-
-Write-Information "Build Info:`n $($RepoInfo | Out-String )"

@@ -1,10 +1,18 @@
 # use VS provided PS Module to locate VS installed instances
-function Find-VSInstance([switch]$PreRelease, [switch]$Force)
+function Find-VSInstance([switch]$PreRelease, [switch]$Force, $Version = '[16.0, 17.0)')
 {
-    $requiredComponents = 'Microsoft.Component.MSBuild', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', 'Microsoft.VisualStudio.Component.VC.CMake.Project'
-    Install-Module VSSetup -Scope CurrentUser -Force:$Force | Out-Null
+    $requiredComponents = 'Microsoft.Component.MSBuild',
+                        'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
+                        'Microsoft.VisualStudio.Component.VC.CMake.Project'
+
+    if(!(Get-InstalledModule VSSetup))
+    {
+        Write-Information "Installing VSSetup module"
+        Install-Module VSSetup -Scope CurrentUser -Force:$Force | Out-Null
+    }
+
     Get-VSSetupInstance -Prerelease:$PreRelease |
-        Select-VSSetupInstance -Version  '[15.0,16.0)' -Require $requiredComponents |
+        Select-VSSetupInstance -Version $Version -Require $requiredComponents |
         select -First 1
 }
 
@@ -15,8 +23,8 @@ function Find-MSBuild
     $foundOnPath = !!$msbuildPath
     if( !$foundOnPath )
     {
-        Write-Information "MSBuild not found on path attempting to locate VS installation"
-        $vsInstall = Find-VSInstance
+        Write-Verbose "MSBuild not found on path, using RepoInfo.VsInstance to find it"
+        $vsInstall = $RepoInfo.VsInstance
         if( !$vsInstall )
         {
             throw "MSBuild not found on PATH and No instances of VS found to use"
@@ -69,7 +77,7 @@ function Invoke-MSBuild([string]$project, [hashtable]$properties, [string[]]$tar
 }
 Export-ModuleMember -Function Invoke-MSBuild
 
-function Initialize-VCVars([switch]$Force, $vsInstance = (Find-VSInstance -Force:$Force))
+function Initialize-VCVars([switch]$Force, $vsInstance = ($RepoInfo.VsInstance))
 {
     if($vsInstance)
     {
