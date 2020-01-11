@@ -3,10 +3,10 @@
 Set-StrictMode -Version Latest
 
 function New-LlvmCmakeConfig([string]$platform,
-                             [string]$config,
-                             [string]$baseBuild = (Join-Path (Get-Location) BuildOutput),
-                             [string]$srcRoot = (Join-Path (Get-Location) 'llvm\lib')
-                            )
+                          [string]$config,
+                          [string]$baseBuild = (Join-Path (Get-Location) BuildOutput),
+                          [string]$srcRoot = (Join-Path (Get-Location) 'llvm\lib')
+                          )
 {
     [CMakeConfig]$cmakeConfig = New-Object CMakeConfig -ArgumentList $platform, $config, $baseBuild, $srcRoot
     $cmakeConfig.CMakeBuildVariables = @{
@@ -245,22 +245,16 @@ function Initialize-BuildEnvironment
         $env:Path = "$($env:Path);$($msBuildInfo.BinPath)"
     }
 
-    $cmakePath = Find-OnPath 'cmake.exe'
-    if(!$cmakePath)
+    $cmakePath = $(Join-Path $RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe')
+    if(!(Test-Path -PathType Leaf $cmakePath))
     {
-        $cmakePath = $(Join-Path $RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe')
-        Write-Information "Using cmake from VS Instance"
-        $env:Path = "$env:Path;$([System.IO.Path]::GetDirectoryName($cmakePath))"
+        throw "CMAKE.EXE not found at: '$cmakePath'"
     }
 
-    if( !(Test-Path -PathType Leaf $cmakePath))
-    {
-        Write-Error "cmake.exe was not found!"
-    }
-    else
-    {
-        Write-Information "cmake: $cmakePath"
-    }
+    Write-Information "Using cmake from VS Instance"
+    $env:Path = "$([System.IO.Path]::GetDirectoryName($cmakePath));$env:Path"
+
+    Write-Information "cmake: $cmakePath"
 
     Install-Module -Name 7Zip4Powershell -Scope CurrentUser -Force:$isCI
 }

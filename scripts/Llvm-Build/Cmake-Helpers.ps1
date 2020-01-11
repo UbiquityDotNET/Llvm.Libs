@@ -129,7 +129,7 @@ Export-ModuleMember -Function Assert-CmakeInfo
 function Invoke-CMakeGenerate( [CMakeConfig]$config )
 {
     # Verify Cmake version info
-    Assert-CmakeInfo ([Version]::new(3, 7, 1))
+    Assert-CmakeInfo ([Version]::new(3, 15, 0))
 
     $activity = "Generating solution for $($config.Name)"
     Write-Information $activity
