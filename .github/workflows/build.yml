@@ -10,10 +10,8 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v2
            
-      - name: git Actions
-        uses: srt32/git-actions@v0.0.3
-        with:
-          args: git submodule update --init --recursive
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
         
       - name: Build Repo for Windows
         run: |
