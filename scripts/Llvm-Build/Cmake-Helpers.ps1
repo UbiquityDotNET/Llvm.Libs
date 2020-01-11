@@ -21,15 +21,23 @@
         $this.Platform = $Plat.ToLowerInvariant()
         if( $this.Platform -eq "x64")
         {
-            $this.Generator = "Visual Studio 15 2017 Win64"
+            $this.Generator = "Visual Studio 16 2019 Win64"
         }
         else
         {
-            $this.Generator = "Visual Studio 15 2017"
+            $this.Generator = "Visual Studio 16 2019"
         }
 
         $this.Name="$($this.Platform)-$config"
-        $this.ConfigurationType = $config
+        if($config -ieq "Release" )
+        {
+            $this.ConfigurationType = "RelWithDebInfo"
+        }
+        else
+        {
+            $this.ConfigurationType = $config
+        }
+
         $this.BuildRoot = Join-Path $baseBuild $this.Name
         $this.SrcRoot = $srcRoot
         $this.CMakeCommandArgs = @()
@@ -62,7 +70,7 @@
             "name":  "foo"
         }
     ]
-    instead of say:
+    instead of just:
     {
         "baz":  "boo",
         "foo":  "bar"

@@ -1,9 +1,10 @@
 # use VS provided PS Module to locate VS installed instances
 function Find-VSInstance([switch]$PreRelease, [switch]$Force)
 {
+    $requiredComponents = 'Microsoft.Component.MSBuild', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', 'Microsoft.VisualStudio.Component.VC.CMake.Project'
     Install-Module VSSetup -Scope CurrentUser -Force:$Force | Out-Null
     Get-VSSetupInstance -Prerelease:$PreRelease |
-        Select-VSSetupInstance -Require 'Microsoft.Component.MSBuild', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', 'Microsoft.VisualStudio.Component.VC.CMake.Project' |
+        Select-VSSetupInstance -Version  '[15.0,16.0)' -Require $requiredComponents |
         select -First 1
 }
 
@@ -11,27 +12,39 @@ function Find-MSBuild
 {
     $foundOnPath = $true
     $msBuildPath = Find-OnPath msbuild.exe -ErrorAction Continue
-    if( !$msBuildPath )
+    $foundOnPath = !!$msbuildPath
+    if( !$foundOnPath )
     {
-        Write-Verbose "MSBuild not found attempting to locate VS installation"
+        Write-Information "MSBuild not found on path attempting to locate VS installation"
         $vsInstall = Find-VSInstance
         if( !$vsInstall )
         {
             throw "MSBuild not found on PATH and No instances of VS found to use"
         }
 
-        Write-Verbose "VS installation found: $vsInstall"
-        $msBuildPath = [System.IO.Path]::Combine( $vsInstall.InstallationPath, 'MSBuild', '15.0', 'bin', 'MSBuild.exe')
-        $foundOnPath = $false
+        Write-Information "VS installation found: $($vsInstall.InstallationPath)"
+        $msBuildVerPath = [System.IO.Path]::Combine( $vsInstall.InstallationPath, 'MSBuild', '15.0', 'bin', 'MSBuild.exe')
+        $msbuildCurrPath = [System.IO.Path]::Combine( $vsInstall.InstallationPath, 'MSBuild', 'Current', 'bin', 'MSBuild.exe')
+        if( (Test-Path -PathType Leaf $msBuildVerPath ) )
+        {
+            $msBuildPath = $msBuildVerPath
+        }
+        else
+        {
+            if( (Test-Path -PathType Leaf $msBuildCurrPath) )
+            {
+                $msBuildPath = $msBuildCurrPath
+            }
+        }
     }
 
-    if( !(Test-Path -PathType Leaf $msBuildPath ) )
+    if(!$msBuildPath -or !(Test-Path -PathType Leaf $msBuildPath ) )
     {
-        Write-Verbose 'MSBuild not found'
+        Write-Information 'MSBuild not found'
         return $null
     }
 
-    Write-Verbose "MSBuild Found at: $msBuildPath"
+    Write-Information "MSBuild Found at: $msBuildPath"
     return @{ FullPath=$msBuildPath
               BinPath=[System.IO.Path]::GetDirectoryName( $msBuildPath )
               FoundOnPath=$foundOnPath
