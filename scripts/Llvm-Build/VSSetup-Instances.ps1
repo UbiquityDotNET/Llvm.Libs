@@ -5,7 +5,8 @@ function Find-VSInstance([switch]$PreRelease, [switch]$Force, $Version = '[16.0,
                         'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
                         'Microsoft.VisualStudio.Component.VC.CMake.Project'
 
-    if(!(Get-InstalledModule -ErrorAction Continue VSSetup))
+    $existingModule = Get-InstalledModule -ErrorAction SilentlyContinue VSSetup
+    if(!$existingModule)
     {
         Write-Information "Installing VSSetup module"
         Install-Module VSSetup -Scope CurrentUser -Force:$Force | Out-Null

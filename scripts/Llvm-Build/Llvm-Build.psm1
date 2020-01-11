@@ -44,7 +44,10 @@ Export-ModuleMember -Function Get-LlvmVersion
 
 function LlvmBuildConfig([CMakeConfig]$configuration)
 {
+    Write-Information "Generating CMAKE configuration $($configuration.Name)"
     Invoke-CMakeGenerate $configuration
+
+    Write-Information "Building CMAKE configuration $($configuration.Name)"
     Invoke-CmakeBuild $configuration
 }
 

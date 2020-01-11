@@ -157,8 +157,8 @@ function Invoke-CMakeGenerate( [CMakeConfig]$config )
     pushd $config.BuildRoot
     try
     {
-        Write-Verbose "cmake $cmakeArgs"
-        & cmake $cmakeArgs #| %{Write-Progress -Activity $activity -PercentComplete (-1) -SecondsRemaining (-1) -Status ([string]$_) }
+        Write-Information "cmake $cmakeArgs"
+        & cmake $cmakeArgs
 
         if($LASTEXITCODE -ne 0 )
         {
@@ -184,7 +184,7 @@ function Invoke-CmakeBuild([CMakeConfig]$config)
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     try
     {
-        Write-Verbose "cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs"
+        Write-Information "cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs"
         cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs
         if($LASTEXITCODE -ne 0 )
         {
