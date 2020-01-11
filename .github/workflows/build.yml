@@ -10,6 +10,9 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v2
         
+      - name: Checkout submodules
+        uses: textbook/git-checkout-submodule-action@2.0.0
+        
       - name: Build Repo for Windows
         run: |
           .\scripts\Initialize-BuildEnv.ps1
