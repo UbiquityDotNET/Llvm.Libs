@@ -40,11 +40,11 @@ function Find-MSBuild
 
     if(!$msBuildPath -or !(Test-Path -PathType Leaf $msBuildPath ) )
     {
-        Write-Information 'MSBuild not found'
+        Write-Verbose 'MSBuild not found'
         return $null
     }
 
-    Write-Information "MSBuild Found at: $msBuildPath"
+    Write-Verbose "MSBuild Found at: $msBuildPath"
     return @{ FullPath=$msBuildPath
               BinPath=[System.IO.Path]::GetDirectoryName( $msBuildPath )
               FoundOnPath=$foundOnPath
