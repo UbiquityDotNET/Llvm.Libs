@@ -18,3 +18,5 @@ jobs:
           .\scripts\Initialize-BuildEnv.ps1
           build
           pack
+        env:
+          CI: 1
