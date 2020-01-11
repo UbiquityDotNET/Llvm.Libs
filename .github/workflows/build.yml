@@ -9,10 +9,11 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
-        
-      - uses: Mushus/checkout-submodule@v0.1.0
+           
+      - name: git Actions
+        uses: srt32/git-actions@v0.0.3
         with:
-          submodulePath: ./llvm
+          args: git submodule update --init --recursive
         
       - name: Build Repo for Windows
         run: |
