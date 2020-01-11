@@ -10,8 +10,9 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v2
         
-      - name: Checkout submodules
-        uses: textbook/git-checkout-submodule-action@2.0.0
+      - uses: Mushus/checkout-submodule@v0.1.0
+        with:
+          submodulePath: ./llvm
         
       - name: Build Repo for Windows
         run: |
