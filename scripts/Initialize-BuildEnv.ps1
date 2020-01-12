@@ -1,4 +1,5 @@
-$InformationPreference = [System.Management.Automation.ActionPreference]::Continue
+$ErrorActionPreference = 'Stop'
+$InformationPreference = 'Continue'
 
 $env:PSModulePath = "$env:PSModulePath;$PSScriptRoot"
 

@@ -43,7 +43,7 @@
 
         if( $this.Platform -eq "x64" )
         {
-            $this.CMakeCommandArgs.Add('x64')
+            $this.CMakeCommandArgs.Add('-A x64')
         }
 
         if([Environment]::Is64BitOperatingSystem)
@@ -161,6 +161,9 @@ function Invoke-CMakeGenerate( [CMakeConfig]$config )
     pushd $config.BuildRoot
     try
     {
+        # need to use start-process as CMAKE scripts may write to STDERR and PsCore considers that an error
+        # using start-process allows forcing the error handling to ignore (Continue) such cases consistently
+        # between PS variants and versions.
         Write-Information "starting process: cmake $cmakeArgs"
         $cmakePath = Find-OnPath 'cmake.exe'
         Start-Process -ErrorAction Continue -NoNewWindow -Wait -FilePath $cmakePath -ArgumentList $cmakeArgs
@@ -187,7 +190,7 @@ function Invoke-CmakeBuild([CMakeConfig]$config)
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     try
     {
-        Write-Information "cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs"
+        Write-Information "cmake --build $($config.BuildRoot) --config $($config.ConfigurationType) -- $($config.BuildCommandArgs)"
         cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs 2>&1
     }
     catch
