@@ -160,18 +160,19 @@ function Invoke-CMakeGenerate( [CMakeConfig]$config )
     {
         Write-Information "cmake $cmakeArgs"
         & cmake $cmakeArgs 2>&1
-
-        #if($LASTEXITCODE -ne 0 )
-        #{
-            Write-Information "Cmake generation exited with code: $LASTEXITCODE"
-        #}
     }
-    finally
+    catch
     {
-        $timer.Stop()
-        popd
-        Write-Information "Generation Time: $($timer.Elapsed.ToString())"
+        # PSCore treats bogus writes to stderr by external apps as an error, desktop PS doesn't..., just ignore them and rely on LASTEXITCODE
     }
+
+    if($LASTEXITCODE -ne 0 )
+    {
+        Write-Information "Cmake generation exited with code: $LASTEXITCODE"
+    }
+    $timer.Stop()
+    popd
+    Write-Information "Generation Time: $($timer.Elapsed.ToString())"
 }
 Export-ModuleMember -Function Generate-CMake
 
@@ -184,17 +185,19 @@ function Invoke-CmakeBuild([CMakeConfig]$config)
     {
         Write-Information "cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs"
         cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs 2>&1
-
-        #if($LASTEXITCODE -ne 0 )
-        #{
-            Write-Information "Cmake build exited with code: $LASTEXITCODE"
-        #}
     }
-    finally
+    catch
     {
-        $timer.Stop()
-        Write-Information "Build Time: $($timer.Elapsed.ToString())"
+        # PSCore treats bogus writes to stderr by external apps as an error, desktop PS doesn't..., just ignore them and rely on LASTEXITCODE
     }
+
+    if($LASTEXITCODE -ne 0 )
+    {
+        Write-Information "Cmake build exited with code: $LASTEXITCODE"
+    }
+
+    $timer.Stop()
+    Write-Information "Build Time: $($timer.Elapsed.ToString())"
 }
 Export-ModuleMember -Function Build-CMake
 
