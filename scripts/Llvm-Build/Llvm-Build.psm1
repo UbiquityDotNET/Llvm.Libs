@@ -4,11 +4,12 @@ Set-StrictMode -Version Latest
 
 function New-LlvmCmakeConfig([string]$platform,
                           [string]$config,
+                          $VsInstance,
                           [string]$baseBuild = (Join-Path (Get-Location) BuildOutput),
                           [string]$srcRoot = (Join-Path (Get-Location) 'llvm\lib')
                           )
 {
-    [CMakeConfig]$cmakeConfig = New-Object CMakeConfig -ArgumentList $platform, $config, $baseBuild, $srcRoot, $RepoInfo.VsInstance
+    [CMakeConfig]$cmakeConfig = New-Object CMakeConfig -ArgumentList $platform, $config, $baseBuild, $srcRoot, $VsInstance
     $cmakeConfig.CMakeBuildVariables = @{
         LLVM_ENABLE_RTTI = "ON"
         LLVM_ENABLE_CXX1Y = "ON"
@@ -228,9 +229,9 @@ function Get-RepoInfo([switch]$Force)
         VsInstanceName = $vsInstance.DisplayName
         VsVersion = $vsInstance.InstallationVersion
         VsInstance = $vsInstance
-        CMakeConfigurations = @( (New-LlvmCmakeConfig x64 'Release' $buildOuputPath $llvmroot),
-                                 (New-LlvmCmakeConfig x64 'Debug' $buildOuputPath $llvmroot)
-                               )
+        CMakeConfigurations = @( (New-LlvmCmakeConfig x64 'Release' $vsInstance $buildOuputPath $llvmroot),
+                               (New-LlvmCmakeConfig x64 'Debug' $vsInstance $buildOuputPath $llvmroot)
+                             )
     }
 }
 
