@@ -108,12 +108,14 @@
     }
 }
 
+. .\RepoBuild-Common.ps1
+
 function Assert-CmakeInfo([Version]$minVersion)
 {
-    $cmakePaths = where.exe cmake.exe 2>$null
-    if( !$cmakePaths )
+    $cmakePath = Find-OnPath 'cmake.exe'
+    if( !$cmakePath )
     {
-        throw "CMAKE.EXE not found"
+        throw 'CMAKE.EXE not found'
     }
 
     $cmakeInfo = cmake.exe -E capabilities | ConvertFrom-Json
@@ -158,8 +160,9 @@ function Invoke-CMakeGenerate( [CMakeConfig]$config )
     pushd $config.BuildRoot
     try
     {
-        Write-Information "cmake $cmakeArgs"
-        & cmake $cmakeArgs 2>&1
+        Write-Information "starting process: cmake $cmakeArgs"
+        $cmakePath = Find-OnPath 'cmake.exe'
+        Start-Process -ErrorAction Continue -FilePath $cmakePath -ArgumentList $cmakeArgs
     }
     catch
     {
