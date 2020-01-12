@@ -1,5 +1,5 @@
 # use VS provided PS Module to locate VS installed instances
-function Find-VSInstance([switch]$PreRelease, [switch]$Force, $Version = '[16.0, 17.0)')
+function Find-VSInstance([switch]$PreRelease, [switch]$Force, $Version = '[15.0, 16.0)')
 {
     $requiredComponents = 'Microsoft.Component.MSBuild',
                         'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',

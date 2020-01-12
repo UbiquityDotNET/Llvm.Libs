@@ -214,7 +214,7 @@ function Get-RepoInfo([switch]$Force)
 
     if(!$vsInstance)
     {
-        throw "No VisualStudion 2019 instance found! This build requires VS2019 build tools to function"
+        throw "No VisualStudion 2017 instance found! This build requires VS2017 build tools to function"
     }
 
     return @{
