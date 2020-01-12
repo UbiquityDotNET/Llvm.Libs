@@ -210,11 +210,11 @@ function Get-RepoInfo([switch]$Force)
     $toolsPath = EnsureBuildPath 'tools'
     $buildOuputPath = EnsureBuildPath 'BuildOutput'
     $packOutputPath = EnsureBuildPath 'packages'
-    $vsInstance = Find-VSInstance -Force:$Force -Version '[15.0, 16.0)'
+    $vsInstance = Find-VSInstance -Force:$Force -Version '[15.0, 17.0)'
 
     if(!$vsInstance)
     {
-        throw "No VisualStudion 2017 instance found! This build requires VS2017 build tools to function"
+        throw "No VisualStudio instance found! This build requires VS build tools to function"
     }
 
     return @{
