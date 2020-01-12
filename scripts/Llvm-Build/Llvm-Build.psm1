@@ -179,6 +179,10 @@ function Invoke-Build([switch]$GenerateOnly)
             LlvmBuildConfig $cmakeConfig -GenerateOnly:$GenerateOnly
         }
     }
+    catch
+    {
+        Write-Error "Caught Exception: $_"
+    }
     finally
     {
         $timer.Stop()

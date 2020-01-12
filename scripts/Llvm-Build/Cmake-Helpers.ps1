@@ -161,10 +161,10 @@ function Invoke-CMakeGenerate( [CMakeConfig]$config )
         Write-Information "cmake $cmakeArgs"
         & cmake $cmakeArgs
 
-        if($LASTEXITCODE -ne 0 )
-        {
-            Write-Error "Cmake generation exited with non-zero exit code: $LASTEXITCODE"
-        }
+        #if($LASTEXITCODE -ne 0 )
+        #{
+            Write-Information "Cmake generation exited with code: $LASTEXITCODE"
+        #}
     }
     finally
     {
@@ -185,10 +185,10 @@ function Invoke-CmakeBuild([CMakeConfig]$config)
         Write-Information "cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs"
         cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs
 
-        if($LASTEXITCODE -ne 0 )
-        {
-            Write-Error "Cmake build exited with non-zero exit code: $LASTEXITCODE"
-        }
+        #if($LASTEXITCODE -ne 0 )
+        #{
+            Write-Information "Cmake build exited with code: $LASTEXITCODE"
+        #}
     }
     finally
     {
