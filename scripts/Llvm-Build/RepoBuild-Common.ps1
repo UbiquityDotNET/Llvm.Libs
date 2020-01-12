@@ -15,7 +15,7 @@ function Find-OnPath
     Write-Information "Searching for $exeName..."
     try
     {
-        $path = where.exe $exeName 2>$null
+        $path = where.exe $exeName 2>$null | select -First 1
     }
     catch
     {}
