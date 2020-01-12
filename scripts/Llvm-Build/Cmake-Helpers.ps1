@@ -159,7 +159,7 @@ function Invoke-CMakeGenerate( [CMakeConfig]$config )
     try
     {
         Write-Information "cmake $cmakeArgs"
-        & cmake $cmakeArgs
+        & cmake $cmakeArgs 2>&1
 
         #if($LASTEXITCODE -ne 0 )
         #{
@@ -183,7 +183,7 @@ function Invoke-CmakeBuild([CMakeConfig]$config)
     try
     {
         Write-Information "cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs"
-        cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs
+        cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs 2>&1
 
         #if($LASTEXITCODE -ne 0 )
         #{
