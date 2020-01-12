@@ -108,7 +108,8 @@
     }
 }
 
-. .\RepoBuild-Common.ps1
+$scriptRoot = Split-Path -parent $PSCommandPath
+. (Join-Path $scriptRoot RepoBuild-Common.ps1)
 
 function Assert-CmakeInfo([Version]$minVersion)
 {
@@ -162,7 +163,7 @@ function Invoke-CMakeGenerate( [CMakeConfig]$config )
     {
         Write-Information "starting process: cmake $cmakeArgs"
         $cmakePath = Find-OnPath 'cmake.exe'
-        Start-Process -ErrorAction Continue -FilePath $cmakePath -ArgumentList $cmakeArgs
+        Start-Process -ErrorAction Continue -NoNewWindow -Wait -FilePath $cmakePath -ArgumentList $cmakeArgs
     }
     catch
     {
