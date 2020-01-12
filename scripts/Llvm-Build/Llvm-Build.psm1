@@ -247,7 +247,8 @@ function Initialize-BuildEnvironment
     $env:Path = "$($RepoInfo.ToolsPath);$env:Path"
     $isCI = !!$env:CI
 
-    Write-Information "Build Info:`n $($RepoInfo | Out-String )"
+    Write-Information "Build Info:`n $($RepoInfo | Out-String)"
+    Write-Information "PS Version:`n $($PSVersionTable | Out-String)"
 
     $msBuildInfo = Find-MsBuild
     if( !$msBuildInfo.FoundOnPath )
