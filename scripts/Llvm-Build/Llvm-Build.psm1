@@ -43,13 +43,16 @@ function Get-LlvmVersion( [string] $cmakeListPath )
 }
 Export-ModuleMember -Function Get-LlvmVersion
 
-function LlvmBuildConfig([CMakeConfig]$configuration)
+function LlvmBuildConfig([CMakeConfig]$configuration, [switch]$GenerateOnly)
 {
     Write-Information "Generating CMAKE configuration $($configuration.Name)"
     Invoke-CMakeGenerate $configuration
 
-    Write-Information "Building CMAKE configuration $($configuration.Name)"
-    Invoke-CmakeBuild $configuration
+    if(!$GenerateOnly)
+    {
+        Write-Information "Building CMAKE configuration $($configuration.Name)"
+        Invoke-CmakeBuild $configuration
+    }
 }
 
 function New-CMakeSettingsJson
@@ -138,7 +141,7 @@ function Clear-BuildOutput()
 }
 Export-ModuleMember -Function Clear-BuildOutput
 
-function Invoke-Build
+function Invoke-Build([switch]$GenerateOnly)
 {
 <#
 .SYNOPSIS
@@ -173,7 +176,7 @@ function Invoke-Build
         $timer = [System.Diagnostics.Stopwatch]::StartNew()
         foreach( $cmakeConfig in $RepoInfo.CMakeConfigurations )
         {
-            LlvmBuildConfig $cmakeConfig
+            LlvmBuildConfig $cmakeConfig -GenerateOnly:$GenerateOnly
         }
     }
     finally
@@ -257,6 +260,13 @@ function Initialize-BuildEnvironment
 
     Write-Information "Using cmake from VS Instance"
     $env:Path = "$([System.IO.Path]::GetDirectoryName($cmakePath));$env:Path"
+
+    $vsGitCmdPath = [System.IO.Path]::Combine( $RepoInfo.VsInstance.InstallationPath, 'Common7', 'IDE', 'CommonExtensions', 'Microsoft', 'TeamFoundation', 'Team Explorer', 'Git', 'cmd')
+    if(Test-Path -PathType Leaf ([System.IO.Path]::Combine($vsGitCmdPath, 'git.exe')))
+    {
+        Write-Information "Using git from VS Instance"
+        $env:Path = "$vsGitCmdPath;$env:Path"
+    }
 
     Write-Information "cmake: $cmakePath"
 
