@@ -1,4 +1,3 @@
-$ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $InformationPreference = [System.Management.Automation.ActionPreference]::Continue
 
 $env:PSModulePath = "$env:PSModulePath;$PSScriptRoot"

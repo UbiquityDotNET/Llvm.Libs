@@ -280,7 +280,6 @@ function Initialize-BuildEnvironment
 Export-ModuleMember -Function Initialize-BuildEnvironment
 
 # --- Module init script
-$ErrorActionPreference = "Stop"
 $InformationPreference = "Continue"
 
 $isCI = !!$env:CI
