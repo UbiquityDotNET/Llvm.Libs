@@ -164,6 +164,9 @@ function Invoke-Build
         Write-Warning "NUMBER_OF_PROCESSORS{ $env:NUMBER_OF_PROCESSORS } < 6;"
     }
 
+    # Verify Cmake version info
+    Assert-CmakeInfo ([Version]::new(3, 12, 1))
+
     try
     {
         $timer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -207,7 +210,7 @@ function Get-RepoInfo([switch]$Force)
     $toolsPath = EnsureBuildPath 'tools'
     $buildOuputPath = EnsureBuildPath 'BuildOutput'
     $packOutputPath = EnsureBuildPath 'packages'
-    $vsInstance = Find-VSInstance -Force:$Force -Version '[16.0, 17.0)'
+    $vsInstance = Find-VSInstance -Force:$Force -Version '[15.0, 16.0)'
 
     if(!$vsInstance)
     {

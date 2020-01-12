@@ -19,7 +19,7 @@
     CMakeConfig([string]$plat, [string]$config, [string]$baseBuild, [string]$srcRoot)
     {
         $this.Platform = $Plat.ToLowerInvariant()
-        $this.Generator = "Visual Studio 16 2019"
+        $this.Generator = "Visual Studio 15 2017"
 
         $this.Name="$($this.Platform)-$config"
         if($config -ieq "Release" )
@@ -128,9 +128,6 @@ Export-ModuleMember -Function Assert-CmakeInfo
 
 function Invoke-CMakeGenerate( [CMakeConfig]$config )
 {
-    # Verify Cmake version info
-    Assert-CmakeInfo ([Version]::new(3, 15, 0))
-
     $activity = "Generating solution for $($config.Name)"
     Write-Information $activity
     if(!(Test-Path -PathType Container $config.BuildRoot ))
@@ -176,9 +173,6 @@ Export-ModuleMember -Function Generate-CMake
 
 function Invoke-CmakeBuild([CMakeConfig]$config)
 {
-    # Verify Cmake version info
-    Assert-CmakeInfo ([Version]::new(3, 7, 1))
-
     Write-Information "CMake Building $($config.Name)"
 
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
