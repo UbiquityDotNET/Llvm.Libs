@@ -163,14 +163,14 @@ function Invoke-CMakeGenerate( [CMakeConfig]$config )
 
         if($LASTEXITCODE -ne 0 )
         {
-            throw "Cmake generation exited with non-zero exit code: $LASTEXITCODE"
+            Write-Error "Cmake generation exited with non-zero exit code: $LASTEXITCODE"
         }
     }
     finally
     {
         $timer.Stop()
         popd
-        Write-Verbose "Generation Time: $($timer.Elapsed.ToString())"
+        Write-Information "Generation Time: $($timer.Elapsed.ToString())"
     }
 }
 Export-ModuleMember -Function Generate-CMake
@@ -184,9 +184,10 @@ function Invoke-CmakeBuild([CMakeConfig]$config)
     {
         Write-Information "cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs"
         cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs
+
         if($LASTEXITCODE -ne 0 )
         {
-            throw "Cmake build exited with non-zero exit code: $LASTEXITCODE"
+            Write-Error "Cmake build exited with non-zero exit code: $LASTEXITCODE"
         }
     }
     finally
