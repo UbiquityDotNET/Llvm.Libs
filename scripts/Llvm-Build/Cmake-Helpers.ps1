@@ -16,10 +16,14 @@
     [System.Collections.ArrayList]$InheritEnvironments;
     [hashtable]$CMakeBuildVariables;
 
-    CMakeConfig([string]$plat, [string]$config, [string]$baseBuild, [string]$srcRoot)
+    CMakeConfig([string]$plat, [string]$config, [string]$baseBuild, [string]$srcRoot, $VsInstance)
     {
         $this.Platform = $Plat.ToLowerInvariant()
-        $this.Generator = "Visual Studio 15 2017"
+        switch($VsInstance.InstallationVersion.Major)
+        {
+            15 { $this.Generator = "Visual Studio 15 2017" }
+            16 { $this.Generator= "Visual Studio 16 2019" }
+        }
 
         $this.Name="$($this.Platform)-$config"
         if($config -ieq "Release" )

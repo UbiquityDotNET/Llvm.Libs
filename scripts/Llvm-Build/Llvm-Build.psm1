@@ -8,7 +8,7 @@ function New-LlvmCmakeConfig([string]$platform,
                           [string]$srcRoot = (Join-Path (Get-Location) 'llvm\lib')
                           )
 {
-    [CMakeConfig]$cmakeConfig = New-Object CMakeConfig -ArgumentList $platform, $config, $baseBuild, $srcRoot
+    [CMakeConfig]$cmakeConfig = New-Object CMakeConfig -ArgumentList $platform, $config, $baseBuild, $srcRoot, $RepoInfo.VsInstance
     $cmakeConfig.CMakeBuildVariables = @{
         LLVM_ENABLE_RTTI = "ON"
         LLVM_ENABLE_CXX1Y = "ON"
