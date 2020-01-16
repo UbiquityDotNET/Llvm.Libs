@@ -77,7 +77,7 @@ function LinkFile($archiveVersionName, $info)
     $linkPath = join-Path $archiveVersionName $info.RelativeDir
     if(!(Test-Path -PathType Container $linkPath))
     {
-        md $linkPath | out-null
+        md $linkPath | Out-Null
     }
 
     New-Item -ItemType HardLink -Path $linkPath -Name $info.FileName -Value $info.FullPath
@@ -96,18 +96,19 @@ function Compress-BuildOutput
             Write-Error "Cannot pack LLVM libraries in APPVEYOR build as it requires the built libraries and the total time required will exceed the limits of an APPVEYOR Job"
         }
 
-        pushd $RepoInfo.BuildOutputPath
         # To simplify building the 7z archive with the desired structure
         # create the layout desired using hard-links, and zip the result in a single operation
         # this also allows local testing of the package without needing to publish, download and unpack the archive
         # while avoiding unnecessary file copies
+        Write-Information "Creating ZIP structure hardlinks in $(Join-Path $RepoInfo.BuildOutputPath $archiveVersionName)"
+        pushd $RepoInfo.BuildOutputPath
         if(!(Test-Path -PathType Container $archiveVersionName))
         {
-            md $archiveVersionName
+            md $archiveVersionName | Out-Null
         }
 
-        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug\Debug') -Name lib -Value (Join-Path $RepoInfo.BuildOutputPath 'x64-Debug\Debug\lib')
-        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release\Release') -Name lib -Value (Join-Path $RepoInfo.BuildOutputPath 'x64-Release\RelWithDebInfo\lib')
+        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug\Debug') -Name lib -Value (Join-Path $RepoInfo.BuildOutputPath 'x64-Debug\Debug\lib') | Out-Null
+        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release\Release') -Name lib -Value (Join-Path $RepoInfo.BuildOutputPath 'x64-Release\RelWithDebInfo\lib') | Out-Null
 
         $commonIncPath = join-Path $RepoInfo.LlvmRoot include
         & {
@@ -115,12 +116,13 @@ function Compress-BuildOutput
             dir -r $commonIncPath -Exclude ('*.txt')| ?{$_ -is [System.IO.FileInfo]} | %{ mkpathinfo $RepoInfo.LlvmRoot.FullName $_ }
             dir $RepoInfo.RepoRoot -Filter Llvm-Libs.* | ?{$_ -is [System.IO.FileInfo]} | %{ mkpathinfo $RepoInfo.RepoRoot.FullName $_ }
             dir (join-path $RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{mkpathinfo $RepoInfo.LlvmRoot.FullName $_}
-        } | %{ LinkFile $archiveVersionName $_ }
+        } | %{ LinkFile $archiveVersionName $_ } | Out-Null
 
         # Link RelWithDebInfo PDBs into the 7z package so that symbols are available for the release build too.
-        $pdbLibDir = Join-Path $RepoInfo.BuildOutputPath 'x64-Release\RelWithDebInfo\lib'
-        dir -r x64-Release\lib -Include *.pdb | %{ New-Item -ItemType HardLink -Path $pdbLibDir -Name $_.Name -Value $_.FullName}
+        $pdbLibDir = Join-Path $archiveVersionName 'x64-Release\Release\lib'
+        dir -r x64-Release\lib -Include *.pdb | %{ New-Item -ItemType HardLink -Path $pdbLibDir -Name $_.Name -Value $_.FullName | Out-Null}
 
+        Write-Information "Creating ZIP archive $archivePath"
         Compress-7Zip -ArchiveFileName $archivePath -Format SevenZip -CompressionLevel Ultra "$archiveVersionName\"
     }
     finally
