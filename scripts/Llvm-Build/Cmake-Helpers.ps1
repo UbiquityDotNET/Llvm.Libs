@@ -108,10 +108,7 @@
     }
 }
 
-$scriptRoot = Split-Path -parent $PSCommandPath
-. (Join-Path $scriptRoot RepoBuild-Common.ps1)
-
-function Assert-CmakeInfo([Version]$minVersion)
+function global:Assert-CmakeInfo([Version]$minVersion)
 {
     $cmakePath = Find-OnPath 'cmake.exe'
     if( !$cmakePath )
@@ -131,9 +128,8 @@ function Assert-CmakeInfo([Version]$minVersion)
         throw "CMake version not supported. Found: $cmakeVer; Require >= $($minVersion)"
     }
 }
-Export-ModuleMember -Function Assert-CmakeInfo
 
-function Invoke-CMakeGenerate( [CMakeConfig]$config )
+function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
 {
     $activity = "Generating solution for $($config.Name)"
     Write-Information $activity
@@ -158,6 +154,7 @@ function Invoke-CMakeGenerate( [CMakeConfig]$config )
     $cmakeArgs.Add( $config.SrcRoot ) | Out-Null
 
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
+    $cmakePath = Find-OnPath 'cmake.exe'
     pushd $config.BuildRoot
     try
     {
@@ -165,38 +162,31 @@ function Invoke-CMakeGenerate( [CMakeConfig]$config )
         # using start-process allows forcing the error handling to ignore (Continue) such cases consistently
         # between PS variants and versions.
         Write-Information "starting process: cmake $cmakeArgs"
-        $cmakePath = Find-OnPath 'cmake.exe'
         Start-Process -ErrorAction Continue -NoNewWindow -Wait -FilePath $cmakePath -ArgumentList $cmakeArgs
-    }
-    catch
-    {
-        # PSCore treats bogus writes to stderr by external apps as an error, desktop PS doesn't..., just ignore them and rely on LASTEXITCODE
-    }
 
-    if($LASTEXITCODE -ne 0 )
-    {
-        Write-Information "Cmake generation exited with code: $LASTEXITCODE"
+        if($LASTEXITCODE -ne 0 )
+        {
+            Write-Information "Cmake generation exited with code: $LASTEXITCODE"
+        }
     }
-    $timer.Stop()
-    popd
+    finally
+    {
+        $timer.Stop()
+        popd
+    }
     Write-Information "Generation Time: $($timer.Elapsed.ToString())"
 }
-Export-ModuleMember -Function Generate-CMake
 
-function Invoke-CmakeBuild([CMakeConfig]$config)
+function global:Invoke-CmakeBuild([CMakeConfig]$config)
 {
-    Write-Information "CMake Building $($config.Name)"
-
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
-    try
-    {
-        Write-Information "cmake --build $($config.BuildRoot) --config $($config.ConfigurationType) -- $($config.BuildCommandArgs)"
-        cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs 2>&1
-    }
-    catch
-    {
-        # PSCore treats bogus writes to stderr by external apps as an error, desktop PS doesn't..., just ignore them and rely on LASTEXITCODE
-    }
+    Write-Information "CMake Building $($config.Name)"
+    $cmakePath = Find-OnPath 'cmake.exe'
+
+    $cmakeArgs = @('--build', "$($config.BuildRoot)", '--config', "$($config.ConfigurationType)", '--', "$($config.BuildCommandArgs)")
+
+    Write-Information "cmake $([string]::Join(' ', $cmakeArgs))"
+    Start-Process -ErrorAction Continue -NoNewWindow -Wait -FilePath $cmakePath -ArgumentList $cmakeArgs
 
     if($LASTEXITCODE -ne 0 )
     {
@@ -206,7 +196,6 @@ function Invoke-CmakeBuild([CMakeConfig]$config)
     $timer.Stop()
     Write-Information "Build Time: $($timer.Elapsed.ToString())"
 }
-Export-ModuleMember -Function Build-CMake
 
 function New-CmakeSettings( [Parameter(Mandatory, ValueFromPipeline)][CMakeConfig] $configuration )
 {
@@ -223,9 +212,8 @@ function New-CmakeSettings( [Parameter(Mandatory, ValueFromPipeline)][CMakeConfi
         ConvertTo-Json -Depth 4 @{ configurations = $convertedSettings }
     }
 }
-Export-ModuleMember -Function New-CmakeSettings
 
-function Assert-CMakeList([Parameter(Mandatory=$true)][string] $root)
+function global:Assert-CMakeList([Parameter(Mandatory=$true)][string] $root)
 {
     $cmakeListPath = Join-Path $root CMakeLists.txt
     if( !( Test-Path -PathType Leaf $cmakeListPath ) )
@@ -233,4 +221,3 @@ function Assert-CMakeList([Parameter(Mandatory=$true)][string] $root)
         throw "'CMakeLists.txt' is missing, '$root' does not appear to be a valid source directory"
     }
 }
-Export-ModuleMember -Function Assert-CMakeList

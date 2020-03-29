@@ -1,10 +1,19 @@
+#Requires -Version 5.0
+
+Set-StrictMode -Version Latest
+
 $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 
-$env:PSModulePath = "$env:PSModulePath;$PSScriptRoot"
+pushd $PSScriptRoot
+try
+{
+    . .\Llvm-Build\Llvm-Build.ps1
 
-Write-Information "Importing module Llvm-Build"
-Import-Module Llvm-Build
-
-Write-Information "Initializing build environment for this repository"
-Initialize-BuildEnvironment
+    Write-Information "Initializing build environment for this repository"
+    Initialize-BuildEnvironment
+}
+finally
+{
+    popd
+}
