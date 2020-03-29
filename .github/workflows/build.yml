@@ -1,0 +1,33 @@
+name: CI-Build
+
+on: 
+    push:
+      branches:
+        - master
+      paths-ignore:
+        - '**.md'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+        with:
+           persist-credentials: false
+           fetch-depth: 0
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+      - name: Build Repo for Windows
+        run: |
+          ./scripts/Initialize-BuildEnv.ps1
+          build
+          pack
+
+      - name: Publish Artifacts
+        uses: actions/upload-artifact@v1
+        with:
+            name: Nuget Packages
+            path: ./BuildOutput/*.7z

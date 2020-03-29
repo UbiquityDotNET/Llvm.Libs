@@ -11,21 +11,18 @@
     [string]$BuildRoot;
     [string]$SrcRoot;
     [string]$Generator;
-    [string[]]$CMakeCommandArgs;
-    [string[]]$BuildCommandArgs;
-    [string[]]$InheritEnvironments;
+    [System.Collections.ArrayList]$CMakeCommandArgs;
+    [System.Collections.ArrayList]$BuildCommandArgs;
+    [System.Collections.ArrayList]$InheritEnvironments;
     [hashtable]$CMakeBuildVariables;
 
-    CMakeConfig([string]$plat, [string]$config, [string]$baseBuild, [string]$srcRoot)
+    CMakeConfig([string]$plat, [string]$config, [string]$baseBuild, [string]$srcRoot, $VsInstance)
     {
         $this.Platform = $Plat.ToLowerInvariant()
-        if( $this.Platform -eq "x64")
+        switch($VsInstance.InstallationVersion.Major)
         {
-            $this.Generator = "Visual Studio 16 2019 Win64"
-        }
-        else
-        {
-            $this.Generator = "Visual Studio 16 2019"
+            15 { $this.Generator = "Visual Studio 15 2017" }
+            16 { $this.Generator= "Visual Studio 16 2019" }
         }
 
         $this.Name="$($this.Platform)-$config"
@@ -40,19 +37,26 @@
 
         $this.BuildRoot = Join-Path $baseBuild $this.Name
         $this.SrcRoot = $srcRoot
-        $this.CMakeCommandArgs = @()
-        $this.InheritEnvironments =@()
+        $this.CMakeCommandArgs = [System.Collections.ArrayList]@()
+        $this.BuildCommandArgs = [System.Collections.ArrayList]@()
+        $this.InheritEnvironments = [System.Collections.ArrayList]@()
+
+        if( $this.Platform -eq "x64" )
+        {
+            $this.CMakeCommandArgs.Add('-A x64')
+        }
+
         if([Environment]::Is64BitOperatingSystem)
         {
-            $this.CMakeCommandArgs = @('-Thost=x64')
-            $this.InheritEnvironments = @("msvc_x64_x64")
+            $this.CMakeCommandArgs.Add('-Thost=x64')
+            $this.InheritEnvironments.Add('msvc_x64_x64')
         }
         else
         {
-            $this.InheritEnvironments = @("msvc_x64")
+            $this.InheritEnvironments.Add('msvc_x64')
         }
 
-        $this.BuildCommandArgs = @('/m')
+        $this.BuildCommandArgs.Add('/m')
         $this.CMakeBuildVariables = @{}
     }
 
@@ -104,12 +108,12 @@
     }
 }
 
-function Assert-CmakeInfo([Version]$minVersion)
+function global:Assert-CmakeInfo([Version]$minVersion)
 {
-    $cmakePaths = where.exe cmake.exe 2>$null
-    if( !$cmakePaths )
+    $cmakePath = Find-OnPath 'cmake.exe'
+    if( !$cmakePath )
     {
-        throw "CMAKE.EXE not found"
+        throw 'CMAKE.EXE not found'
     }
 
     $cmakeInfo = cmake.exe -E capabilities | ConvertFrom-Json
@@ -124,13 +128,9 @@ function Assert-CmakeInfo([Version]$minVersion)
         throw "CMake version not supported. Found: $cmakeVer; Require >= $($minVersion)"
     }
 }
-Export-ModuleMember -Function Assert-CmakeInfo
 
-function Invoke-CMakeGenerate( [CMakeConfig]$config )
+function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
 {
-    # Verify Cmake version info
-    Assert-CmakeInfo ([Version]::new(3, 7, 1))
-
     $activity = "Generating solution for $($config.Name)"
     Write-Information $activity
     if(!(Test-Path -PathType Container $config.BuildRoot ))
@@ -154,50 +154,48 @@ function Invoke-CMakeGenerate( [CMakeConfig]$config )
     $cmakeArgs.Add( $config.SrcRoot ) | Out-Null
 
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
+    $cmakePath = Find-OnPath 'cmake.exe'
     pushd $config.BuildRoot
     try
     {
-        Write-Verbose "cmake $cmakeArgs"
-        & cmake $cmakeArgs #| %{Write-Progress -Activity $activity -PercentComplete (-1) -SecondsRemaining (-1) -Status ([string]$_) }
+        # need to use start-process as CMAKE scripts may write to STDERR and PsCore considers that an error
+        # using start-process allows forcing the error handling to ignore (Continue) such cases consistently
+        # between PS variants and versions.
+        Write-Information "starting process: cmake $cmakeArgs"
+        Start-Process -ErrorAction Continue -NoNewWindow -Wait -FilePath $cmakePath -ArgumentList $cmakeArgs
 
         if($LASTEXITCODE -ne 0 )
         {
-            throw "Cmake generation exited with non-zero exit code: $LASTEXITCODE"
+            Write-Information "Cmake generation exited with code: $LASTEXITCODE"
         }
     }
     finally
     {
         $timer.Stop()
         popd
-        Write-Verbose "Generation Time: $($timer.Elapsed.ToString())"
     }
+    Write-Information "Generation Time: $($timer.Elapsed.ToString())"
 }
-Export-ModuleMember -Function Generate-CMake
 
-function Invoke-CmakeBuild([CMakeConfig]$config)
+function global:Invoke-CmakeBuild([CMakeConfig]$config)
 {
-    # Verify Cmake version info
-    Assert-CmakeInfo ([Version]::new(3, 7, 1))
-
-    Write-Information "CMake Building $($config.Name)"
-
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
-    try
+    Write-Information "CMake Building $($config.Name)"
+    $cmakePath = Find-OnPath 'cmake.exe'
+
+    $cmakeArgs = @('--build', "$($config.BuildRoot)", '--config', "$($config.ConfigurationType)", '--', "$($config.BuildCommandArgs)")
+
+    Write-Information "cmake $([string]::Join(' ', $cmakeArgs))"
+    Start-Process -ErrorAction Continue -NoNewWindow -Wait -FilePath $cmakePath -ArgumentList $cmakeArgs
+
+    if($LASTEXITCODE -ne 0 )
     {
-        Write-Verbose "cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs"
-        cmake --build $config.BuildRoot --config $config.ConfigurationType -- $config.BuildCommandArgs
-        if($LASTEXITCODE -ne 0 )
-        {
-            throw "Cmake build exited with non-zero exit code: $LASTEXITCODE"
-        }
+        Write-Information "Cmake build exited with code: $LASTEXITCODE"
     }
-    finally
-    {
-        $timer.Stop()
-        Write-Information "Build Time: $($timer.Elapsed.ToString())"
-    }
+
+    $timer.Stop()
+    Write-Information "Build Time: $($timer.Elapsed.ToString())"
 }
-Export-ModuleMember -Function Build-CMake
 
 function New-CmakeSettings( [Parameter(Mandatory, ValueFromPipeline)][CMakeConfig] $configuration )
 {
@@ -214,9 +212,8 @@ function New-CmakeSettings( [Parameter(Mandatory, ValueFromPipeline)][CMakeConfi
         ConvertTo-Json -Depth 4 @{ configurations = $convertedSettings }
     }
 }
-Export-ModuleMember -Function New-CmakeSettings
 
-function Assert-CMakeList([Parameter(Mandatory=$true)][string] $root)
+function global:Assert-CMakeList([Parameter(Mandatory=$true)][string] $root)
 {
     $cmakeListPath = Join-Path $root CMakeLists.txt
     if( !( Test-Path -PathType Leaf $cmakeListPath ) )
@@ -224,4 +221,3 @@ function Assert-CMakeList([Parameter(Mandatory=$true)][string] $root)
         throw "'CMakeLists.txt' is missing, '$root' does not appear to be a valid source directory"
     }
 }
-Export-ModuleMember -Function Assert-CMakeList

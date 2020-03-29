@@ -1,9 +1,19 @@
-if( !$env:__LLVM_BUILD_INITIALIZED )
+#Requires -Version 5.0
+
+Set-StrictMode -Version Latest
+
+$ErrorActionPreference = 'Stop'
+$InformationPreference = 'Continue'
+
+pushd $PSScriptRoot
+try
 {
-    $env:PSModulePath = "$env:PSModulePath;$PSScriptRoot"
-    Write-Information "Importing module Llvm-Build"
-    Import-Module Llvm-Build
+    . .\Llvm-Build\Llvm-Build.ps1
 
     Write-Information "Initializing build environment for this repository"
     Initialize-BuildEnvironment
+}
+finally
+{
+    popd
 }
