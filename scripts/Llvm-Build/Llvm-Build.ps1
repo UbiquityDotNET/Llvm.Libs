@@ -103,15 +103,15 @@ function global:Create-ArchiveLayout($archiveVersionName)
 
     $commonIncPath = join-Path $global:RepoInfo.LlvmRoot include
     & {
-        dir -r x64*\include -Include ('*.h', '*.gen', '*.def', '*.inc')| %{ New-PathInfo $global:RepoInfo.BuildOutputPath.FullName $_}
-        dir -r $commonIncPath -Exclude ('*.txt')| ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
-        dir $global:RepoInfo.RepoRoot -Filter Llvm-Libs.* | ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.RepoRoot.FullName $_ }
-        dir (join-path $global:RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
+        Get-ChildItem -r x64*\include -Include ('*.h', '*.gen', '*.def', '*.inc')| %{ New-PathInfo $global:RepoInfo.BuildOutputPath.FullName $_}
+        Get-ChildItem -r $commonIncPath -Exclude ('*.txt')| ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
+        Get-ChildItem $global:RepoInfo.RepoRoot -Filter Llvm-Libs.* | ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.RepoRoot.FullName $_ }
+        Get-ChildItem (join-path $global:RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
     } | %{ LinkFile $archiveVersionName $_ } | Out-Null
 
     # Link RelWithDebInfo PDBs into the 7z package so that symbols are available for the release build too.
     $pdbLibDir = Join-Path $archiveVersionName 'x64-Release\Release\lib'
-    dir -r x64-Release\lib -Include *.pdb | LinkPdb -Path $pdbLibDir
+    Get-ChildItem -r x64-Release\lib -Include *.pdb | LinkPdb -Path $pdbLibDir
 }
 
 function global:Compress-BuildOutput
@@ -133,10 +133,10 @@ function global:Compress-BuildOutput
 
         if(Test-Path -PathType Leaf $archivePath)
         {
-            del -Force $archivePath
+            Remove-Item -Force $archivePath
         }
 
-        pushd $archiveVersionName
+        Push-Location $archiveVersionName
         try
         {
             Write-Information "Creating 7-ZIP archive $archivePath"
@@ -144,7 +144,7 @@ function global:Compress-BuildOutput
         }
         finally
         {
-            popd
+            Pop-Location
         }
     }
     finally
@@ -220,7 +220,7 @@ function global:Initialize-BuildPath([string]$path)
     $resultPath = $([System.IO.Path]::Combine($PSScriptRoot, '..', '..', $path))
     if( !(Test-Path -PathType Container $resultPath) )
     {
-        md $resultPath
+        mkdir $resultPath
     }
     else
     {
