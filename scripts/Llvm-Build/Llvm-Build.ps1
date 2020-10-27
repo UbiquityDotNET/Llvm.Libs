@@ -35,9 +35,9 @@ function New-LlvmCmakeConfig(
 function global:Get-LlvmVersion( [string] $cmakeListPath )
 {
     $props = @{}
-    $matches = Select-String -Path $cmakeListPath -Pattern "set\(LLVM_VERSION_(MAJOR|MINOR|PATCH) ([0-9]+)\)" |
-        %{ $_.Matches } |
-        %{ $props.Add( $_.Groups[1].Value, [Convert]::ToInt32($_.Groups[2].Value) ) }
+    Select-String -Path $cmakeListPath -Pattern "set\(LLVM_VERSION_(MAJOR|MINOR|PATCH) ([0-9]+)\)" |
+        ForEach-Object{ $_.Matches } |
+        ForEach-Object{ $props.Add( $_.Groups[1].Value, [Convert]::ToInt32($_.Groups[2].Value) ) }
     return $props
 }
 
@@ -62,7 +62,7 @@ function global:LinkFile($archiveVersionName, $info)
     $linkPath = join-Path $archiveVersionName $info.RelativeDir
     if(!(Test-Path -PathType Container $linkPath))
     {
-        md $linkPath | Out-Null
+        mkdir $linkPath | Out-Null
     }
 
     New-Item -ItemType HardLink -Path $linkPath -Name $info.FileName -Value $info.FullPath
@@ -75,7 +75,7 @@ function global:LinkPdb([Parameter(Mandatory=$true, ValueFromPipeLine)]$item, [P
     if(Test-Path -PathType Leaf $targetPath)
     {
         Write-Information "Deleting existing PDB link"
-        del -Force $targetPath
+        Remove-Item -Force $targetPath
     }
 
     New-Item -ItemType HardLink -Path $Path -Name $item.Name -Value $item.FullName -ErrorAction Stop | Out-Null
@@ -88,13 +88,13 @@ function global:Create-ArchiveLayout($archiveVersionName)
     # this also allows local testing of the package without needing to publish, download and unpack the archive
     # while avoiding unnecessary file copies
     Write-Information "Creating ZIP structure hardlinks in $(Join-Path $global:RepoInfo.BuildOutputPath $archiveVersionName)"
-    pushd $global:RepoInfo.BuildOutputPath
+    Push-Location $global:RepoInfo.BuildOutputPath
     if(Test-Path -PathType Container $archiveVersionName)
     {
-        rd -Force -Recurse $archiveVersionName
+        Remove-Item -Force -Recurse $archiveVersionName
     }
 
-    md $archiveVersionName | Out-Null
+    mkdir $archiveVersionName | Out-Null
 
     ConvertTo-Json (Get-LlvmVersion (Join-Path $global:RepoInfo.LlvmRoot 'CMakeLists.txt')) | Out-File (Join-Path $archiveVersionName 'llvm-version.json')
 
@@ -107,7 +107,7 @@ function global:Create-ArchiveLayout($archiveVersionName)
         Get-ChildItem -r $commonIncPath -Exclude ('*.txt')| ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
         Get-ChildItem $global:RepoInfo.RepoRoot -Filter Llvm-Libs.* | ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.RepoRoot.FullName $_ }
         Get-ChildItem (join-path $global:RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
-    } | %{ LinkFile $archiveVersionName $_ } | Out-Null
+    } | ForEach-Object{ LinkFile $archiveVersionName $_ } | Out-Null
 
     # Link RelWithDebInfo PDBs into the 7z package so that symbols are available for the release build too.
     $pdbLibDir = Join-Path $archiveVersionName 'x64-Release\Release\lib'
@@ -157,9 +157,9 @@ function global:Compress-BuildOutput
 
 function global:Clear-BuildOutput()
 {
-    rd -Recurse -Force $global:RepoInfo.ToolsPath
-    rd -Recurse -Force $global:RepoInfo.BuildOutputPath
-    rd -Recurse -Force $global:RepoInfo.PackOutputPath
+    Remove-Item -Recurse -Force $global:RepoInfo.ToolsPath
+    Remove-Item -Recurse -Force $global:RepoInfo.BuildOutputPath
+    Remove-Item -Recurse -Force $global:RepoInfo.PackOutputPath
     $global:RepoInfo = Get-RepoInfo
 }
 
@@ -235,29 +235,47 @@ function global:Get-RepoInfo([switch]$Force)
     $llvmversionInfo = (Get-LlvmVersion (Join-Path $llvmroot 'CMakeLists.txt'))
     $llvmversion = "$($llvmversionInfo.Major).$($llvmversionInfo.Minor).$($llvmversionInfo.Patch)"
     $toolsPath = Initialize-BuildPath 'tools'
-    $buildOuputPath = Initialize-BuildPath 'BuildOutput'
+    $buildOutputPath = Initialize-BuildPath 'BuildOutput'
     $packOutputPath = Initialize-BuildPath 'packages'
-    $vsInstance = Find-VSInstance -Force:$Force -Version '[15.0, 17.0)'
 
-    if(!$vsInstance)
+    if ($IsLinux)
     {
-        throw "No VisualStudio instance found! This build requires VS build tools to function"
+        $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $null $buildOutputPath $llvmroot),
+                        (New-LlvmCmakeConfig x64 'Debug' $null $buildOutputPath $llvmroot)
+                      )
+    }
+    elseif ($IsMacOS)
+    {
+        $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $null $buildOutputPath $llvmroot),
+                        (New-LlvmCmakeConfig x64 'Debug' $null $buildOutputPath $llvmroot)
+                      )
+    }
+    else
+    {
+        $vsInstance = Find-VSInstance -Force:$Force -Version '[15.0, 17.0)'
+
+        if(!$vsInstance)
+        {
+            throw "No VisualStudio instance found! This build requires VS build tools to function"
+        }
+
+        $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $vsInstance $buildOutputPath $llvmroot),
+                        (New-LlvmCmakeConfig x64 'Debug' $vsInstance $buildOutputPath $llvmroot)
+                      )
     }
 
     return @{
         RepoRoot = $repoRoot
         ToolsPath = $toolsPath
-        BuildOutputPath = $buildOuputPath
+        BuildOutputPath = $buildOutputPath
         PackOutputPath = $packOutputPath
         LlvmRoot = $llvmroot
         LlvmVersion = $llvmversion
         Version = $llvmversion # this may differ from the LLVM Version if the packaging infrastructure is "patched"
-        VsInstanceName = $vsInstance.DisplayName
-        VsVersion = $vsInstance.InstallationVersion
-        VsInstance = $vsInstance
-        CMakeConfigurations = @( (New-LlvmCmakeConfig x64 'Release' $vsInstance $buildOuputPath $llvmroot),
-                                 (New-LlvmCmakeConfig x64 'Debug' $vsInstance $buildOuputPath $llvmroot)
-                               )
+        # VsInstanceName = $vsInstance.DisplayName
+        # VsVersion = $vsInstance.InstallationVersion
+        # VsInstance = $vsInstance
+        CMakeConfigurations = $cmakeInfo
     }
 }
 
@@ -269,30 +287,54 @@ function Initialize-BuildEnvironment
     Write-Information "Build Info:`n $($global:RepoInfo | Out-String)"
     Write-Information "PS Version:`n $($PSVersionTable | Out-String)"
 
-    $msBuildInfo = Find-MsBuild
-    if( !$msBuildInfo.FoundOnPath )
+    # $msBuildInfo = Find-MsBuild
+    # if( !$msBuildInfo.FoundOnPath )
+    # {
+    #     Write-Information "Using MSBuild from: $($msBuildInfo.BinPath)"
+    #     $env:Path = "$($env:Path);$($msBuildInfo.BinPath)"
+    # }
+
+    if ($IsLinux || $IsMacOS)
     {
-        Write-Information "Using MSBuild from: $($msBuildInfo.BinPath)"
-        $env:Path = "$($env:Path);$($msBuildInfo.BinPath)"
+        $cmakePath = which cmake
+        if(!(Test-Path -PathType Leaf $cmakePath))
+        {
+            throw "cmake not found at: '$cmakePath'"
+        }
+
+        Write-Information "Using cmake from $cmakePath"
+    }
+    else 
+    {
+        $cmakePath = $(Join-Path $global:RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe')
+        if(!(Test-Path -PathType Leaf $cmakePath))
+        {
+            throw "CMAKE.EXE not found at: '$cmakePath'"
+        }
+
+        Write-Information "Using cmake from VS Instance"
+        $env:Path = "$([System.IO.Path]::GetDirectoryName($cmakePath));$env:Path"
     }
 
-    $cmakePath = $(Join-Path $global:RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe')
-    if(!(Test-Path -PathType Leaf $cmakePath))
+    if ($IsLinux || $IsMacOS)
     {
-        throw "CMAKE.EXE not found at: '$cmakePath'"
+        $vsGitCmdPath = which git
+        if(!(Test-Path -PathType Leaf $vsGitCmdPath))
+        {
+            throw "git not found at: '$vsGitCmdPath'"
+        }
+        
+        Write-Information "Using git from $vsGitCmdPath"
     }
-
-    Write-Information "Using cmake from VS Instance"
-    $env:Path = "$([System.IO.Path]::GetDirectoryName($cmakePath));$env:Path"
-
-    $vsGitCmdPath = [System.IO.Path]::Combine( $global:RepoInfo.VsInstance.InstallationPath, 'Common7', 'IDE', 'CommonExtensions', 'Microsoft', 'TeamFoundation', 'Team Explorer', 'Git', 'cmd')
-    if(Test-Path -PathType Leaf ([System.IO.Path]::Combine($vsGitCmdPath, 'git.exe')))
+    else 
     {
-        Write-Information "Using git from VS Instance"
-        $env:Path = "$vsGitCmdPath;$env:Path"
+        $vsGitCmdPath = [System.IO.Path]::Combine( $global:RepoInfo.VsInstance.InstallationPath, 'Common7', 'IDE', 'CommonExtensions', 'Microsoft', 'TeamFoundation', 'Team Explorer', 'Git', 'cmd')
+        if(Test-Path -PathType Leaf ([System.IO.Path]::Combine($vsGitCmdPath, 'git.exe')))
+        {
+            Write-Information "Using git from VS Instance"
+            $env:Path = "$vsGitCmdPath;$env:Path"
+        }
     }
-
-    Write-Information "cmake: $cmakePath"
 }
 
 # --- Module init script
@@ -303,6 +345,6 @@ $isCI = !!$env:CI -or !!$env:GITHUB_ACTIONS
 
 $global:RepoInfo = Get-RepoInfo -Force:$isCI
 
-New-Alias -Name build -Value Invoke-Build -Scope Global
-New-Alias -Name pack -Value Compress-BuildOutput -Scope Global
-New-Alias -Name clean -Value Clear-BuildOutput -Scope Global
+New-Alias -Force -Name build -Value Invoke-Build -Scope Global
+New-Alias -Force -Name pack -Value Compress-BuildOutput -Scope Global
+New-Alias -Force -Name clean -Value Clear-BuildOutput -Scope Global

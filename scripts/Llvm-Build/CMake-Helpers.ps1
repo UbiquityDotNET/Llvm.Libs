@@ -19,10 +19,17 @@
     CMakeConfig([string]$plat, [string]$config, [string]$baseBuild, [string]$srcRoot, $VsInstance)
     {
         $this.Platform = $Plat.ToLowerInvariant()
-        switch($VsInstance.InstallationVersion.Major)
+        if (!$VsInstance)
         {
-            15 { $this.Generator = "Visual Studio 15 2017" }
-            16 { $this.Generator= "Visual Studio 16 2019" }
+            $this.Generator = "Unix Makefiles"
+        }
+        else 
+        {
+            switch($VsInstance.InstallationVersion.Major)
+            {
+                15 { $this.Generator = "Visual Studio 15 2017" }
+                16 { $this.Generator = "Visual Studio 16 2019" }
+            }
         }
 
         $this.Name="$($this.Platform)-$config"
