@@ -48,22 +48,29 @@
         $this.BuildCommandArgs = [System.Collections.ArrayList]@()
         $this.InheritEnvironments = [System.Collections.ArrayList]@()
 
-        if( $this.Platform -eq "x64" )
+        if ($global:IsLinux -and $global:IsMacOS)
         {
-            $this.CMakeCommandArgs.Add('-A x64')
-        }
-
-        if([Environment]::Is64BitOperatingSystem)
-        {
-            $this.CMakeCommandArgs.Add('-Thost=x64')
-            $this.InheritEnvironments.Add('msvc_x64_x64')
         }
         else
         {
-            $this.InheritEnvironments.Add('msvc_x64')
+            if( $this.Platform -eq "x64" )
+            {
+                $this.CMakeCommandArgs.Add('-A x64')
+            }
+    
+            if([Environment]::Is64BitOperatingSystem)
+            {
+                $this.CMakeCommandArgs.Add('-Thost=x64')
+                $this.InheritEnvironments.Add('msvc_x64_x64')
+            }
+            else
+            {
+                $this.InheritEnvironments.Add('msvc_x64')
+            }
+
+            $this.BuildCommandArgs.Add('/m')
         }
 
-        $this.BuildCommandArgs.Add('/m')
         $this.CMakeBuildVariables = @{}
     }
 
@@ -115,15 +122,33 @@
     }
 }
 
-function global:Assert-CmakeInfo([Version]$minVersion)
+function global:Find-CMake
 {
-    $cmakePath = Find-OnPath 'cmake.exe'
-    if( !$cmakePath )
+    if ($IsLinux -or $IsMacOS)
     {
-        throw 'CMAKE.EXE not found'
+        $cmakePath = which cmake
+        if( !$cmakePath )
+        {
+            throw "cmake not found"
+        }
+    }
+    else 
+    {
+        $cmakePath = Find-OnPath 'cmake'
+        if( !$cmakePath )
+        {
+            throw 'CMAKE.EXE not found'
+        }
     }
 
-    $cmakeInfo = cmake.exe -E capabilities | ConvertFrom-Json
+    $cmakePath
+}
+
+function global:Assert-CMakeInfo([Version]$minVersion)
+{
+    Find-CMake
+
+    $cmakeInfo = cmake -E capabilities | ConvertFrom-Json
     if(!$cmakeInfo)
     {
         throw "CMake version not supported. 'cmake -E capabilities' returned nothing"
@@ -161,34 +186,34 @@ function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
     $cmakeArgs.Add( $config.SrcRoot ) | Out-Null
 
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
-    $cmakePath = Find-OnPath 'cmake.exe'
-    pushd $config.BuildRoot
+    $cmakePath = Find-CMake
+    Push-Location $config.BuildRoot
     try
     {
         # need to use start-process as CMAKE scripts may write to STDERR and PsCore considers that an error
         # using start-process allows forcing the error handling to ignore (Continue) such cases consistently
         # between PS variants and versions.
-        Write-Information "starting process: cmake $cmakeArgs"
+        Write-Warning "starting process: cmake $cmakeArgs"
         Start-Process -ErrorAction Continue -NoNewWindow -Wait -FilePath $cmakePath -ArgumentList $cmakeArgs
 
         if($LASTEXITCODE -ne 0 )
         {
-            Write-Information "Cmake generation exited with code: $LASTEXITCODE"
+            Write-Information "CMake generation exited with code: $LASTEXITCODE"
         }
     }
     finally
     {
         $timer.Stop()
-        popd
+        Pop-Location
     }
     Write-Information "Generation Time: $($timer.Elapsed.ToString())"
 }
 
-function global:Invoke-CmakeBuild([CMakeConfig]$config)
+function global:Invoke-CMakeBuild([CMakeConfig]$config)
 {
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     Write-Information "CMake Building $($config.Name)"
-    $cmakePath = Find-OnPath 'cmake.exe'
+    $cmakePath = Find-CMake
 
     $cmakeArgs = @('--build', "$($config.BuildRoot)", '--config', "$($config.ConfigurationType)", '--', "$($config.BuildCommandArgs)")
 
@@ -197,14 +222,14 @@ function global:Invoke-CmakeBuild([CMakeConfig]$config)
 
     if($LASTEXITCODE -ne 0 )
     {
-        Write-Information "Cmake build exited with code: $LASTEXITCODE"
+        Write-Information "CMake build exited with code: $LASTEXITCODE"
     }
 
     $timer.Stop()
     Write-Information "Build Time: $($timer.Elapsed.ToString())"
 }
 
-function New-CmakeSettings( [Parameter(Mandatory, ValueFromPipeline)][CMakeConfig] $configuration )
+function New-CMakeSettings( [Parameter(Mandatory, ValueFromPipeline)][CMakeConfig] $configuration )
 {
     BEGIN
     {

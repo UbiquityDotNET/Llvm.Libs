@@ -252,7 +252,7 @@ function global:Get-GitHubTaggedRelease($org, $project, $tag)
 # use VS provided PS Module to locate VS installed instances
 function global:Find-VSInstance([switch]$PreRelease, [switch]$Force, $Version = '[15.0, 17.0)')
 {
-    if ($IsLinux || $IsMacOS)
+    if ($IsLinux -or $IsMacOS)
     {
         $null
     }

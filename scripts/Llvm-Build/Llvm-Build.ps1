@@ -1,7 +1,7 @@
 . (Join-Path $PSScriptRoot RepoBuild-Common.ps1)
 . (Join-Path $PSScriptRoot CMake-Helpers.ps1)
 
-function New-LlvmCmakeConfig(
+function global:New-LlvmCmakeConfig(
     [string]$platform,
     [string]$config,
     $VsInstance,
@@ -62,7 +62,14 @@ function global:LinkFile($archiveVersionName, $info)
     $linkPath = join-Path $archiveVersionName $info.RelativeDir
     if(!(Test-Path -PathType Container $linkPath))
     {
-        mkdir $linkPath | Out-Null
+        if ($IsLinux -or $IsMacOS)
+        {
+            mkdir -p $linkPath | Out-Null
+        }
+        else 
+        {
+            mkdir $linkPath | Out-Null   
+        }
     }
 
     New-Item -ItemType HardLink -Path $linkPath -Name $info.FileName -Value $info.FullPath
@@ -98,20 +105,31 @@ function global:Create-ArchiveLayout($archiveVersionName)
 
     ConvertTo-Json (Get-LlvmVersion (Join-Path $global:RepoInfo.LlvmRoot 'CMakeLists.txt')) | Out-File (Join-Path $archiveVersionName 'llvm-version.json')
 
-    New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug\Debug') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Debug\Debug\lib') | Out-Null
-    New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release\Release') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Release\RelWithDebInfo\lib') | Out-Null
+    if ($IsLinux -or $IsMacOS)
+    {
+        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Debug\lib') | Out-Null
+        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Release\lib') | Out-Null    
+    }
+    else 
+    {
+        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug\Debug') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Debug\Debug\lib') | Out-Null
+        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release\Release') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Release\RelWithDebInfo\lib') | Out-Null
+    }
 
     $commonIncPath = join-Path $global:RepoInfo.LlvmRoot include
     & {
-        Get-ChildItem -r x64*\include -Include ('*.h', '*.gen', '*.def', '*.inc')| %{ New-PathInfo $global:RepoInfo.BuildOutputPath.FullName $_}
-        Get-ChildItem -r $commonIncPath -Exclude ('*.txt')| ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
+        Get-ChildItem -r x64*\include -Include ('*.h', '*.gen', '*.def', '*.inc') | %{ New-PathInfo $global:RepoInfo.BuildOutputPath.FullName $_}
+        Get-ChildItem -r $commonIncPath -Exclude ('*.txt') | ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
         Get-ChildItem $global:RepoInfo.RepoRoot -Filter Llvm-Libs.* | ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.RepoRoot.FullName $_ }
         Get-ChildItem (join-path $global:RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
     } | ForEach-Object{ LinkFile $archiveVersionName $_ } | Out-Null
 
-    # Link RelWithDebInfo PDBs into the 7z package so that symbols are available for the release build too.
-    $pdbLibDir = Join-Path $archiveVersionName 'x64-Release\Release\lib'
-    Get-ChildItem -r x64-Release\lib -Include *.pdb | LinkPdb -Path $pdbLibDir
+    if (!$IsLinux -and !$IsMacOS)
+    {
+        # Link RelWithDebInfo PDBs into the 7z package so that symbols are available for the release build too.
+        $pdbLibDir = Join-Path $archiveVersionName 'x64-Release\Release\lib'
+        Get-ChildItem -r x64-Release\lib -Include *.pdb | LinkPdb -Path $pdbLibDir
+    }
 }
 
 function global:Compress-BuildOutput
@@ -124,7 +142,18 @@ function global:Compress-BuildOutput
 
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     $oldPath = $env:Path
-    $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-msvc-$($global:RepoInfo.VsInstance.InstallationVersion.Major).$($global:RepoInfo.VsInstance.InstallationVersion.Minor)"
+    if ($IsLinux)
+    {
+        $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-linux"
+    }
+    elseif ($IsMacOs) 
+    {
+        $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-macos"
+    }
+    else 
+    {
+        $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-msvc-$($global:RepoInfo.VsInstance.InstallationVersion.Major).$($global:RepoInfo.VsInstance.InstallationVersion.Minor)"
+    }
     $archivePath = Join-Path $global:RepoInfo.BuildOutputPath "$archiveVersionName.7z"
     try
     {
@@ -136,11 +165,12 @@ function global:Compress-BuildOutput
             Remove-Item -Force $archivePath
         }
 
+        Write-Information "Created archive layout, compressing archive"
         Push-Location $archiveVersionName
         try
         {
             Write-Information "Creating 7-ZIP archive $archivePath"
-            7z.exe a $archivePath '*' -r -t7z -mx=9
+            7z a $archivePath '*' -r -t7z -mx=9
         }
         finally
         {
@@ -294,7 +324,7 @@ function Initialize-BuildEnvironment
     #     $env:Path = "$($env:Path);$($msBuildInfo.BinPath)"
     # }
 
-    if ($IsLinux || $IsMacOS)
+    if ($IsLinux -or $IsMacOS)
     {
         $cmakePath = which cmake
         if(!(Test-Path -PathType Leaf $cmakePath))
@@ -316,7 +346,7 @@ function Initialize-BuildEnvironment
         $env:Path = "$([System.IO.Path]::GetDirectoryName($cmakePath));$env:Path"
     }
 
-    if ($IsLinux || $IsMacOS)
+    if ($IsLinux -or $IsMacOS)
     {
         $vsGitCmdPath = which git
         if(!(Test-Path -PathType Leaf $vsGitCmdPath))
