@@ -5,7 +5,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 
-pushd $PSScriptRoot
+Push-Location $PSScriptRoot
 try
 {
     . .\Llvm-Build\Llvm-Build.ps1
@@ -15,5 +15,5 @@ try
 }
 finally
 {
-    popd
+    Pop-Location
 }

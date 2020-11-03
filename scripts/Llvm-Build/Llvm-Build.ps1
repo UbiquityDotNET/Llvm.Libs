@@ -273,12 +273,34 @@ function global:Get-RepoInfo([switch]$Force)
         $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $null $buildOutputPath $llvmroot),
                         (New-LlvmCmakeConfig x64 'Debug' $null $buildOutputPath $llvmroot)
                       )
+
+        return @{
+            RepoRoot = $repoRoot
+            ToolsPath = $toolsPath
+            BuildOutputPath = $buildOutputPath
+            PackOutputPath = $packOutputPath
+            LlvmRoot = $llvmroot
+            LlvmVersion = $llvmversion
+            Version = $llvmversion # this may differ from the LLVM Version if the packaging infrastructure is "patched"
+            CMakeConfigurations = $cmakeInfo
+        }
     }
     elseif ($IsMacOS)
     {
         $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $null $buildOutputPath $llvmroot),
                         (New-LlvmCmakeConfig x64 'Debug' $null $buildOutputPath $llvmroot)
                       )
+
+        return @{
+            RepoRoot = $repoRoot
+            ToolsPath = $toolsPath
+            BuildOutputPath = $buildOutputPath
+            PackOutputPath = $packOutputPath
+            LlvmRoot = $llvmroot
+            LlvmVersion = $llvmversion
+            Version = $llvmversion # this may differ from the LLVM Version if the packaging infrastructure is "patched"
+            CMakeConfigurations = $cmakeInfo
+        }
     }
     else
     {
@@ -292,20 +314,20 @@ function global:Get-RepoInfo([switch]$Force)
         $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $vsInstance $buildOutputPath $llvmroot),
                         (New-LlvmCmakeConfig x64 'Debug' $vsInstance $buildOutputPath $llvmroot)
                       )
-    }
 
-    return @{
-        RepoRoot = $repoRoot
-        ToolsPath = $toolsPath
-        BuildOutputPath = $buildOutputPath
-        PackOutputPath = $packOutputPath
-        LlvmRoot = $llvmroot
-        LlvmVersion = $llvmversion
-        Version = $llvmversion # this may differ from the LLVM Version if the packaging infrastructure is "patched"
-        # VsInstanceName = $vsInstance.DisplayName
-        # VsVersion = $vsInstance.InstallationVersion
-        # VsInstance = $vsInstance
-        CMakeConfigurations = $cmakeInfo
+        return @{
+            RepoRoot = $repoRoot
+            ToolsPath = $toolsPath
+            BuildOutputPath = $buildOutputPath
+            PackOutputPath = $packOutputPath
+            LlvmRoot = $llvmroot
+            LlvmVersion = $llvmversion
+            Version = $llvmversion # this may differ from the LLVM Version if the packaging infrastructure is "patched"
+            VsInstanceName = $vsInstance.DisplayName
+            VsVersion = $vsInstance.InstallationVersion
+            VsInstance = $vsInstance
+            CMakeConfigurations = $cmakeInfo
+        }
     }
 }
 
@@ -316,13 +338,6 @@ function Initialize-BuildEnvironment
 
     Write-Information "Build Info:`n $($global:RepoInfo | Out-String)"
     Write-Information "PS Version:`n $($PSVersionTable | Out-String)"
-
-    # $msBuildInfo = Find-MsBuild
-    # if( !$msBuildInfo.FoundOnPath )
-    # {
-    #     Write-Information "Using MSBuild from: $($msBuildInfo.BinPath)"
-    #     $env:Path = "$($env:Path);$($msBuildInfo.BinPath)"
-    # }
 
     if ($IsLinux -or $IsMacOS)
     {
