@@ -16,10 +16,10 @@
     [System.Collections.ArrayList]$InheritEnvironments;
     [hashtable]$CMakeBuildVariables;
 
-    CMakeConfig([string]$plat, [string]$config, [string]$baseBuild, [string]$srcRoot, $VsInstance)
+    CMakeConfig([string]$plat, [string]$config, [string]$baseBuild, [string]$srcRoot, [object]$VsInstance)
     {
         $this.Platform = $Plat.ToLowerInvariant()
-        if (!$VsInstance)
+        if ($null -eq $VsInstance)
         {
             $this.Generator = "Unix Makefiles"
         }
@@ -48,10 +48,7 @@
         $this.BuildCommandArgs = [System.Collections.ArrayList]@()
         $this.InheritEnvironments = [System.Collections.ArrayList]@()
 
-        if ($global:IsLinux -and $global:IsMacOS)
-        {
-        }
-        else
+        if (!$global:IsLinux -and !$global:IsMacOS)
         {
             if( $this.Platform -eq "x64" )
             {
@@ -193,7 +190,7 @@ function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
         # need to use start-process as CMAKE scripts may write to STDERR and PsCore considers that an error
         # using start-process allows forcing the error handling to ignore (Continue) such cases consistently
         # between PS variants and versions.
-        Write-Warning "starting process: cmake $cmakeArgs"
+        Write-Information "starting process: cmake $cmakeArgs"
         Start-Process -ErrorAction Continue -NoNewWindow -Wait -FilePath $cmakePath -ArgumentList $cmakeArgs
 
         if($LASTEXITCODE -ne 0 )
