@@ -62,7 +62,7 @@ function global:LinkFile($archiveVersionName, $info)
     $linkPath = join-Path $archiveVersionName $info.RelativeDir
     if(!(Test-Path -PathType Container $linkPath))
     {
-        if (!$global:IsWindows)
+        if (!$global:IsWindowsPS)
         {
             mkdir -p $linkPath | Out-Null
         }
@@ -105,7 +105,7 @@ function global:Create-ArchiveLayout($archiveVersionName)
 
     ConvertTo-Json (Get-LlvmVersion (Join-Path $global:RepoInfo.LlvmRoot 'CMakeLists.txt')) | Out-File (Join-Path $archiveVersionName 'llvm-version.json')
 
-    if (!$global:IsWindows)
+    if (!$global:IsWindowsPS)
     {
         New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Debug\lib') | Out-Null
         New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Release\lib') | Out-Null    
@@ -124,7 +124,7 @@ function global:Create-ArchiveLayout($archiveVersionName)
         Get-ChildItem (join-path $global:RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
     } | ForEach-Object{ LinkFile $archiveVersionName $_ } | Out-Null
 
-    if ($global:IsWindows)
+    if ($global:IsWindowsPS)
     {
         # Link RelWithDebInfo PDBs into the 7z package so that symbols are available for the release build too.
         $pdbLibDir = Join-Path $archiveVersionName 'x64-Release\Release\lib'
@@ -142,11 +142,11 @@ function global:Compress-BuildOutput
 
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     $oldPath = $env:Path
-    if (!$global:IsWindows -and $IsLinux)
+    if (!$global:IsWindowsPS -and $IsLinux)
     {
         $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-linux"
     }
-    elseif (!$global:IsWindows -and $IsMacOs) 
+    elseif (!$global:IsWindowsPS -and $IsMacOs) 
     {
         $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-macos"
     }
@@ -268,7 +268,7 @@ function global:Get-RepoInfo([switch]$Force)
     $buildOutputPath = Initialize-BuildPath 'BuildOutput'
     $packOutputPath = Initialize-BuildPath 'packages'
 
-    if (!$global:IsWindows -and $IsLinux)
+    if (!$global:IsWindowsPS -and $IsLinux)
     {
         $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $null $buildOutputPath $llvmroot),
                         (New-LlvmCmakeConfig x64 'Debug' $null $buildOutputPath $llvmroot)
@@ -285,7 +285,7 @@ function global:Get-RepoInfo([switch]$Force)
             CMakeConfigurations = $cmakeInfo
         }
     }
-    elseif (!$global:IsWindows -and $IsMacOS)
+    elseif (!$global:IsWindowsPS -and $IsMacOS)
     {
         $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $null $buildOutputPath $llvmroot),
                         (New-LlvmCmakeConfig x64 'Debug' $null $buildOutputPath $llvmroot)
@@ -335,17 +335,17 @@ function Get-BuildPlatform
 {
     if ($PSVersionTable.PSEdition -ne "Core")
     {
-        $global:IsWindows = $true
+        $global:IsWindowsPS = $true
     }
     else 
     {
         if ($IsLinux -or $IsMacOS)
         {
-            $global:IsWindows = $false
+            $global:IsWindowsPS = $false
         }
         else 
         {
-            $global:IsWindows = $true
+            $global:IsWindowsPS = $true
         }
     }
 }
@@ -360,7 +360,7 @@ function Initialize-BuildEnvironment
 
     Get-BuildPlatform
 
-    if (!$global:IsWindows)
+    if (!$global:IsWindowsPS)
     {
         $cmakePath = which cmake
         if(!(Test-Path -PathType Leaf $cmakePath))
@@ -382,7 +382,7 @@ function Initialize-BuildEnvironment
         $env:Path = "$([System.IO.Path]::GetDirectoryName($cmakePath));$env:Path"
     }
 
-    if (!$global:IsWindows)
+    if (!$global:IsWindowsPS)
     {
         $vsGitCmdPath = which git
         if(!(Test-Path -PathType Leaf $vsGitCmdPath))

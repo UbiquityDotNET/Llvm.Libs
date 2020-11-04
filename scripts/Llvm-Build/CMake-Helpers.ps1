@@ -48,7 +48,7 @@
         $this.BuildCommandArgs = [System.Collections.ArrayList]@()
         $this.InheritEnvironments = [System.Collections.ArrayList]@()
 
-        if ($global:IsWindows)
+        if ($global:IsWindowsPS)
         {
             if( $this.Platform -eq "x64" )
             {
@@ -121,7 +121,7 @@
 
 function global:Find-CMake
 {
-    if (!$global:IsWindows)
+    if (!$global:IsWindowsPS)
     {
         $cmakePath = which cmake
         if( !$cmakePath )
