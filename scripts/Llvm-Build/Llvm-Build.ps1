@@ -62,7 +62,7 @@ function global:LinkFile($archiveVersionName, $info)
     $linkPath = join-Path $archiveVersionName $info.RelativeDir
     if(!(Test-Path -PathType Container $linkPath))
     {
-        if ($IsLinux -or $IsMacOS)
+        if (!$global:IsWindows)
         {
             mkdir -p $linkPath | Out-Null
         }
@@ -105,7 +105,7 @@ function global:Create-ArchiveLayout($archiveVersionName)
 
     ConvertTo-Json (Get-LlvmVersion (Join-Path $global:RepoInfo.LlvmRoot 'CMakeLists.txt')) | Out-File (Join-Path $archiveVersionName 'llvm-version.json')
 
-    if ($IsLinux -or $IsMacOS)
+    if (!$global:IsWindows)
     {
         New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Debug\lib') | Out-Null
         New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Release\lib') | Out-Null    
@@ -124,7 +124,7 @@ function global:Create-ArchiveLayout($archiveVersionName)
         Get-ChildItem (join-path $global:RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
     } | ForEach-Object{ LinkFile $archiveVersionName $_ } | Out-Null
 
-    if (!$IsLinux -and !$IsMacOS)
+    if ($global:IsWindows)
     {
         # Link RelWithDebInfo PDBs into the 7z package so that symbols are available for the release build too.
         $pdbLibDir = Join-Path $archiveVersionName 'x64-Release\Release\lib'
@@ -142,11 +142,11 @@ function global:Compress-BuildOutput
 
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     $oldPath = $env:Path
-    if ($IsLinux)
+    if (!$global:IsWindows -and $IsLinux)
     {
         $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-linux"
     }
-    elseif ($IsMacOs) 
+    elseif (!$global:IsWindows -and $IsMacOs) 
     {
         $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-macos"
     }
@@ -268,7 +268,7 @@ function global:Get-RepoInfo([switch]$Force)
     $buildOutputPath = Initialize-BuildPath 'BuildOutput'
     $packOutputPath = Initialize-BuildPath 'packages'
 
-    if ($IsLinux)
+    if (!$global:IsWindows -and $IsLinux)
     {
         $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $null $buildOutputPath $llvmroot),
                         (New-LlvmCmakeConfig x64 'Debug' $null $buildOutputPath $llvmroot)
@@ -285,7 +285,7 @@ function global:Get-RepoInfo([switch]$Force)
             CMakeConfigurations = $cmakeInfo
         }
     }
-    elseif ($IsMacOS)
+    elseif (!$global:IsWindows -and $IsMacOS)
     {
         $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $null $buildOutputPath $llvmroot),
                         (New-LlvmCmakeConfig x64 'Debug' $null $buildOutputPath $llvmroot)
@@ -331,6 +331,25 @@ function global:Get-RepoInfo([switch]$Force)
     }
 }
 
+function Get-BuildPlatform
+{
+    if ($PSVersionTable.PSEdition -ne "Core")
+    {
+        $global:IsWindows = $true
+    }
+    else 
+    {
+        if ($IsLinux -or $IsMacOS)
+        {
+            $global:IsWindows = $false
+        }
+        else 
+        {
+            $global:IsWindows = $true
+        }
+    }
+}
+
 function Initialize-BuildEnvironment
 {
     $env:Path = "$($global:RepoInfo.ToolsPath);$env:Path"
@@ -339,7 +358,9 @@ function Initialize-BuildEnvironment
     Write-Information "Build Info:`n $($global:RepoInfo | Out-String)"
     Write-Information "PS Version:`n $($PSVersionTable | Out-String)"
 
-    if ($IsLinux -or $IsMacOS)
+    Get-BuildPlatform
+
+    if (!$global:IsWindows)
     {
         $cmakePath = which cmake
         if(!(Test-Path -PathType Leaf $cmakePath))
@@ -361,7 +382,7 @@ function Initialize-BuildEnvironment
         $env:Path = "$([System.IO.Path]::GetDirectoryName($cmakePath));$env:Path"
     }
 
-    if ($IsLinux -or $IsMacOS)
+    if (!$global:IsWindows)
     {
         $vsGitCmdPath = which git
         if(!(Test-Path -PathType Leaf $vsGitCmdPath))
@@ -388,6 +409,7 @@ $InformationPreference = "Continue"
 
 $isCI = !!$env:CI -or !!$env:GITHUB_ACTIONS
 
+Get-BuildPlatform
 $global:RepoInfo = Get-RepoInfo -Force:$isCI
 
 New-Alias -Force -Name build -Value Invoke-Build -Scope Global
