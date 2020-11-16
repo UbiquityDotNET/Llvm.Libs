@@ -62,14 +62,7 @@ function global:LinkFile($archiveVersionName, $info)
     $linkPath = join-Path $archiveVersionName $info.RelativeDir
     if(!(Test-Path -PathType Container $linkPath))
     {
-        if (!$global:IsWindowsPS)
-        {
-            mkdir -p $linkPath | Out-Null
-        }
-        else 
-        {
-            mkdir $linkPath | Out-Null   
-        }
+        New-Item -Path $linkPath -Type Directory -Force
     }
 
     New-Item -ItemType HardLink -Path $linkPath -Name $info.FileName -Value $info.FullPath
