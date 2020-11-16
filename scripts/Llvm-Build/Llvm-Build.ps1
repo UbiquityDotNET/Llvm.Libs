@@ -36,8 +36,8 @@ function global:Get-LlvmVersion( [string] $cmakeListPath )
 {
     $props = @{}
     Select-String -Path $cmakeListPath -Pattern "set\(LLVM_VERSION_(MAJOR|MINOR|PATCH) ([0-9]+)\)" |
-        ForEach-Object{ $_.Matches } |
-        ForEach-Object{ $props.Add( $_.Groups[1].Value, [Convert]::ToInt32($_.Groups[2].Value) ) }
+        %{ $_.Matches } |
+        %{ $props.Add( $_.Groups[1].Value, [Convert]::ToInt32($_.Groups[2].Value) ) }
     return $props
 }
 
@@ -122,7 +122,7 @@ function global:Create-ArchiveLayout($archiveVersionName)
         Get-ChildItem -r $commonIncPath -Exclude ('*.txt') | ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
         Get-ChildItem $global:RepoInfo.RepoRoot -Filter Llvm-Libs.* | ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.RepoRoot.FullName $_ }
         Get-ChildItem (join-path $global:RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
-    } | ForEach-Object{ LinkFile $archiveVersionName $_ } | Out-Null
+    } | %{ LinkFile $archiveVersionName $_ } | Out-Null
 
     if ($global:IsWindowsPS)
     {
