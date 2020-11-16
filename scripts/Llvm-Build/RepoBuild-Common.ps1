@@ -13,7 +13,14 @@ function global:Find-OnPath
     Write-Information "Searching for $exeName..."
     try
     {
-        $path = where.exe $exeName 2>$null | select -First 1
+        if (!$global:IsWindowsPS)
+        {
+            if ($exeName.EndsWith(".exe"))
+            {
+                $exeName = $exeName.Substring(0, $ExeName.Length - 4)
+            }
+        }
+        $path = (Get-Command -Name $exeName).Source
     }
     catch
     {}

@@ -19,7 +19,7 @@
     CMakeConfig([string]$plat, [string]$config, [string]$baseBuild, [string]$srcRoot, [object]$VsInstance)
     {
         $this.Platform = $Plat.ToLowerInvariant()
-        if ($null -eq $VsInstance)
+        if (!$VsInstance)
         {
             $this.Generator = "Unix Makefiles"
         }
@@ -119,32 +119,8 @@
     }
 }
 
-function global:Find-CMake
-{
-    if (!$global:IsWindowsPS)
-    {
-        $cmakePath = which cmake
-        if( !$cmakePath )
-        {
-            throw "cmake not found"
-        }
-    }
-    else 
-    {
-        $cmakePath = Find-OnPath 'cmake'
-        if( !$cmakePath )
-        {
-            throw 'CMAKE.EXE not found'
-        }
-    }
-
-    $cmakePath
-}
-
 function global:Assert-CMakeInfo([Version]$minVersion)
 {
-    Find-CMake
-
     $cmakeInfo = cmake -E capabilities | ConvertFrom-Json
     if(!$cmakeInfo)
     {
@@ -183,7 +159,7 @@ function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
     $cmakeArgs.Add( $config.SrcRoot ) | Out-Null
 
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
-    $cmakePath = Find-CMake
+    $cmakePath = Find-OnPath 'cmake'
     Push-Location $config.BuildRoot
     try
     {
@@ -210,7 +186,7 @@ function global:Invoke-CMakeBuild([CMakeConfig]$config)
 {
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     Write-Information "CMake Building $($config.Name)"
-    $cmakePath = Find-CMake
+    $cmakePath = Find-OnPath 'cmake'
 
     $cmakeArgs = @('--build', "$($config.BuildRoot)", '--config', "$($config.ConfigurationType)", '--', "$($config.BuildCommandArgs)")
 
