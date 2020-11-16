@@ -75,7 +75,7 @@ function global:LinkPdb([Parameter(Mandatory=$true, ValueFromPipeLine)]$item, [P
     if(Test-Path -PathType Leaf $targetPath)
     {
         Write-Information "Deleting existing PDB link"
-        Remove-Item -Force $targetPath
+        del -Force $targetPath
     }
 
     New-Item -ItemType HardLink -Path $Path -Name $item.Name -Value $item.FullName -ErrorAction Stop | Out-Null
@@ -88,10 +88,10 @@ function global:Create-ArchiveLayout($archiveVersionName)
     # this also allows local testing of the package without needing to publish, download and unpack the archive
     # while avoiding unnecessary file copies
     Write-Information "Creating ZIP structure hardlinks in $(Join-Path $global:RepoInfo.BuildOutputPath $archiveVersionName)"
-    Push-Location $global:RepoInfo.BuildOutputPath
+    pushd $global:RepoInfo.BuildOutputPath
     if(Test-Path -PathType Container $archiveVersionName)
     {
-        Remove-Item -Force -Recurse $archiveVersionName
+        del -Force -Recurse $archiveVersionName
     }
 
     mkdir $archiveVersionName | Out-Null
@@ -155,11 +155,11 @@ function global:Compress-BuildOutput
 
         if(Test-Path -PathType Leaf $archivePath)
         {
-            Remove-Item -Force $archivePath
+            del -Force $archivePath
         }
 
         Write-Information "Created archive layout, compressing archive"
-        Push-Location $archiveVersionName
+        pushd $archiveVersionName
         try
         {
             Write-Information "Creating 7-ZIP archive $archivePath"
@@ -167,7 +167,7 @@ function global:Compress-BuildOutput
         }
         finally
         {
-            Pop-Location
+            popd
         }
     }
     finally
@@ -180,9 +180,9 @@ function global:Compress-BuildOutput
 
 function global:Clear-BuildOutput()
 {
-    Remove-Item -Recurse -Force $global:RepoInfo.ToolsPath
-    Remove-Item -Recurse -Force $global:RepoInfo.BuildOutputPath
-    Remove-Item -Recurse -Force $global:RepoInfo.PackOutputPath
+    del -Recurse -Force $global:RepoInfo.ToolsPath
+    del -Recurse -Force $global:RepoInfo.BuildOutputPath
+    del -Recurse -Force $global:RepoInfo.PackOutputPath
     $global:RepoInfo = Get-RepoInfo
 }
 

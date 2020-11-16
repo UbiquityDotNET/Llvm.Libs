@@ -160,7 +160,7 @@ function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
 
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     $cmakePath = Find-OnPath 'cmake'
-    Push-Location $config.BuildRoot
+    pushd $config.BuildRoot
     try
     {
         # need to use start-process as CMAKE scripts may write to STDERR and PsCore considers that an error
@@ -177,7 +177,7 @@ function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
     finally
     {
         $timer.Stop()
-        Pop-Location
+        popd
     }
     Write-Information "Generation Time: $($timer.Elapsed.ToString())"
 }
