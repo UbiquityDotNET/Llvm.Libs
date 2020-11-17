@@ -13,7 +13,14 @@ function global:Find-OnPath
     Write-Information "Searching for $exeName..."
     try
     {
-        $path = where.exe $exeName 2>$null | select -First 1
+        if (!$global:IsWindowsPS)
+        {
+            if ($exeName.EndsWith(".exe"))
+            {
+                $exeName = $exeName.Substring(0, $ExeName.Length - 4)
+            }
+        }
+        $path = (Get-Command -Name $exeName).Source
     }
     catch
     {}
@@ -252,20 +259,27 @@ function global:Get-GitHubTaggedRelease($org, $project, $tag)
 # use VS provided PS Module to locate VS installed instances
 function global:Find-VSInstance([switch]$PreRelease, [switch]$Force, $Version = '[15.0, 17.0)')
 {
-    $requiredComponents = 'Microsoft.Component.MSBuild',
-                        'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
-                        'Microsoft.VisualStudio.Component.VC.CMake.Project'
-
-    $existingModule = Get-InstalledModule -ErrorAction SilentlyContinue VSSetup
-    if(!$existingModule)
+    if (!$global:IsWindows)
     {
+        $null
+    }
+    else
+    {
+        $requiredComponents = 'Microsoft.Component.MSBuild',
+                              'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
+                              'Microsoft.VisualStudio.Component.VC.CMake.Project'
+
+        $existingModule = Get-InstalledModule -ErrorAction SilentlyContinue VSSetup
+        if(!$existingModule)
+        {
         Write-Information "Installing VSSetup module"
         Install-Module VSSetup -Scope CurrentUser -Force:$Force | Out-Null
-    }
+        }
 
-    Get-VSSetupInstance -Prerelease:$PreRelease |
+        Get-VSSetupInstance -Prerelease:$PreRelease |
         Select-VSSetupInstance -Version $Version -Require $requiredComponents |
-        select -First 1
+        Select-Object -First 1
+    }
 }
 
 function global:Find-MSBuild

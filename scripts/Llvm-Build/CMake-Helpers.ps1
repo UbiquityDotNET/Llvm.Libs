@@ -16,13 +16,20 @@
     [System.Collections.ArrayList]$InheritEnvironments;
     [hashtable]$CMakeBuildVariables;
 
-    CMakeConfig([string]$plat, [string]$config, [string]$baseBuild, [string]$srcRoot, $VsInstance)
+    CMakeConfig([string]$plat, [string]$config, [string]$baseBuild, [string]$srcRoot, [object]$VsInstance)
     {
         $this.Platform = $Plat.ToLowerInvariant()
-        switch($VsInstance.InstallationVersion.Major)
+        if (!$VsInstance)
         {
-            15 { $this.Generator = "Visual Studio 15 2017" }
-            16 { $this.Generator= "Visual Studio 16 2019" }
+            $this.Generator = "Unix Makefiles"
+        }
+        else 
+        {
+            switch($VsInstance.InstallationVersion.Major)
+            {
+                15 { $this.Generator = "Visual Studio 15 2017" }
+                16 { $this.Generator = "Visual Studio 16 2019" }
+            }
         }
 
         $this.Name="$($this.Platform)-$config"
@@ -41,22 +48,26 @@
         $this.BuildCommandArgs = [System.Collections.ArrayList]@()
         $this.InheritEnvironments = [System.Collections.ArrayList]@()
 
-        if( $this.Platform -eq "x64" )
+        if ($global:IsWindowsPS)
         {
-            $this.CMakeCommandArgs.Add('-A x64')
+            if( $this.Platform -eq "x64" )
+            {
+                $this.CMakeCommandArgs.Add('-A x64')
+            }
+    
+            if([Environment]::Is64BitOperatingSystem)
+            {
+                $this.CMakeCommandArgs.Add('-Thost=x64')
+                $this.InheritEnvironments.Add('msvc_x64_x64')
+            }
+            else
+            {
+                $this.InheritEnvironments.Add('msvc_x64')
+            }
+
+            $this.BuildCommandArgs.Add('/m')
         }
 
-        if([Environment]::Is64BitOperatingSystem)
-        {
-            $this.CMakeCommandArgs.Add('-Thost=x64')
-            $this.InheritEnvironments.Add('msvc_x64_x64')
-        }
-        else
-        {
-            $this.InheritEnvironments.Add('msvc_x64')
-        }
-
-        $this.BuildCommandArgs.Add('/m')
         $this.CMakeBuildVariables = @{}
     }
 
@@ -108,15 +119,9 @@
     }
 }
 
-function global:Assert-CmakeInfo([Version]$minVersion)
+function global:Assert-CMakeInfo([Version]$minVersion)
 {
-    $cmakePath = Find-OnPath 'cmake.exe'
-    if( !$cmakePath )
-    {
-        throw 'CMAKE.EXE not found'
-    }
-
-    $cmakeInfo = cmake.exe -E capabilities | ConvertFrom-Json
+    $cmakeInfo = cmake -E capabilities | ConvertFrom-Json
     if(!$cmakeInfo)
     {
         throw "CMake version not supported. 'cmake -E capabilities' returned nothing"
@@ -154,7 +159,7 @@ function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
     $cmakeArgs.Add( $config.SrcRoot ) | Out-Null
 
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
-    $cmakePath = Find-OnPath 'cmake.exe'
+    $cmakePath = Find-OnPath 'cmake'
     pushd $config.BuildRoot
     try
     {
@@ -166,7 +171,7 @@ function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
 
         if($LASTEXITCODE -ne 0 )
         {
-            Write-Information "Cmake generation exited with code: $LASTEXITCODE"
+            Write-Information "CMake generation exited with code: $LASTEXITCODE"
         }
     }
     finally
@@ -177,11 +182,11 @@ function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
     Write-Information "Generation Time: $($timer.Elapsed.ToString())"
 }
 
-function global:Invoke-CmakeBuild([CMakeConfig]$config)
+function global:Invoke-CMakeBuild([CMakeConfig]$config)
 {
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     Write-Information "CMake Building $($config.Name)"
-    $cmakePath = Find-OnPath 'cmake.exe'
+    $cmakePath = Find-OnPath 'cmake'
 
     $cmakeArgs = @('--build', "$($config.BuildRoot)", '--config', "$($config.ConfigurationType)", '--', "$($config.BuildCommandArgs)")
 
@@ -190,14 +195,14 @@ function global:Invoke-CmakeBuild([CMakeConfig]$config)
 
     if($LASTEXITCODE -ne 0 )
     {
-        Write-Information "Cmake build exited with code: $LASTEXITCODE"
+        Write-Information "CMake build exited with code: $LASTEXITCODE"
     }
 
     $timer.Stop()
     Write-Information "Build Time: $($timer.Elapsed.ToString())"
 }
 
-function New-CmakeSettings( [Parameter(Mandatory, ValueFromPipeline)][CMakeConfig] $configuration )
+function New-CMakeSettings( [Parameter(Mandatory, ValueFromPipeline)][CMakeConfig] $configuration )
 {
     BEGIN
     {

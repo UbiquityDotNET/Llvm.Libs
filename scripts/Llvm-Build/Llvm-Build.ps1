@@ -1,7 +1,7 @@
 . (Join-Path $PSScriptRoot RepoBuild-Common.ps1)
 . (Join-Path $PSScriptRoot CMake-Helpers.ps1)
 
-function New-LlvmCmakeConfig(
+function global:New-LlvmCmakeConfig(
     [string]$platform,
     [string]$config,
     $VsInstance,
@@ -35,7 +35,7 @@ function New-LlvmCmakeConfig(
 function global:Get-LlvmVersion( [string] $cmakeListPath )
 {
     $props = @{}
-    $matches = Select-String -Path $cmakeListPath -Pattern "set\(LLVM_VERSION_(MAJOR|MINOR|PATCH) ([0-9]+)\)" |
+    Select-String -Path $cmakeListPath -Pattern "set\(LLVM_VERSION_(MAJOR|MINOR|PATCH) ([0-9]+)\)" |
         %{ $_.Matches } |
         %{ $props.Add( $_.Groups[1].Value, [Convert]::ToInt32($_.Groups[2].Value) ) }
     return $props
@@ -62,7 +62,7 @@ function global:LinkFile($archiveVersionName, $info)
     $linkPath = join-Path $archiveVersionName $info.RelativeDir
     if(!(Test-Path -PathType Container $linkPath))
     {
-        md $linkPath | Out-Null
+        New-Item -Path $linkPath -Type Directory -Force
     }
 
     New-Item -ItemType HardLink -Path $linkPath -Name $info.FileName -Value $info.FullPath
@@ -91,27 +91,38 @@ function global:Create-ArchiveLayout($archiveVersionName)
     pushd $global:RepoInfo.BuildOutputPath
     if(Test-Path -PathType Container $archiveVersionName)
     {
-        rd -Force -Recurse $archiveVersionName
+        del -Force -Recurse $archiveVersionName
     }
 
-    md $archiveVersionName | Out-Null
+    mkdir $archiveVersionName | Out-Null
 
     ConvertTo-Json (Get-LlvmVersion (Join-Path $global:RepoInfo.LlvmRoot 'CMakeLists.txt')) | Out-File (Join-Path $archiveVersionName 'llvm-version.json')
 
-    New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug\Debug') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Debug\Debug\lib') | Out-Null
-    New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release\Release') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Release\RelWithDebInfo\lib') | Out-Null
+    if (!$global:IsWindowsPS)
+    {
+        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Debug\lib') | Out-Null
+        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Release\lib') | Out-Null    
+    }
+    else 
+    {
+        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug\Debug') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Debug\Debug\lib') | Out-Null
+        New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release\Release') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Release\RelWithDebInfo\lib') | Out-Null
+    }
 
     $commonIncPath = join-Path $global:RepoInfo.LlvmRoot include
     & {
-        dir -r x64*\include -Include ('*.h', '*.gen', '*.def', '*.inc')| %{ New-PathInfo $global:RepoInfo.BuildOutputPath.FullName $_}
-        dir -r $commonIncPath -Exclude ('*.txt')| ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
-        dir $global:RepoInfo.RepoRoot -Filter Llvm-Libs.* | ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.RepoRoot.FullName $_ }
-        dir (join-path $global:RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
+        Get-ChildItem -r x64*\include -Include ('*.h', '*.gen', '*.def', '*.inc') | %{ New-PathInfo $global:RepoInfo.BuildOutputPath.FullName $_}
+        Get-ChildItem -r $commonIncPath -Exclude ('*.txt') | ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
+        Get-ChildItem $global:RepoInfo.RepoRoot -Filter Llvm-Libs.* | ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.RepoRoot.FullName $_ }
+        Get-ChildItem (join-path $global:RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
     } | %{ LinkFile $archiveVersionName $_ } | Out-Null
 
-    # Link RelWithDebInfo PDBs into the 7z package so that symbols are available for the release build too.
-    $pdbLibDir = Join-Path $archiveVersionName 'x64-Release\Release\lib'
-    dir -r x64-Release\lib -Include *.pdb | LinkPdb -Path $pdbLibDir
+    if ($global:IsWindowsPS)
+    {
+        # Link RelWithDebInfo PDBs into the 7z package so that symbols are available for the release build too.
+        $pdbLibDir = Join-Path $archiveVersionName 'x64-Release\Release\lib'
+        Get-ChildItem -r x64-Release\lib -Include *.pdb | LinkPdb -Path $pdbLibDir
+    }
 }
 
 function global:Compress-BuildOutput
@@ -124,7 +135,18 @@ function global:Compress-BuildOutput
 
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     $oldPath = $env:Path
-    $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-msvc-$($global:RepoInfo.VsInstance.InstallationVersion.Major).$($global:RepoInfo.VsInstance.InstallationVersion.Minor)"
+    if (!$global:IsWindowsPS -and $IsLinux)
+    {
+        $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-linux"
+    }
+    elseif (!$global:IsWindowsPS -and $IsMacOs) 
+    {
+        $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-macos"
+    }
+    else 
+    {
+        $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-msvc-$($global:RepoInfo.VsInstance.InstallationVersion.Major).$($global:RepoInfo.VsInstance.InstallationVersion.Minor)"
+    }
     $archivePath = Join-Path $global:RepoInfo.BuildOutputPath "$archiveVersionName.7z"
     try
     {
@@ -136,11 +158,12 @@ function global:Compress-BuildOutput
             del -Force $archivePath
         }
 
+        Write-Information "Created archive layout, compressing archive"
         pushd $archiveVersionName
         try
         {
             Write-Information "Creating 7-ZIP archive $archivePath"
-            7z.exe a $archivePath '*' -r -t7z -mx=9
+            7z a $archivePath '*' -r -t7z -mx=9
         }
         finally
         {
@@ -157,9 +180,9 @@ function global:Compress-BuildOutput
 
 function global:Clear-BuildOutput()
 {
-    rd -Recurse -Force $global:RepoInfo.ToolsPath
-    rd -Recurse -Force $global:RepoInfo.BuildOutputPath
-    rd -Recurse -Force $global:RepoInfo.PackOutputPath
+    del -Recurse -Force $global:RepoInfo.ToolsPath
+    del -Recurse -Force $global:RepoInfo.BuildOutputPath
+    del -Recurse -Force $global:RepoInfo.PackOutputPath
     $global:RepoInfo = Get-RepoInfo
 }
 
@@ -220,7 +243,7 @@ function global:Initialize-BuildPath([string]$path)
     $resultPath = $([System.IO.Path]::Combine($PSScriptRoot, '..', '..', $path))
     if( !(Test-Path -PathType Container $resultPath) )
     {
-        md $resultPath
+        mkdir $resultPath
     }
     else
     {
@@ -235,19 +258,37 @@ function global:Get-RepoInfo([switch]$Force)
     $llvmversionInfo = (Get-LlvmVersion (Join-Path $llvmroot 'CMakeLists.txt'))
     $llvmversion = "$($llvmversionInfo.Major).$($llvmversionInfo.Minor).$($llvmversionInfo.Patch)"
     $toolsPath = Initialize-BuildPath 'tools'
-    $buildOuputPath = Initialize-BuildPath 'BuildOutput'
+    $buildOutputPath = Initialize-BuildPath 'BuildOutput'
     $packOutputPath = Initialize-BuildPath 'packages'
-    $vsInstance = Find-VSInstance -Force:$Force -Version '[15.0, 17.0)'
 
-    if(!$vsInstance)
+    if ($global:IsWindowsPS)
     {
-        throw "No VisualStudio instance found! This build requires VS build tools to function"
+        $vsInstance = Find-VSInstance -Force:$Force -Version '[15.0, 17.0)'
+
+        if(!$vsInstance)
+        {
+            throw "No VisualStudio instance found! This build requires VS build tools to function"
+        }
+
+        VsInstanceName = $vsInstance.DisplayName
+        VsVersion = $vsInstance.InstallationVersion
+        VsInstance = $vsInstance
     }
+    else 
+    {
+        VsInstanceName = ""
+        VsVersion = ""
+        VsInstance = $null
+    }
+
+    $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $null $buildOutputPath $llvmroot),
+                    (New-LlvmCmakeConfig x64 'Debug' $null $buildOutputPath $llvmroot)
+                    )
 
     return @{
         RepoRoot = $repoRoot
         ToolsPath = $toolsPath
-        BuildOutputPath = $buildOuputPath
+        BuildOutputPath = $buildOutputPath
         PackOutputPath = $packOutputPath
         LlvmRoot = $llvmroot
         LlvmVersion = $llvmversion
@@ -255,9 +296,27 @@ function global:Get-RepoInfo([switch]$Force)
         VsInstanceName = $vsInstance.DisplayName
         VsVersion = $vsInstance.InstallationVersion
         VsInstance = $vsInstance
-        CMakeConfigurations = @( (New-LlvmCmakeConfig x64 'Release' $vsInstance $buildOuputPath $llvmroot),
-                                 (New-LlvmCmakeConfig x64 'Debug' $vsInstance $buildOuputPath $llvmroot)
-                               )
+        CMakeConfigurations = $cmakeInfo
+    }
+
+}
+
+function Get-BuildPlatform
+{
+    if ($PSVersionTable.PSEdition -ne "Core")
+    {
+        $global:IsWindowsPS = $true
+    }
+    else 
+    {
+        if ($IsLinux -or $IsMacOS)
+        {
+            $global:IsWindowsPS = $false
+        }
+        else 
+        {
+            $global:IsWindowsPS = $true
+        }
     }
 }
 
@@ -269,30 +328,49 @@ function Initialize-BuildEnvironment
     Write-Information "Build Info:`n $($global:RepoInfo | Out-String)"
     Write-Information "PS Version:`n $($PSVersionTable | Out-String)"
 
-    $msBuildInfo = Find-MsBuild
-    if( !$msBuildInfo.FoundOnPath )
+    Get-BuildPlatform
+
+    if (!$global:IsWindowsPS)
     {
-        Write-Information "Using MSBuild from: $($msBuildInfo.BinPath)"
-        $env:Path = "$($env:Path);$($msBuildInfo.BinPath)"
+        $cmakePath = which cmake
+        if(!(Test-Path -PathType Leaf $cmakePath))
+        {
+            throw "cmake not found at: '$cmakePath'"
+        }
+
+        Write-Information "Using cmake from $cmakePath"
+    }
+    else 
+    {
+        $cmakePath = $(Join-Path $global:RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe')
+        if(!(Test-Path -PathType Leaf $cmakePath))
+        {
+            throw "CMAKE.EXE not found at: '$cmakePath'"
+        }
+
+        Write-Information "Using cmake from VS Instance"
+        $env:Path = "$([System.IO.Path]::GetDirectoryName($cmakePath));$env:Path"
     }
 
-    $cmakePath = $(Join-Path $global:RepoInfo.VsInstance.InstallationPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe')
-    if(!(Test-Path -PathType Leaf $cmakePath))
+    if (!$global:IsWindowsPS)
     {
-        throw "CMAKE.EXE not found at: '$cmakePath'"
+        $vsGitCmdPath = which git
+        if(!(Test-Path -PathType Leaf $vsGitCmdPath))
+        {
+            throw "git not found at: '$vsGitCmdPath'"
+        }
+        
+        Write-Information "Using git from $vsGitCmdPath"
     }
-
-    Write-Information "Using cmake from VS Instance"
-    $env:Path = "$([System.IO.Path]::GetDirectoryName($cmakePath));$env:Path"
-
-    $vsGitCmdPath = [System.IO.Path]::Combine( $global:RepoInfo.VsInstance.InstallationPath, 'Common7', 'IDE', 'CommonExtensions', 'Microsoft', 'TeamFoundation', 'Team Explorer', 'Git', 'cmd')
-    if(Test-Path -PathType Leaf ([System.IO.Path]::Combine($vsGitCmdPath, 'git.exe')))
+    else 
     {
-        Write-Information "Using git from VS Instance"
-        $env:Path = "$vsGitCmdPath;$env:Path"
+        $vsGitCmdPath = [System.IO.Path]::Combine( $global:RepoInfo.VsInstance.InstallationPath, 'Common7', 'IDE', 'CommonExtensions', 'Microsoft', 'TeamFoundation', 'Team Explorer', 'Git', 'cmd')
+        if(Test-Path -PathType Leaf ([System.IO.Path]::Combine($vsGitCmdPath, 'git.exe')))
+        {
+            Write-Information "Using git from VS Instance"
+            $env:Path = "$vsGitCmdPath;$env:Path"
+        }
     }
-
-    Write-Information "cmake: $cmakePath"
 }
 
 # --- Module init script
@@ -301,8 +379,9 @@ $InformationPreference = "Continue"
 
 $isCI = !!$env:CI -or !!$env:GITHUB_ACTIONS
 
+Get-BuildPlatform
 $global:RepoInfo = Get-RepoInfo -Force:$isCI
 
-New-Alias -Name build -Value Invoke-Build -Scope Global
-New-Alias -Name pack -Value Compress-BuildOutput -Scope Global
-New-Alias -Name clean -Value Clear-BuildOutput -Scope Global
+New-Alias -Force -Name build -Value Invoke-Build -Scope Global
+New-Alias -Force -Name pack -Value Compress-BuildOutput -Scope Global
+New-Alias -Force -Name clean -Value Clear-BuildOutput -Scope Global
