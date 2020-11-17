@@ -261,41 +261,7 @@ function global:Get-RepoInfo([switch]$Force)
     $buildOutputPath = Initialize-BuildPath 'BuildOutput'
     $packOutputPath = Initialize-BuildPath 'packages'
 
-    if (!$global:IsWindowsPS -and $IsLinux)
-    {
-        $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $null $buildOutputPath $llvmroot),
-                        (New-LlvmCmakeConfig x64 'Debug' $null $buildOutputPath $llvmroot)
-                      )
-
-        return @{
-            RepoRoot = $repoRoot
-            ToolsPath = $toolsPath
-            BuildOutputPath = $buildOutputPath
-            PackOutputPath = $packOutputPath
-            LlvmRoot = $llvmroot
-            LlvmVersion = $llvmversion
-            Version = $llvmversion # this may differ from the LLVM Version if the packaging infrastructure is "patched"
-            CMakeConfigurations = $cmakeInfo
-        }
-    }
-    elseif (!$global:IsWindowsPS -and $IsMacOS)
-    {
-        $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $null $buildOutputPath $llvmroot),
-                        (New-LlvmCmakeConfig x64 'Debug' $null $buildOutputPath $llvmroot)
-                      )
-
-        return @{
-            RepoRoot = $repoRoot
-            ToolsPath = $toolsPath
-            BuildOutputPath = $buildOutputPath
-            PackOutputPath = $packOutputPath
-            LlvmRoot = $llvmroot
-            LlvmVersion = $llvmversion
-            Version = $llvmversion # this may differ from the LLVM Version if the packaging infrastructure is "patched"
-            CMakeConfigurations = $cmakeInfo
-        }
-    }
-    else
+    if ($global:IsWindowsPS)
     {
         $vsInstance = Find-VSInstance -Force:$Force -Version '[15.0, 17.0)'
 
@@ -304,24 +270,35 @@ function global:Get-RepoInfo([switch]$Force)
             throw "No VisualStudio instance found! This build requires VS build tools to function"
         }
 
-        $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $vsInstance $buildOutputPath $llvmroot),
-                        (New-LlvmCmakeConfig x64 'Debug' $vsInstance $buildOutputPath $llvmroot)
-                      )
-
-        return @{
-            RepoRoot = $repoRoot
-            ToolsPath = $toolsPath
-            BuildOutputPath = $buildOutputPath
-            PackOutputPath = $packOutputPath
-            LlvmRoot = $llvmroot
-            LlvmVersion = $llvmversion
-            Version = $llvmversion # this may differ from the LLVM Version if the packaging infrastructure is "patched"
-            VsInstanceName = $vsInstance.DisplayName
-            VsVersion = $vsInstance.InstallationVersion
-            VsInstance = $vsInstance
-            CMakeConfigurations = $cmakeInfo
-        }
+        VsInstanceName = $vsInstance.DisplayName
+        VsVersion = $vsInstance.InstallationVersion
+        VsInstance = $vsInstance
     }
+    else 
+    {
+        VsInstanceName = ""
+        VsVersion = ""
+        VsInstance = $null
+    }
+
+    $cmakeInfo = @( (New-LlvmCmakeConfig x64 'Release' $null $buildOutputPath $llvmroot),
+                    (New-LlvmCmakeConfig x64 'Debug' $null $buildOutputPath $llvmroot)
+                    )
+
+    return @{
+        RepoRoot = $repoRoot
+        ToolsPath = $toolsPath
+        BuildOutputPath = $buildOutputPath
+        PackOutputPath = $packOutputPath
+        LlvmRoot = $llvmroot
+        LlvmVersion = $llvmversion
+        Version = $llvmversion # this may differ from the LLVM Version if the packaging infrastructure is "patched"
+        VsInstanceName = $vsInstance.DisplayName
+        VsVersion = $vsInstance.InstallationVersion
+        VsInstance = $vsInstance
+        CMakeConfigurations = $cmakeInfo
+    }
+
 }
 
 function Get-BuildPlatform
