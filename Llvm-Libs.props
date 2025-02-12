@@ -12,8 +12,8 @@
     </PropertyGroup>
     <PropertyGroup Label="UserMacros">
         <!-- These are not conditional as the version is bound directly to the version of LLVM built into the libraries -->
-        <LlvmVersionMajor>10</LlvmVersionMajor>
-        <llvmVersionMinor>0</llvmVersionMinor>
+        <LlvmVersionMajor>20</LlvmVersionMajor>
+        <llvmVersionMinor>1</llvmVersionMinor>
         <LlvmVersionBuild>0</LlvmVersionBuild>
         <LlvmVersion>$(LlvmVersionMajor).$(LlvmVersionMinor).$(LlvmVersionBuild)</LlvmVersion>
         <LlvmLibsMetaPackageRoot>$(MSBuildThisFileDirectory)</LlvmLibsMetaPackageRoot>
@@ -22,6 +22,8 @@
         <LlvmCommonIncRoot>$(LlvmLibsMetaPackageRoot)include\</LlvmCommonIncRoot>
         <LlvmExecutionEngineOrcRoot>$(LlvmLibsMetaPackageRoot)lib\ExecutionEngine\Orc</LlvmExecutionEngineOrcRoot>
     </PropertyGroup>
+
+    <!-- TODO: Change this to an ItemGroup with GLOB so that only libs created are included -->
     <PropertyGroup>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64AsmParser.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64CodeGen.lib</AllLlvmLibs>
@@ -114,7 +116,7 @@
         <AllLlvmLibs>$(AllLlvmLibs);LLVMObject.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMObjectYAML.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMOption.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMOrcError.lib</AllLlvmLibs>
+        <!--<AllLlvmLibs>$(AllLlvmLibs);LLVMOrcError.lib</AllLlvmLibs>-->
         <AllLlvmLibs>$(AllLlvmLibs);LLVMOrcJIT.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMPasses.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMPowerPCAsmParser.lib</AllLlvmLibs>
@@ -129,7 +131,7 @@
         <AllLlvmLibs>$(AllLlvmLibs);LLVMRISCVDesc.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMRISCVDisassembler.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMRISCVInfo.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMRISCVUtils.lib</AllLlvmLibs>
+        <!--<AllLlvmLibs>$(AllLlvmLibs);LLVMRISCVUtils.lib</AllLlvmLibs>-->
         <AllLlvmLibs>$(AllLlvmLibs);LLVMRuntimeDyld.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMScalarOpts.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSelectionDAG.lib</AllLlvmLibs>
@@ -146,7 +148,7 @@
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSystemZDisassembler.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSystemZInfo.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMTableGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMTableGenGlobalISel.lib</AllLlvmLibs>
+        <!--<AllLlvmLibs>$(AllLlvmLibs);LLVMTableGenGlobalISel.lib</AllLlvmLibs>-->
         <AllLlvmLibs>$(AllLlvmLibs);LLVMTarget.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMTextAPI.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMTransformUtils.lib</AllLlvmLibs>
@@ -162,7 +164,7 @@
         <AllLlvmLibs>$(AllLlvmLibs);LLVMX86Desc.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMX86Disassembler.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMX86Info.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMX86Utils.lib</AllLlvmLibs>
+        <!--<AllLlvmLibs>$(AllLlvmLibs);LLVMX86Utils.lib</AllLlvmLibs>-->
         <AllLlvmLibs>$(AllLlvmLibs);LLVMXCoreCodeGen.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMXCoreDesc.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMXCoreDisassembler.lib</AllLlvmLibs>

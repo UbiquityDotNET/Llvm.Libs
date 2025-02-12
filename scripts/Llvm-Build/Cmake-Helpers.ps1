@@ -21,8 +21,10 @@
         $this.Platform = $Plat.ToLowerInvariant()
         switch($VsInstance.InstallationVersion.Major)
         {
-            15 { $this.Generator = "Visual Studio 15 2017" }
-            16 { $this.Generator= "Visual Studio 16 2019" }
+            #15 { $this.Generator = "Visual Studio 15 2017" }
+            #16 { $this.Generator= "Visual Studio 16 2019" }
+            17 { $this.Generator= "Visual Studio 17 2022" }
+            default { throw "Unkonwn VS Version"}
         }
 
         $this.Name="$($this.Platform)-$config"

@@ -27,7 +27,7 @@ function global:Find-OnPath
 function Find-Python
 {
     # Find/Install Python
-    $pythonExe = Find-OnPath 'python.exe'
+    $pythonExe = Find-OnPath 'python3.exe'
     $foundOnPath = $false
     if($pythonExe)
     {
@@ -36,25 +36,28 @@ function Find-Python
     }
     else
     {
-        # try registry location(s) see [PEP-514](https://www.python.org/dev/peps/pep-0514/)
-        if( Test-Path -PathType Container HKCU:Software\Python\*\2.7\InstallPath )
+        if($IsWindows)
         {
-            $pythonPath = dir HKCU:\Software\Python\*\2.7\InstallPath | ?{ Test-Path -PathType Leaf (Join-Path ($_.GetValue($null)) 'python.exe') } | %{ $_.GetValue($null) } | select -First 1
-        }
-        elseif( Test-Path -PathType Container HKLM:Software\Python\*\2.7\InstallPath )
-        {
-            $pythonPath = dir HKLM:\Software\Python\*\2.7\InstallPath | ?{ Test-Path -PathType Leaf (Join-Path ($_.GetValue($null)) 'python.exe') } | %{ $_.GetValue($null) } | select -First 1
-        }
-        elseif ( Test-Path -PathType Container HKLM:Software\Wow6432Node\Python\*\2.7\InstallPath )
-        {
-            $pythonPath = dir HKLM:\Software\Wow6432Node\Python\*\2.7\InstallPath | ?{ Test-Path -PathType Leaf (Join-Path ($_.GetValue($null)) 'python.exe') } | %{ $_.GetValue($null) } | select -First 1
+            # try registry location(s) see [PEP-514](https://www.python.org/dev/peps/pep-0514/)
+            if( Test-Path -PathType Container HKCU:Software\Python\*\3.6\InstallPath )
+            {
+                $pythonPath = dir HKCU:\Software\Python\*\3.6\InstallPath | ?{ Test-Path -PathType Leaf (Join-Path ($_.GetValue($null)) 'python.exe') } | %{ $_.GetValue($null) } | select -First 1
+            }
+            elseif( Test-Path -PathType Container HKLM:Software\Python\*\3.6\InstallPath )
+            {
+                $pythonPath = dir HKLM:\Software\Python\*\3.6\InstallPath | ?{ Test-Path -PathType Leaf (Join-Path ($_.GetValue($null)) 'python.exe') } | %{ $_.GetValue($null) } | select -First 1
+            }
+            elseif ( Test-Path -PathType Container HKLM:Software\Wow6432Node\Python\*\3.6\InstallPath )
+            {
+                $pythonPath = dir HKLM:\Software\Wow6432Node\Python\*\3.6\InstallPath | ?{ Test-Path -PathType Leaf (Join-Path ($_.GetValue($null)) 'python.exe') } | %{ $_.GetValue($null) } | select -First 1
+            }
         }
 
         if( !$pythonPath )
         {
             return $null
         }
-        $pythonExe = Join-Path $pythonPath 'python.exe'
+        $pythonExe = Join-Path $pythonPath 'python3.exe'
     }
 
     return @{ FullPath = $pythonExe
@@ -65,12 +68,12 @@ function Find-Python
 
 function Install-Python
 {
-    param([string]$PythonPath = (Join-Path (Get-ToolsPath) 'Python27'))
+    param([string]$PythonPath = (Join-Path (Get-ToolsPath) 'Python36'))
 
     # Download installer from official Python release location
-    $msiPath = (Join-Path (Get-ToolsPath) 'python-2.7.13.msi')
+    $msiPath = (Join-Path (Get-ToolsPath) 'python-3.6.13.msi')
     Write-Information 'Downloading Python'
-    Invoke-WebRequest -UseBasicParsing -Uri https://www.python.org/ftp/python/2.7.13/python-2.7.13.msi -OutFile $msiPath
+    Invoke-WebRequest -UseBasicParsing -Uri https://www.python.org/ftp/python/3.6.13/python-3.6.13.msi -OutFile $msiPath
 
     Write-Information 'Installing Python'
     msiexec /i  $msiPath "TARGETDIR=$PythonPath" /qn | Out-Null
@@ -250,7 +253,7 @@ function global:Get-GitHubTaggedRelease($org, $project, $tag)
 }
 
 # use VS provided PS Module to locate VS installed instances
-function global:Find-VSInstance([switch]$PreRelease, [switch]$Force, $Version = '[15.0, 17.0)')
+function global:Find-VSInstance([switch]$PreRelease, [switch]$Force, $Version = '[17.0, 18.0)')
 {
     $requiredComponents = 'Microsoft.Component.MSBuild',
                         'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
@@ -283,7 +286,7 @@ function global:Find-MSBuild
         }
 
         Write-Information "VS installation found: $($vsInstall.InstallationPath)"
-        $msBuildVerPath = [System.IO.Path]::Combine( $vsInstall.InstallationPath, 'MSBuild', '15.0', 'bin', 'MSBuild.exe')
+        $msBuildVerPath = [System.IO.Path]::Combine( $vsInstall.InstallationPath, 'MSBuild', '17.0', 'bin', 'MSBuild.exe')
         $msbuildCurrPath = [System.IO.Path]::Combine( $vsInstall.InstallationPath, 'MSBuild', 'Current', 'bin', 'MSBuild.exe')
         if( (Test-Path -PathType Leaf $msBuildVerPath ) )
         {

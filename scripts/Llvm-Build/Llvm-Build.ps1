@@ -62,7 +62,7 @@ function global:LinkFile($archiveVersionName, $info)
     $linkPath = join-Path $archiveVersionName $info.RelativeDir
     if(!(Test-Path -PathType Container $linkPath))
     {
-        md $linkPath | Out-Null
+        New-Item -ItemType Directory $linkPath | Out-Null
     }
 
     New-Item -ItemType HardLink -Path $linkPath -Name $info.FileName -Value $info.FullPath
@@ -94,19 +94,21 @@ function global:Create-ArchiveLayout($archiveVersionName)
         rd -Force -Recurse $archiveVersionName
     }
 
-    md $archiveVersionName | Out-Null
+    New-Item -ItemType Directory $archiveVersionName | Out-Null
 
-    ConvertTo-Json (Get-LlvmVersion (Join-Path $global:RepoInfo.LlvmRoot 'CMakeLists.txt')) | Out-File (Join-Path $archiveVersionName 'llvm-version.json')
+    ConvertTo-Json (Get-LlvmVersion (Join-Path $global:RepoInfo.LlvmRoot '..\cmake\Modules\LLVMVersion.cmake')) | Out-File (Join-Path $archiveVersionName 'llvm-version.json')
 
     New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug\Debug') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Debug\Debug\lib') | Out-Null
     New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release\Release') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Release\RelWithDebInfo\lib') | Out-Null
 
     $commonIncPath = join-Path $global:RepoInfo.LlvmRoot include
+
+    # Construct a sequence of New path info values to create a hard link for each of them in the new location
     & {
         dir -r x64*\include -Include ('*.h', '*.gen', '*.def', '*.inc')| %{ New-PathInfo $global:RepoInfo.BuildOutputPath.FullName $_}
         dir -r $commonIncPath -Exclude ('*.txt')| ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
         dir $global:RepoInfo.RepoRoot -Filter Llvm-Libs.* | ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.RepoRoot.FullName $_ }
-        dir (join-path $global:RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
+        #dir (join-path $global:RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
     } | %{ LinkFile $archiveVersionName $_ } | Out-Null
 
     # Link RelWithDebInfo PDBs into the 7z package so that symbols are available for the release build too.
@@ -220,7 +222,7 @@ function global:Initialize-BuildPath([string]$path)
     $resultPath = $([System.IO.Path]::Combine($PSScriptRoot, '..', '..', $path))
     if( !(Test-Path -PathType Container $resultPath) )
     {
-        md $resultPath
+        New-Item -ItemType Directory $resultPath
     }
     else
     {
@@ -232,16 +234,30 @@ function global:Get-RepoInfo([switch]$Force)
 {
     $repoRoot = (Get-Item $([System.IO.Path]::Combine($PSScriptRoot, '..', '..')))
     $llvmroot = (Get-Item $([System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'llvm', 'llvm')))
-    $llvmversionInfo = (Get-LlvmVersion (Join-Path $llvmroot 'CMakeLists.txt'))
+    $llvmversionInfo = (Get-LlvmVersion (Join-Path $llvmroot '..\cmake\Modules\LLVMVersion.cmake'))
     $llvmversion = "$($llvmversionInfo.Major).$($llvmversionInfo.Minor).$($llvmversionInfo.Patch)"
     $toolsPath = Initialize-BuildPath 'tools'
     $buildOuputPath = Initialize-BuildPath 'BuildOutput'
     $packOutputPath = Initialize-BuildPath 'packages'
-    $vsInstance = Find-VSInstance -Force:$Force -Version '[15.0, 17.0)'
 
-    if(!$vsInstance)
+    # On Windows VisualStuido is used to provide the C/C++ compiler
+    if($IsWindows)
     {
-        throw "No VisualStudio instance found! This build requires VS build tools to function"
+        $vsInstance = Find-VSInstance -Force:$Force -Version '[17.0, 18.0)'
+        if(!$vsInstance)
+        {
+            throw "No VisualStudio instance found! This build requires VS build tools to function"
+        }
+    }
+    else
+    {
+        throw "Non-Windows platforms not currently supported"
+    }
+
+    $pythonLocationInfo = Find-Python
+    if(!$pythonLocationInfo)
+    {
+        throw "Python.exe not found!"
     }
 
     return @{
@@ -255,6 +271,7 @@ function global:Get-RepoInfo([switch]$Force)
         VsInstanceName = $vsInstance.DisplayName
         VsVersion = $vsInstance.InstallationVersion
         VsInstance = $vsInstance
+        PythonLocationInfo = $pythonLocationInfo
         CMakeConfigurations = @( (New-LlvmCmakeConfig x64 'Release' $vsInstance $buildOuputPath $llvmroot),
                                  (New-LlvmCmakeConfig x64 'Debug' $vsInstance $buildOuputPath $llvmroot)
                                )
