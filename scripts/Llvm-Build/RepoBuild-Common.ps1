@@ -27,36 +27,35 @@ function global:Find-OnPath
 function Find-Python
 {
     # Find/Install Python
-    $pythonExe = Find-OnPath 'python3.exe'
+    $pythonExe = Find-OnPath 'python.exe'
     $foundOnPath = $false
     if($pythonExe)
     {
         $pythonPath = [System.IO.Path]::GetDirectoryName($pythonExe)
         $foundOnPath = $true
     }
-    else
+    elseif($IsWindows)
     {
-        if($IsWindows)
+        $pythonPath = $null
+        # try registry location(s) see [PEP-514](https://www.python.org/dev/peps/pep-0514/)
+        if( Test-Path -PathType Container HKCU:Software\Python\*\3.6\InstallPath )
         {
-            # try registry location(s) see [PEP-514](https://www.python.org/dev/peps/pep-0514/)
-            if( Test-Path -PathType Container HKCU:Software\Python\*\3.6\InstallPath )
-            {
-                $pythonPath = dir HKCU:\Software\Python\*\3.6\InstallPath | ?{ Test-Path -PathType Leaf (Join-Path ($_.GetValue($null)) 'python.exe') } | %{ $_.GetValue($null) } | select -First 1
-            }
-            elseif( Test-Path -PathType Container HKLM:Software\Python\*\3.6\InstallPath )
-            {
-                $pythonPath = dir HKLM:\Software\Python\*\3.6\InstallPath | ?{ Test-Path -PathType Leaf (Join-Path ($_.GetValue($null)) 'python.exe') } | %{ $_.GetValue($null) } | select -First 1
-            }
-            elseif ( Test-Path -PathType Container HKLM:Software\Wow6432Node\Python\*\3.6\InstallPath )
-            {
-                $pythonPath = dir HKLM:\Software\Wow6432Node\Python\*\3.6\InstallPath | ?{ Test-Path -PathType Leaf (Join-Path ($_.GetValue($null)) 'python.exe') } | %{ $_.GetValue($null) } | select -First 1
-            }
+            $pythonPath = dir HKCU:\Software\Python\*\3.6\InstallPath | ?{ Test-Path -PathType Leaf (Join-Path ($_.GetValue($null)) 'python.exe') } | %{ $_.GetValue($null) } | select -First 1
+        }
+        elseif( Test-Path -PathType Container HKLM:Software\Python\*\3.6\InstallPath )
+        {
+            $pythonPath = dir HKLM:\Software\Python\*\3.6\InstallPath | ?{ Test-Path -PathType Leaf (Join-Path ($_.GetValue($null)) 'python.exe') } | %{ $_.GetValue($null) } | select -First 1
+        }
+        elseif ( Test-Path -PathType Container HKLM:Software\Wow6432Node\Python\*\3.6\InstallPath )
+        {
+            $pythonPath = dir HKLM:\Software\Wow6432Node\Python\*\3.6\InstallPath | ?{ Test-Path -PathType Leaf (Join-Path ($_.GetValue($null)) 'python.exe') } | %{ $_.GetValue($null) } | select -First 1
         }
 
         if( !$pythonPath )
         {
-            return $null
+            throw "Python runtime not found"
         }
+
         $pythonExe = Join-Path $pythonPath 'python3.exe'
     }
 
