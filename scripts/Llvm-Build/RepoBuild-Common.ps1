@@ -16,7 +16,9 @@ function global:Find-OnPath
         $path = where.exe $exeName 2>$null | select -First 1
     }
     catch
-    {}
+    {
+    }
+
     if($path)
     {
         Write-Information "Found $exeName at: '$path'"

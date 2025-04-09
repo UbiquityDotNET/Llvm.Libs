@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="LibLLVmNuget.csproj" />
+  <Project Path="Ubiquity.NET.InteropHelpers/Ubiquity.NET.InteropHelpers.csproj" />
+  <Project Path="Ubiquity.NET.Llvm.Interop/Ubiquity.NET.Llvm.Interop.csproj" />
+</Solution>

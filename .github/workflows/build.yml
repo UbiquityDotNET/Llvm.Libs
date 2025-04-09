@@ -17,9 +17,6 @@ jobs:
            persist-credentials: false
            fetch-depth: 0
 
-      - name: Checkout submodules
-        run: git submodule update --init --recursive
-
       - name: Build Repo for Windows
         run: |
           ./scripts/Initialize-BuildEnv.ps1
@@ -29,5 +26,5 @@ jobs:
       - name: Publish Artifacts
         uses: actions/upload-artifact@v1
         with:
-            name: Nuget Packages
+            name: Library zip Packages
             path: ./BuildOutput/*.7z

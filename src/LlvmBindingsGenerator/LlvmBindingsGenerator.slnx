@@ -1,0 +1,36 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path="../../.editorconfig" />
+    <File Path="../../.gitattributes" />
+    <File Path="../../.gitignore" />
+    <File Path="../../.gitmodules" />
+    <File Path="../../Build-All.ps1" />
+    <File Path="../../Build-NativeAndOneTarget.ps1" />
+    <File Path="../../BuildVersion.xml" />
+    <File Path="../../Directory.Build.props" />
+    <File Path="../../Directory.Build.targets" />
+    <File Path="../../Directory.Packages.props" />
+    <File Path="../../global.json" />
+    <File Path="../../Llvm-Libs.props" />
+    <File Path="../../Llvm-Libs.targets" />
+    <File Path="../../NuGet.Config" />
+    <File Path="../../ReadMe.md" />
+    <File Path="../../repo-buildutils.ps1" />
+  </Folder>
+  <Project Path="../../PsModules/CommonBuild/CommonBuild.pssproj" Type="f5034706-568f-408a-b7b3-4d38c6db8a32" Id="6cafc0c6-a428-4d30-a9f9-700e829fea51">
+    <Platform Project="AnyCPU" />
+  </Project>
+  <Project Path="../../PsModules/RepoBuild/RepoBuild.pssproj" Type="f5034706-568f-408a-b7b3-4d38c6db8a32" Id="0c6a5f49-fc2a-4e62-8dd8-b31ade60ec76">
+    <Platform Project="AnyCPU" />
+  </Project>
+  <Project Path="../LibLLVM/LibLLVM.vcxproj" Id="6c77a7de-d464-430f-96a9-a64768763b5f">
+    <BuildType Project="Release" />
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="LlvmBindingsGenerator.csproj" />
+</Solution>

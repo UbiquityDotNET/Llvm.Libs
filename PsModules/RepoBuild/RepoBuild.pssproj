@@ -1,0 +1,62 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0c6a5f49-fc2a-4e62-8dd8-b31ade60ec76}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>MyApplication</RootNamespace>
+    <AssemblyName>MyApplication</AssemblyName>
+    <Name>RepoBuild</Name>
+    <DebugArguments>-SkipLlvm</DebugArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Debug-Module.ps1" />
+    <Compile Include="RepoBuild.psd1" />
+    <Compile Include="RepoBuild.psm1" />
+    <!--
+    Ideally this would use standard MSBUILD folder depth agnostic GLOB pattern '**';
+    but the 'PowerShell Tools for Visual Studio 2022' project system can't handle that
+    and complains.
+
+    Additionally to work around problems of exporting PS enums and classes they are
+    contained in a distinct subfolder of Public to allow running them all in the inporting
+    space. Use of a subfolder including glob would break that.
+
+    Also NOTE that folder delimiters are forced to use WINDOWS ONLY '\'
+    despite the fact that msbuild is generally agnostic. Again the VSIX extension can't
+    handle things properly without it. (Ditto for the `Folder` Items as well...)
+
+    NO EXPLICIT files should appear here. The IDE will add them when adding any new files.
+    This MUST be overridden before a commit to prevent accidentally leaving out files
+    that are actually in the module. This list is NOT authoritative. The PSM1 file itself
+    uses a glob pattern to find all of the script files and exports the functions contained
+    within it.
+    -->
+    <Compile Include="Public\EnumsAndClasses\*.ps1" />
+    <Compile Include="Public\*.ps1" />
+    <Compile Include="Private\*.ps1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Private\" />
+    <Folder Include="Public\" />
+    <Folder Include="Public\EnumsAndClasses\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\PowerShell Tools for Visual Studio\PowerShellTools.targets" Condition="Exists('$(MSBuildExtensionsPath)\PowerShell Tools for Visual Studio\PowerShellTools.targets')" />
+</Project>

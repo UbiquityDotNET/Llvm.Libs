@@ -1,25 +1,50 @@
+# dot source (include) the helper scipts
 . (Join-Path $PSScriptRoot RepoBuild-Common.ps1)
 . (Join-Path $PSScriptRoot CMake-Helpers.ps1)
 
-function New-LlvmCmakeConfig(
-    [string]$platform,
-    [string]$config,
-    $VsInstance,
-    [string]$baseBuild = (Join-Path (Get-Location) BuildOutput),
-    [string]$srcRoot = (Join-Path (Get-Location) 'llvm\lib')
-    )
+# get an LLVM target for the native runtime of this build
+function global:Get-NativeTarget
 {
+    $hostArch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
+    switch($hostArch)
+    {
+        X86 {'X86'}
+        X64 {'X86'}  # 64 vs 32 is a CPU/Feature option in LLVM
+        Arm {'ARM'}
+        Armv6 {'ARM'} # distinction between ARM-32 CPUs is a CPU/Feature in LLVM
+        Arm64 {'AArch64'}
+        Wasm {'WebAssembly'} # unlikely to ever occur but here for for completeness
+        LoongArch64 {'LoongArch'}
+        Ppc64le {'PowerPc'}
+        RiscV64 {'RISCV'} # 64 vs 32 is a CPU/Feature option in LLVM
+        default { throw "Unknown Native environment for host: $hostArch"}
+    }
+}
+
+function New-LlvmCmakeConfig
+{
+    param(
+        [string]$platform,
+        [string]$config,
+        $VsInstance,
+        [string]$baseBuild = (Join-Path (Get-Location) BuildOutput),
+        [string]$srcRoot = (Join-Path (Get-Location) 'llvm\lib')
+    )
+
     [CMakeConfig]$cmakeConfig = New-Object CMakeConfig -ArgumentList $platform, $config, $baseBuild, $srcRoot, $VsInstance
     $cmakeConfig.CMakeBuildVariables = @{
-        LLVM_ENABLE_RTTI = "ON"
+        LLVM_ENABLE_RTTI = "OFF"
         LLVM_BUILD_TOOLS = "OFF"
         LLVM_BUILD_UTILS = "OFF"
         LLVM_BUILD_DOCS = "OFF"
         LLVM_BUILD_RUNTIME = "OFF"
         LLVM_BUILD_RUNTIMES = "OFF"
+        LLVM_BUILD_BENCHMARKS  = "OFF"
+        LLVM_ENABLE_BINDINGS  = "OFF"
+        LLVM_BUILD_TELEMETRY = "OFF"
         LLVM_OPTIMIZED_TABLEGEN = "ON"
-        LLVM_REVERSE_ITERATION = "ON"
-        LLVM_TARGETS_TO_BUILD  = "all"
+        LLVM_REVERSE_ITERATION = "OFF"
+        LLVM_INCLUDE_BENCHMARKS = "OFF"
         LLVM_INCLUDE_DOCS = "OFF"
         LLVM_INCLUDE_EXAMPLES = "OFF"
         LLVM_INCLUDE_GO_TESTS = "OFF"
@@ -68,26 +93,13 @@ function global:LinkFile($archiveVersionName, $info)
     New-Item -ItemType HardLink -Path $linkPath -Name $info.FileName -Value $info.FullPath
 }
 
-function global:LinkPdb([Parameter(Mandatory=$true, ValueFromPipeLine)]$item, [Parameter(Mandatory=$true)]$Path)
-{
-    $targetPath = Join-Path $Path $item.Name
-    Write-Information "Linking $targetPath"
-    if(Test-Path -PathType Leaf $targetPath)
-    {
-        Write-Information "Deleting existing PDB link"
-        del -Force $targetPath
-    }
-
-    New-Item -ItemType HardLink -Path $Path -Name $item.Name -Value $item.FullName -ErrorAction Stop | Out-Null
-}
-
 function global:Create-ArchiveLayout($archiveVersionName)
 {
     # To simplify building the 7z archive with the desired structure
     # create the layout desired using hard-links, and zip the result in a single operation
     # this also allows local testing of the package without needing to publish, download and unpack the archive
     # while avoiding unnecessary file copies
-    Write-Information "Creating ZIP structure hardlinks in $(Join-Path $global:RepoInfo.BuildOutputPath $archiveVersionName)"
+    Write-Information "Creating archiveLayout structure hardlinks in $(Join-Path $global:RepoInfo.BuildOutputPath $archiveVersionName)"
     pushd $global:RepoInfo.BuildOutputPath
     if(Test-Path -PathType Container $archiveVersionName)
     {
@@ -95,10 +107,10 @@ function global:Create-ArchiveLayout($archiveVersionName)
     }
 
     New-Item -ItemType Directory $archiveVersionName | Out-Null
-
+    Write-Information 'Creating JSON version file'
     ConvertTo-Json (Get-LlvmVersion (Join-Path $global:RepoInfo.LlvmRoot '..\cmake\Modules\LLVMVersion.cmake')) | Out-File (Join-Path $archiveVersionName 'llvm-version.json')
-
-    New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Debug\Debug') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Debug\Debug\lib') | Out-Null
+    # TODO: This should use some sort of input var to indicate platform AND ISA (and so should the name of the compressed file) so it isn't hardcoded to 'x64-Release`
+    # TODO: on platforms where the distinction between a junction and hardlink don't exist, make the directory and link each file or other alternates...
     New-Item -ItemType Junction -Path (Join-path $archiveVersionName 'x64-Release\Release') -Name lib -Value (Join-Path $global:RepoInfo.BuildOutputPath 'x64-Release\RelWithDebInfo\lib') | Out-Null
 
     $commonIncPath = join-Path $global:RepoInfo.LlvmRoot include
@@ -108,15 +120,10 @@ function global:Create-ArchiveLayout($archiveVersionName)
         dir -r x64*\include -Include ('*.h', '*.gen', '*.def', '*.inc')| %{ New-PathInfo $global:RepoInfo.BuildOutputPath.FullName $_}
         dir -r $commonIncPath -Exclude ('*.txt')| ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
         dir $global:RepoInfo.RepoRoot -Filter Llvm-Libs.* | ?{$_ -is [System.IO.FileInfo]} | %{ New-PathInfo $global:RepoInfo.RepoRoot.FullName $_ }
-        #dir (join-path $global:RepoInfo.LlvmRoot 'lib\ExecutionEngine\Orc\OrcCBindingsStack.h') | %{ New-PathInfo $global:RepoInfo.LlvmRoot.FullName $_ }
     } | %{ LinkFile $archiveVersionName $_ } | Out-Null
-
-    # Link RelWithDebInfo PDBs into the 7z package so that symbols are available for the release build too.
-    $pdbLibDir = Join-Path $archiveVersionName 'x64-Release\Release\lib'
-    dir -r x64-Release\lib -Include *.pdb | LinkPdb -Path $pdbLibDir
 }
 
-function global:Compress-BuildOutput
+function global:Compress-BuildOutput($additionalTarget)
 {
     if($env:APPVEYOR)
     {
@@ -126,7 +133,12 @@ function global:Compress-BuildOutput
 
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     $oldPath = $env:Path
-    $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-msvc-$($global:RepoInfo.VsInstance.InstallationVersion.Major).$($global:RepoInfo.VsInstance.InstallationVersion.Minor)"
+    # Triple format:  <arch><sub>-<vendor>-<sys>-<abi>
+    # For now, the ONLY native support is Windows MSVC AMD64, eventually once support is worked out this can grow
+    # But for now this is enough. The build scripts themselves have a TON of Windows assumptions and aliases etc..
+    # that need fixing/updates to finallly work for true x-plat. [Baby steps...]
+    $nativeTriple = "x86_64-pc-Win32-MSVC"
+    $archiveVersionName = "llvm-libs-$($global:RepoInfo.LlvmVersion)-$nativeTriple-$($global:RepoInfo.VsInstance.InstallationVersion.Major).$($global:RepoInfo.VsInstance.InstallationVersion.Minor)-$additionalTarget"
     $archivePath = Join-Path $global:RepoInfo.BuildOutputPath "$archiveVersionName.7z"
     try
     {
@@ -138,7 +150,7 @@ function global:Compress-BuildOutput
             del -Force $archivePath
         }
 
-        pushd $archiveVersionName
+        Push-Location $archiveVersionName
         try
         {
             Write-Information "Creating 7-ZIP archive $archivePath"
@@ -146,7 +158,7 @@ function global:Compress-BuildOutput
         }
         finally
         {
-            popd
+            Pop-Location
         }
     }
     finally
@@ -159,13 +171,12 @@ function global:Compress-BuildOutput
 
 function global:Clear-BuildOutput()
 {
-    rd -Recurse -Force $global:RepoInfo.ToolsPath
-    rd -Recurse -Force $global:RepoInfo.BuildOutputPath
-    rd -Recurse -Force $global:RepoInfo.PackOutputPath
-    $global:RepoInfo = Get-RepoInfo
+    Remove-Item -Recurse -Force $global:RepoInfo.ToolsPath
+    Remove-Item -Recurse -Force $global:RepoInfo.BuildOutputPath
+    Remove-Item -Recurse -Force $global:RepoInfo.PackOutputPath
 }
 
-function global:Invoke-Build([switch]$GenerateOnly)
+function global:Invoke-Build
 {
 <#
 .SYNOPSIS
@@ -173,7 +184,21 @@ function global:Invoke-Build([switch]$GenerateOnly)
 
 .DESCRIPTION
     This script is used to build LLVM libraries
+
+.PARAMETER additionalTarget
+    Provides the name of the additional target for the final native library. The build limits the supported targets
+    to exactly the native target for this environment and one additional target. This limits the footprint and Time
+    of any given build to "hopefully" allow for automated builds of the native library. Which, would in turn enable
+    support for matrix builds of Non-Windows platforms to make this a truly x-plat library.
 #>
+
+    # NOTE: The validation set for the supported targets should be evaluated with each new release of LLVM to ensure it is up to date with the current support.
+    param (
+        [ValidateSet('AArch64', 'AMDGPU', 'ARM', 'AVR', 'BPF', 'Hexagon', 'Lanai', 'LoongArch', 'Mips', 'MSP430', 'NVPTX', 'PowerPC', 'RISCV', 'Spar', 'SystemZ', 'VE', 'WebAssembly', 'X86', 'XCore')] 
+        [string] $additionalTarget,
+        [switch]$GenerateOnly
+    )
+
     if($env:APPVEYOR)
     {
         Write-Error "Cannot build LLVM libraries in APPVEYOR build as the total time required will exceed the limits of an APPVEYOR Job"
@@ -198,10 +223,14 @@ function global:Invoke-Build([switch]$GenerateOnly)
     try
     {
         $timer = [System.Diagnostics.Stopwatch]::StartNew()
+        $additionalBuildVars = @{
+            LLVM_TARGETS_TO_BUILD  = "$(Get-NativeTarget);$additionalTarget"
+        }
+
         foreach( $cmakeConfig in $global:RepoInfo.CMakeConfigurations )
         {
             Write-Information "Generating CMAKE configuration $($cmakeConfig.Name)"
-            Invoke-CMakeGenerate $cmakeConfig
+            Invoke-CMakeGenerate $cmakeConfig $additionalBuildVars
 
             if(!$GenerateOnly)
             {
@@ -240,7 +269,7 @@ function global:Get-RepoInfo([switch]$Force)
     $buildOuputPath = Initialize-BuildPath 'BuildOutput'
     $packOutputPath = Initialize-BuildPath 'packages'
 
-    # On Windows VisualStuido is used to provide the C/C++ compiler
+    # On Windows VisualStuido is used to provide the C/C++ compiler assuming targetting Windows.
     if($IsWindows)
     {
         $vsInstance = Find-VSInstance -Force:$Force -Version '[17.0, 18.0)'
@@ -272,9 +301,7 @@ function global:Get-RepoInfo([switch]$Force)
         VsVersion = $vsInstance.InstallationVersion
         VsInstance = $vsInstance
         PythonLocationInfo = $pythonLocationInfo
-        CMakeConfigurations = @( (New-LlvmCmakeConfig x64 'Release' $vsInstance $buildOuputPath $llvmroot),
-                                 (New-LlvmCmakeConfig x64 'Debug' $vsInstance $buildOuputPath $llvmroot)
-                               )
+        CMakeConfigurations = @( (New-LlvmCmakeConfig x64 'Release' $vsInstance $buildOuputPath $llvmroot))
     }
 }
 

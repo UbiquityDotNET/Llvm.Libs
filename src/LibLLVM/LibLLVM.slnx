@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Release" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="LibLLVM.vcxproj" Id="6c77a7de-d464-430f-96a9-a64768763b5f" />
+</Solution>

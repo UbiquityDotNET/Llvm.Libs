@@ -8,64 +8,48 @@
         -->
         <LlvmPlatform Condition="'$(LlvmPlatform)'==''">$(Platform)</LlvmPlatform>
         <LlvmPlatform Condition="'$(LlvmPlatform)'=='Win32'">x86</LlvmPlatform>
-        <LlvmPlatformConfig Condition="'$(LlvmPlatformConfig)'==''">$(LlvmPlatform)-$(Configuration)</LlvmPlatformConfig>
+        <LlvmLibsConfig>Release</LlvmLibsConfig> <!-- Force everyting to consume the Release (RelWtihDebInfo) libraries only FULL Debug is just too big to be worth it-->
+        <LlvmPlatformConfig Condition="'$(LlvmPlatformConfig)'==''">$(LlvmPlatform)-$(LlvmLibsConfig)</LlvmPlatformConfig>
     </PropertyGroup>
     <PropertyGroup Label="UserMacros">
         <!-- These are not conditional as the version is bound directly to the version of LLVM built into the libraries -->
         <LlvmVersionMajor>20</LlvmVersionMajor>
         <llvmVersionMinor>1</llvmVersionMinor>
-        <LlvmVersionBuild>0</LlvmVersionBuild>
-        <LlvmVersion>$(LlvmVersionMajor).$(LlvmVersionMinor).$(LlvmVersionBuild)</LlvmVersion>
-        <LlvmLibsMetaPackageRoot>$(MSBuildThisFileDirectory)</LlvmLibsMetaPackageRoot>
-        <LlvmPlatformConfigLibRoot>$(LlvmLibsMetaPackageRoot)$(LlvmPlatformConfig)\$(Configuration)\lib\</LlvmPlatformConfigLibRoot>
-        <LlvmPlatformConfigIncRoot>$(LlvmLibsMetaPackageRoot)$(LlvmPlatformConfig)\include\</LlvmPlatformConfigIncRoot>
-        <LlvmCommonIncRoot>$(LlvmLibsMetaPackageRoot)include\</LlvmCommonIncRoot>
-        <LlvmExecutionEngineOrcRoot>$(LlvmLibsMetaPackageRoot)lib\ExecutionEngine\Orc</LlvmExecutionEngineOrcRoot>
+        <LlvmVersionPatch>1</LlvmVersionPatch>
+        <LlvmVersion>$(LlvmVersionMajor).$(LlvmVersionMinor).$(LlvmVersionPatch)</LlvmVersion>
+
+        <LlvmLibsMetaPackageRoot>$([MSBuild]::NormalizeDirectory('$(BuildRootDir)\llvm-project\llvm'))</LlvmLibsMetaPackageRoot>
+        <LlvmBasePlatformConfig>$([MSBuild]::NormalizeDirectory('$(BaseBuildOutputPath)$(LlvmPlatformConfig)'))</LlvmBasePlatformConfig>
+        <LlvmPlatformConfigLibRoot>$([MSBuild]::NormalizeDirectory('$(LlvmBasePlatformConfig)\release\lib'))</LlvmPlatformConfigLibRoot>
+        <LlvmPlatformConfigIncRoot>$([MSBuild]::NormalizeDirectory('$(LlvmBasePlatformConfig)\include'))</LlvmPlatformConfigIncRoot>
+        <LlvmCommonIncRoot>$([MSBuild]::NormalizeDirectory('$(LlvmLibsMetaPackageRoot)include'))</LlvmCommonIncRoot>
+        <!--
+        As of right now the set of targets a particular library supports is limited to a maximum of the native target
+        AND one additional cross platform target. (Native only, no x-plat, is supported)
+        -->
+        <_LibLlvmNativeOnlyTarget>false</_LibLlvmNativeOnlyTarget>
+        <_LibLlvmNativeOnlyTarget Condition="'$(LibLLVMAdditionalTarget)'=='' or '$(LibLLVMNativeTarget)'=='$(LibLLVMAdditionalTarget)'">true</_LibLlvmNativeOnlyTarget>
+
+        <LlvmTargets Condition="'$(_LibLlvmNativeOnlyTarget)'=='true'">$(LibLLVMNativeTarget)</LlvmTargets>
+        <LlvmTargets Condition="'$(_LibLlvmNativeOnlyTarget)'!='true'">$(LibLLVMNativeTarget);$(LibLLVMAdditionalTarget)</LlvmTargets>
     </PropertyGroup>
 
     <!--
     TODO: Change this to an ItemGroup with GLOB so that only libs created are included
     CHALLENGE: There's an ordering problem with that and item expressions are NOT allowed as values
-               in an ItemDefinitionGroup.
+               in an ItemDefinitionGroup. [This seems like a FALSE claim as the existing group that
+               uses this below applies item group expressions... RETHINK THIS for simplification...
+               Though with replacement in CMAKE in mind that might not be worth the effort]
     -->
     <PropertyGroup>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64AsmParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64CodeGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64Desc.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64Disassembler.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64Info.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64Utils.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMAggressiveInstCombine.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUAsmParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUCodeGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUDesc.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUDisassembler.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUInfo.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUTargetMCA.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUUtils.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMAnalysis.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMARMAsmParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMARMCodeGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMARMDesc.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMARMDisassembler.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMARMInfo.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMARMUtils.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMAsmParser.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMAsmPrinter.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAVRAsmParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAVRCodeGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAVRDesc.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAVRDisassembler.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMAVRInfo.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMBinaryFormat.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMBitReader.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMBitstreamReader.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMBitWriter.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMBPFAsmParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMBPFCodeGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMBPFDesc.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMBPFDisassembler.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMBPFInfo.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMCFGuard.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMCGData.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMCodeGen.lib</AllLlvmLibs>
@@ -99,53 +83,25 @@
         <AllLlvmLibs>$(AllLlvmLibs);LLVMFuzzerCLI.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMFuzzMutate.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMGlobalISel.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMHexagonAsmParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMHexagonCodeGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMHexagonDesc.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMHexagonDisassembler.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMHexagonInfo.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMHipStdPar.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMInstCombine.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMInstrumentation.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMInterfaceStub.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMHipStdPar.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMInterpreter.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMipo.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMIRPrinter.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMIRReader.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMJITLink.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMLanaiAsmParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMLanaiCodeGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMLanaiDesc.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMLanaiDisassembler.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMLanaiInfo.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMLibDriver.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMLineEditor.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMLinker.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMLoongArchAsmParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMLoongArchCodeGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMLoongArchDesc.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMLoongArchDisassembler.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMLoongArchInfo.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMLTO.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMMC.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMMCA.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMMCDisassembler.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMMCJIT.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMMCParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMMipsAsmParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMMipsCodeGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMMipsDesc.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMMipsDisassembler.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMMipsInfo.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMMIRParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMMSP430AsmParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMMSP430CodeGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMMSP430Desc.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMMSP430Disassembler.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMMSP430Info.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMNVPTXCodeGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMNVPTXDesc.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMNVPTXInfo.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMObjCARCOpts.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMObjCopy.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMObject.lib</AllLlvmLibs>
@@ -156,81 +112,201 @@
         <AllLlvmLibs>$(AllLlvmLibs);LLVMOrcShared.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMOrcTargetProcess.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMPasses.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMProfileData.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMRemarks.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMRuntimeDyld.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMSandboxIR.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMScalarOpts.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMSelectionDAG.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMSupport.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMSymbolize.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMTableGen.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMTableGenBasic.lib</AllLlvmLibs>
+        <!--<AllLlvmLibs>$(AllLlvmLibs);LLVMTableGenCommon.lib</AllLlvmLibs>-->
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMTarget.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMTargetParser.lib</AllLlvmLibs>
+        <!--<AllLlvmLibs>$(AllLlvmLibs);LLVMTelemetry.lib</AllLlvmLibs>-->
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMTextAPI.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMTextAPIBinaryReader.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMTransformUtils.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMVectorize.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMWindowsDriver.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMWindowsManifest.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('AArch64'))">
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64AsmParser.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64CodeGen.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64Desc.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64Disassembler.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64Info.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAArch64Utils.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('AMDGPU'))">
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUAsmParser.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUCodeGen.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUDesc.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUDisassembler.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUInfo.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUTargetMCA.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAMDGPUUtils.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('ARM'))">
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMARMAsmParser.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMARMCodeGen.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMARMDesc.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMARMDisassembler.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMARMInfo.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMARMUtils.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('AVR'))">
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAVRAsmParser.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAVRCodeGen.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAVRDesc.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAVRDisassembler.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMAVRInfo.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('BPF'))">
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMBPFAsmParser.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMBPFCodeGen.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMBPFDesc.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMBPFDisassembler.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMBPFInfo.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('Hexagon'))">
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMHexagonAsmParser.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMHexagonCodeGen.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMHexagonDesc.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMHexagonDisassembler.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMHexagonInfo.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('Lanai'))">
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMLanaiAsmParser.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMLanaiCodeGen.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMLanaiDesc.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMLanaiDisassembler.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMLanaiInfo.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('LoongArch'))">
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMLoongArchAsmParser.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMLoongArchCodeGen.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMLoongArchDesc.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMLoongArchDisassembler.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMLoongArchInfo.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('Mips'))">
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMMipsAsmParser.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMMipsCodeGen.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMMipsDesc.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMMipsDisassembler.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMMipsInfo.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('MSP430'))">
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMMSP430AsmParser.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMMSP430CodeGen.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMMSP430Desc.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMMSP430Disassembler.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMMSP430Info.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('NVPTX'))">
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMNVPTXCodeGen.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMNVPTXDesc.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMNVPTXInfo.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('PowerPC'))">
         <AllLlvmLibs>$(AllLlvmLibs);LLVMPowerPCAsmParser.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMPowerPCCodeGen.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMPowerPCDesc.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMPowerPCDisassembler.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMPowerPCInfo.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMProfileData.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMRemarks.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('RISCV'))">
         <AllLlvmLibs>$(AllLlvmLibs);LLVMRISCVAsmParser.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMRISCVCodeGen.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMRISCVDesc.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMRISCVDisassembler.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMRISCVInfo.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMRISCVTargetMCA.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMRuntimeDyld.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMSandboxIR.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMScalarOpts.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMSelectionDAG.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('Sparc'))">
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSparcAsmParser.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSparcCodeGen.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSparcDesc.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSparcDisassembler.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSparcInfo.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('SPIRV'))">
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSPIRVAnalysis.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSPIRVCodeGen.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSPIRVDesc.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSPIRVInfo.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMSupport.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMSymbolize.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('SystemZ'))">
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSystemZAsmParser.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSystemZCodeGen.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSystemZDesc.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSystemZDisassembler.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSystemZInfo.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMTableGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMTableGenBasic.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMTableGenCommon.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMTarget.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMTargetParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMTelemetry.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMTextAPI.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMTextAPIBinaryReader.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMTransformUtils.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMVEAsmParser.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMVECodeGen.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMVectorize.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('VE'))">
         <AllLlvmLibs>$(AllLlvmLibs);LLVMVEDesc.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMVEDisassembler.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMVEInfo.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMVEAsmParser.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMVECodeGen.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('WebAssembly'))">
         <AllLlvmLibs>$(AllLlvmLibs);LLVMWebAssemblyAsmParser.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMWebAssemblyCodeGen.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMWebAssemblyDesc.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMWebAssemblyDisassembler.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMWebAssemblyInfo.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMWebAssemblyUtils.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMWindowsDriver.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMWindowsManifest.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('X86'))">
         <AllLlvmLibs>$(AllLlvmLibs);LLVMX86AsmParser.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMX86CodeGen.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMX86Desc.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMX86Disassembler.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMX86Info.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMX86TargetMCA.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('X86'))">
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMX86AsmParser.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMX86CodeGen.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMX86Desc.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMX86Disassembler.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMX86Info.lib</AllLlvmLibs>
+        <AllLlvmLibs>$(AllLlvmLibs);LLVMX86TargetMCA.lib</AllLlvmLibs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(LlvmTargets.Contains('XCore'))">
         <AllLlvmLibs>$(AllLlvmLibs);LLVMXCoreCodeGen.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMXCoreDesc.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMXCoreDisassembler.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMXCoreInfo.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMXRay.lib</AllLlvmLibs>
     </PropertyGroup>
-    <ItemDefinitionGroup>
-        <ClCompile>
-            <AdditionalOptions>%(AdditionalOptions) /Zc:sizedDealloc-</AdditionalOptions>
-            <DisableSpecificWarnings>4141;4146;4267;4244;4800;4291;4996;4624;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-            <AdditionalIncludeDirectories>$(LlvmCommonIncRoot);$(LlvmPlatformConfigIncRoot);$(LlvmExecutionEngineOrcRoot)%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-        </ClCompile>
-    </ItemDefinitionGroup>
+
     <ItemDefinitionGroup>
         <!--
         The total number of libs and full path from the MSBuild item will generate insanely long command
@@ -242,5 +318,12 @@
             <AdditionalLibraryDirectories>$(LlvmPlatformConfigLibRoot);%(Link.AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
             <AdditionalDependencies>$(AllLlvmLibs);ntdll.lib;%(Link.AdditionalDependencies)</AdditionalDependencies>
         </Link>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <AdditionalOptions>%(AdditionalOptions) /Zc:sizedDealloc-</AdditionalOptions>
+            <DisableSpecificWarnings>4141;4146;4267;4244;4800;4291;4996;4624;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+            <AdditionalIncludeDirectories>$(LlvmCommonIncRoot);$(LlvmPlatformConfigIncRoot);$(LlvmExecutionEngineOrcRoot)%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+        </ClCompile>
     </ItemDefinitionGroup>
 </Project>

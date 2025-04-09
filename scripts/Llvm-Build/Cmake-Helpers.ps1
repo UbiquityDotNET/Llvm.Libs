@@ -21,8 +21,6 @@
         $this.Platform = $Plat.ToLowerInvariant()
         switch($VsInstance.InstallationVersion.Major)
         {
-            #15 { $this.Generator = "Visual Studio 15 2017" }
-            #16 { $this.Generator= "Visual Studio 16 2019" }
             17 { $this.Generator= "Visual Studio 17 2022" }
             default { throw "Unkonwn VS Version"}
         }
@@ -131,7 +129,7 @@ function global:Assert-CmakeInfo([Version]$minVersion)
     }
 }
 
-function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
+function global:Invoke-CMakeGenerate( [CMakeConfig]$config, [hashtable] $additionalBuildVars )
 {
     $activity = "Generating solution for $($config.Name)"
     Write-Information $activity
@@ -142,7 +140,7 @@ function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
 
     # Construct full set of args from fixed options and configuration variables
     $cmakeArgs = New-Object System.Collections.ArrayList
-    $cmakeArgs.Add("-G`"$($config.Generator)`"" ) | Out-Null
+    $cmakeArgs.Add("-G $($config.Generator)" ) | Out-Null
     foreach( $param in $config.CMakeCommandArgs )
     {
         $cmakeArgs.Add( $param ) | Out-Null
@@ -150,13 +148,28 @@ function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
 
     foreach( $var in $config.CMakeBuildVariables.GetEnumerator() )
     {
+        Write-Information "CMAKE-VAR: $($var.Key)=$($var.Value)"
         $cmakeArgs.Add( "-D$($var.Key)=$($var.Value)" ) | Out-Null
+    }
+
+    # add any build instance specific vars provided
+    if($additionalBuildVars)
+    {
+        foreach( $var in $additionalBuildVars.GetEnumerator())
+        {
+            if ($var.Key -eq $null -or $var.Value -eq $null)
+            {
+                throw 'Invalid build var provided'
+            }
+
+            Write-Information "CMAKE-VAR: $($var.Key)=$($var.Value)"
+            $cmakeArgs.Add( "-D$($var.Key)=$($var.Value)" ) | Out-Null
+        }
     }
 
     $cmakeArgs.Add( $config.SrcRoot ) | Out-Null
 
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
-    $cmakePath = Find-OnPath 'cmake.exe'
     pushd $config.BuildRoot
     try
     {
@@ -164,9 +177,8 @@ function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
         # using start-process allows forcing the error handling to ignore (Continue) such cases consistently
         # between PS variants and versions.
         Write-Information "starting process: cmake $cmakeArgs"
-        Start-Process -ErrorAction Continue -NoNewWindow -Wait -FilePath $cmakePath -ArgumentList $cmakeArgs
-
-        if($LASTEXITCODE -ne 0 )
+        cmake $cmakeArgs
+        if($?)
         {
             Write-Information "Cmake generation exited with code: $LASTEXITCODE"
         }
@@ -179,7 +191,7 @@ function global:Invoke-CMakeGenerate( [CMakeConfig]$config )
     Write-Information "Generation Time: $($timer.Elapsed.ToString())"
 }
 
-function global:Invoke-CmakeBuild([CMakeConfig]$config)
+function global:Invoke-CmakeBuild([CMakeConfig]$config )
 {
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
     Write-Information "CMake Building $($config.Name)"
@@ -188,9 +200,8 @@ function global:Invoke-CmakeBuild([CMakeConfig]$config)
     $cmakeArgs = @('--build', "$($config.BuildRoot)", '--config', "$($config.ConfigurationType)", '--', "$($config.BuildCommandArgs)")
 
     Write-Information "cmake $([string]::Join(' ', $cmakeArgs))"
-    Start-Process -ErrorAction Continue -NoNewWindow -Wait -FilePath $cmakePath -ArgumentList $cmakeArgs
-
-    if($LASTEXITCODE -ne 0 )
+    cmake $cmakeArgs
+    if($?)
     {
         Write-Information "Cmake build exited with code: $LASTEXITCODE"
     }
