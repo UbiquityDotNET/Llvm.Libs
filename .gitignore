@@ -232,3 +232,4 @@ FakesAssemblies/
 CMakeSettings.json
 **/GeneratedCode
 /llvm-project
+/src/LibLLVM/EXPORTS.g.DEF

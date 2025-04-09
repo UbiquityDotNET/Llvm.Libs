@@ -21,6 +21,7 @@
     <File Path="../../NuGet.Config" />
     <File Path="../../ReadMe.md" />
     <File Path="../../repo-buildutils.ps1" />
+    <File Path="../LibLLVM/LlvmApplication.props" />
   </Folder>
   <Project Path="../../PsModules/CommonBuild/CommonBuild.pssproj" Type="f5034706-568f-408a-b7b3-4d38c6db8a32" Id="6cafc0c6-a428-4d30-a9f9-700e829fea51">
     <Platform Project="AnyCPU" />

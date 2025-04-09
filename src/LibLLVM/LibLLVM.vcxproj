@@ -25,6 +25,12 @@
     <GenerateVersionInfoHeader>true</GenerateVersionInfoHeader>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <!--
+    For ease of local development in IDE, pick the most common native target.
+    In automated/command line builds this is provided by scripting/build matrix
+    -->
+    <LibLLVMNativeTarget Condition="'$(LibLLVMNativeTarget)'==''">X86</LibLLVMNativeTarget>
+    <LibLLVMAdditionalTarget Condition="'$(LibLLVMAdditionalTarget)'==''">ARM</LibLLVMAdditionalTarget>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">

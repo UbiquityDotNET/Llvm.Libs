@@ -15,11 +15,5 @@
     <ProductVersionRevision Condition="'$(ProductVersionRevision)'=='' AND '$(Configuration)'=='Debug'">1</ProductVersionRevision>
     <FileVersionMajor Condition="'$(FileVersionMajor)'==''">$(ProductVersionMajor)</FileVersionMajor>
     <FileVersionMinor Condition="'$(FileVersionMinor)'==''">$(ProductVersionMinor)</FileVersionMinor>
-
-    <!--
-    For ease of local development in IDE, pick the most common native target.
-    In automated builds this is provided by scripting/build matrix
-    -->
-    <LibLLVMNativeTarget Condition="'$(LibLLVMNativeTarget)'==''">X86</LibLLVMNativeTarget>
   </PropertyGroup>
 </Project>

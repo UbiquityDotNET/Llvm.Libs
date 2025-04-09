@@ -12,6 +12,7 @@
         <Error Condition="$([System.String]::IsNullOrWhiteSpace($(LlvmTargets)))" Text="Missing LlvmTargets property - NO targets included; At lease one target is required"/>
         <Message Importance="High" Text="LlvmTargets: $(LlvmTargets)"/>
         <Error Condition="$(LlvmTargets.Split(';').Length)&gt;2" Text="Incorrect number of targets [$(LlvmTargets.Split(';').Length)]; Maximum is 2"/>
+        <Error Condition="'$(LlvmTargets)'==''" Text="No Targets specified - broken build infrastructure!"/>
         <Error Condition="'$(_LibLlvmNativeOnlyTarget)'!='true' AND '$(LibLLVMAdditionalTarget)'==''" Text="LibLLVMAdditionalTarget is blank when it MUST contain a target."/>
     </Target>
 </Project>
