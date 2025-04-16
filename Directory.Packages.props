@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <!--
-    Global references are included in ALL projects in this repository
+    Global references are included in ALL projects in this repository EXCEPT for VCXPROJ FILES.
+    VCXPROJ uses the old style Packages.Config... (and that ain't changin' anytime soon apparently...
+    [read - never gonna happen])
     -->
     <ItemGroup>
         <GlobalPackageReference Include="CSemVer.Build.Tasks" Version="2.0.5" />
-        <GlobalPackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" Condition="'$(NoCommonAnalyzers)' !=' true'" />
-        <GlobalPackageReference Include="IDisposableAnalyzers" Version="4.0.8" Condition="'$(NoCommonAnalyzers)' !=' true'" />
-        <GlobalPackageReference Include="MustUseRetVal" Version="0.0.2"/>
+        <GlobalPackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" Condition="'$(NoCommonAnalyzers)' != 'true'" />
+        <GlobalPackageReference Include="IDisposableAnalyzers" Version="4.0.8" Condition="'$(NoCommonAnalyzers)' != 'true'" />
+        <GlobalPackageReference Include="MustUseRetVal" Condition="'$(NoCommonAnalyzers)' != 'true'" Version="0.0.2"/>
         <!--
         While some aspects of this analyzer are helpful, it hasn't been without issues. Worse, the last non-preview release
         was Apr of 2019, That's a LONG time ago. Even the most recent preview (beta) was back in Dec. of 2023. So not much

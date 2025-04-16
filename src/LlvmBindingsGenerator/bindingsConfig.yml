@@ -6,7 +6,7 @@ IgnoredHeaders:
 # The HandleMap Lists the types of handles and their disposal semantics
 # If Alias is True for a global handle then an alias handle is also generated
 # ContextHandle's are owned by the containing context and therefore do not have
-# any sort of Disposer function.
+# any sort of Dispose function.
 #
 #HandleMap:
 #    - !GlobalHandle { HandleName: <Name of Handle>, Disposer: <Dispose Method for handle>[, Alias: True] }

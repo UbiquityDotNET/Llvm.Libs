@@ -1,3 +1,4 @@
+using module "PSModules/CommonBuild/CommonBuild.psd1"
 using module "PSModules/RepoBuild/RepoBuild.psd1"
 
 <#
@@ -88,7 +89,7 @@ try
 
         $nativeTarget = Get-NativeTarget
         Invoke-TimedBlock "CMAKE generate/Build LLVM libs for '$currentRid'" {
-            $cmakeConfig = New-LlvmCMakeConfig "x64-Release" $AdditionalTarget 'Release' $buildInfo
+            $cmakeConfig = New-LlvmCMakeConfig $currentRid $AdditionalTarget 'Release' $buildInfo
             Generate-CMakeConfig $cmakeConfig
             Build-CMakeConfig $cmakeConfig
         }
@@ -113,10 +114,9 @@ try
     # Build per target library
     # For now the DLL ONLY builds for Windows using MSBUILD (VCXPROJ);
     # TODO: Convert C++ code to CMAKE, this means leveraging CSmeVer build task as a standalone tool so
-    # that the version Information s available to the scripts to provide to the build. (See docs generation
+    # that the version Information is available to the scripts to provide to the build. (See docs generation
     # for the Ubiquity.NET.LLvm consuming project for an example of doing that so that the build versioning
-    # is available to scripting) For now leave it on the legacy direct calls to MSBUILD as dotnet msbuild
-    # can't find any of the C++ support - Seems it's using a different set of msbuild props/targets files...
+    # is available to scripting) For now leave it on the legacy direct calls to MSBUILD...
     if ($IsWindows)
     {
         # now build the native DLL that consumes the generated output for the bindings
@@ -132,14 +132,19 @@ try
         # Force a release build no matter what the "configuration" parameter is.
         $libLLvmBuildProps = @{ Configuration = 'Release'
                                 LlvmVersion = Get-LlvmVersionString $buildInfo
-                                LlvmTargets = "$(Get-NativeTarget)%3B$AdditionalTarget"
+                                LibLLVMNativeTarget = (Get-NativeTarget)
+                                LibLLVMAdditionalTarget = $AdditionalTarget
+                                RuntimeIdentifier = $currentRid
                               }
         $libLlvmBuildPropList = ConvertTo-PropertyList $libLLvmBuildProps
 
         Write-Information "Building LibLLVM"
-        $libLLVMBinLogPath = Join-Path $buildInfo['BinLogsPath'] "LibLLVM-Build-X86-$AdditionalTarget.binlog"
+        $libLLVMBinLogPath = Join-Path $buildInfo['BinLogsPath'] "LibLLVM-Build-$currentRid-$AdditionalTarget.binlog"
         Invoke-external MSBuild '-t:Build' "-p:$libLlvmBuildPropList" "-bl:$libLLVMBinLogPath" '-v:m' $libLLVMVcxProj
     }
+
+    # Build NuGetPackage for the target library
+    Invoke-external dotnet pack (Join-Path $buildInfo['SrcRootPath'] 'LibLLVmNuget' 'LibLLVmNuget.csproj') "-p:$libLlvmBuildPropList"
 }
 catch
 {

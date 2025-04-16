@@ -4,63 +4,47 @@
 #include <llvm-c/Target.h>
 #include <llvm/Config/llvm-config.h>
 
-#include "libllvm-c/TargetRegistration.h"
+#include "libllvm-c/TargetRegistrationBindings.h"
 
 using namespace llvm;
 using namespace std::string_view_literals;
 
 // THESE targets are apparently "experimental";
-// They do NOT appear in targets.def and therefore do NOT get any LLVM-C declarations
-// in Target.h; If desired, declarations (forward refs really) may be added here
-// but any consumption of them in calling code should get a clear "experimental"
-// remark.
+// They do NOT appear in targets.def, AsmPrinters.def, AsmParsers.def, or Disassemblers.def.
+// Therefore they do NOT get any LLVM-C declarations in Target.h; If desired, declarations
+// (forward refs really) may be added here but any consumption of them in calling code should
+// get a clear "experimental" remark.
 //
-// EXPERIMENTAL: LLVM_HAS_ARC_TARGET
-// EXPERIMENTAL: LLVM_HAS_CSKY_TARGET
-// EXPERIMENTAL: LLVM_HAS_DIRECTX_TARGET
-// EXPERIMENTAL: LLVM_HAS_XTENSA_TARGET
+// EXPERIMENTAL: ARC, CSKY, DirectX, M68k, XTensa
 
-#define MK_TARGET_(t) CodeGenTarget_##t
-#define MK_TARGET(t) MK_TARGET_(t)
-
-// If not defined or empty preprocessor considers it 0; Replace with LLVM native arch
-#if LIBLLVM_NATIVE_TARGET == 0
-#define LIBLLVM_NATIVE_TARGET LLVM_NATIVE_ARCH
-#endif
-
-// If not defined or empty preprocessor considers it 0; Replace with native target
-#if LIBLLVM_ADDITIONAL_TARGET == 0
-#define LIBLLVM_ADDITIONAL_TARGET LIBLLVM_NATIVE_TARGET
-#endif
+#define STR_(t) #t
+#define STR(t) STR_(t)
 
 namespace
 {
-    // maps a "stringized" form of the target name to the enum used here
-    // Since the enums are used in code via a C ABI ALL enum values are
-    // in the global namespace. A pain, but manageable. The values are also
-    // used in the build/project system to indicate which additional targets
-    // to build for/support. It's not helpful to use the full C ABI names
-    // for that as they are named in such a way to provide some semblance of
-    // "scoping". Thus, this constexpr function is used to map the preprocessor
-    // values to an appropriate C ABI enum value.
-    constexpr CodeGenTarget make_target(std::string_view s)
+    // Converts a string into a target; This has some flexibility
+    // on casing and spellings to allow for simpler build infrastructure
+    // The names used in the preprocessor symbols don't need to be
+    // as exact as the symbolic names. This will translate them at
+    // compile time to a constexpr value member of LibLLVMCodeGenTarget.
+    constexpr LibLLVMCodeGenTarget mk_target(std::string_view s)
     {
         if (s == "Native"sv)
         {
             return CodeGenTarget_Native;
         }
 
-        if (s == "AArch64"sv)
+        if (s == "AArch64"sv || s == "ARM64"sv)
         {
             return CodeGenTarget_AArch64;
         }
 
-        if (s == "AMDGPU"sv)
+        if (s == "AMDGPU"sv || s == "AmdGPU"sv || s == "AmdGpu"sv)
         {
             return CodeGenTarget_AMDGPU;
         }
 
-        if (s == "ARM"sv)
+        if (s == "ARM"sv || s == "ARM32"sv || s == "Arm"sv || s == "Arm32"sv)
         {
             return CodeGenTarget_ARM;
         }
@@ -75,12 +59,12 @@ namespace
             return CodeGenTarget_BPF;
         }
 
-        if (s == "Hexagon"sv)
+        if (s == "Hexagon"sv || s == "HEXAGON"sv)
         {
             return CodeGenTarget_Hexagon;
         }
 
-        if (s == "Lanai"sv)
+        if (s == "Lanai"sv || s == "LANAI"sv)
         {
             return CodeGenTarget_Lanai;
         }
@@ -90,84 +74,162 @@ namespace
             return CodeGenTarget_LoongArch;
         }
 
-        if (s == "MIPS"sv)
+        if (s == "MIPS"sv || s == "Mips"sv)
         {
             return CodeGenTarget_MIPS;
         }
 
-        if (s == "MSP430"sv)
+        if (s == "MSP430"sv || s == "Msp430"sv)
         {
             return CodeGenTarget_MSP430;
         }
 
-        if (s == "NvidiaPTX"sv)
+        if (s == "NVPTX"sv || s == "NvidiaPTX"sv)
         {
-            return CodeGenTarget_NvidiaPTX;
+            return CodeGenTarget_NVPTX;
         }
 
-        if (s == "PowerPC"sv)
+        if (s == "PowerPC"sv || s == "POWERPC")
         {
             return CodeGenTarget_PowerPC;
         }
 
-        if (s == "RISCV"sv)
+        if (s == "RISCV"sv || s == "RiscV"sv)
         {
             return CodeGenTarget_RISCV;
         }
 
-        if (s == "Sparc"sv)
+        if (s == "Sparc"sv || s == "SPARC"sv)
         {
             return CodeGenTarget_Sparc;
         }
 
-        if (s == "SpirV"sv)
+        if (s == "SpirV"sv || s == "SPIRV"sv)
         {
-            return CodeGenTarget_SpirV;
+            return CodeGenTarget_SPIRV;
         }
 
-        if (s == "SystemZ"sv)
+        if (s == "SystemZ"sv || s == "SYSTEMZ"sv)
         {
             return CodeGenTarget_SystemZ;
         }
 
-        if (s == "VE"sv)
+        if (s == "VE"sv )
         {
             return CodeGenTarget_VE;
         }
 
-        if (s == "WebAssembly"sv)
+        if (s == "WebAssembly"sv || s == "WEBASSEMBLY"sv || s == "WASM")
         {
             return CodeGenTarget_WebAssembly;
         }
 
-        if (s == "X86"sv)
+        if (s == "X86"sv || s == "x86"sv)
         {
             return CodeGenTarget_X86;
         }
 
-        if (s == "XCore"sv)
+        if (s == "XCore"sv || s == "XCORE"sv)
         {
             return CodeGenTarget_XCore;
         }
 
-        if (s == "All"sv)
+        if (s == "All"sv || s == "ALL"sv)
         {
             return CodeGenTarget_All;
         }
 
-        // safety check - should never hit this but an exception will break constexpr evaluation
-        // so it detects a problem at compile time. Result is that an expression with an invalid
-        // value is not interpreted and the result doesn't have a value. Exact message depends on
-        // the compiler but is ALWAYS a compile time error.
-        throw std::exception("Unknown target name");
+        return CodeGenTarget_None;
     }
 
-    constexpr CodeGenTarget NativeTarget = MK_TARGET(LIBLLVM_NATIVE_TARGET);
-    constexpr CodeGenTarget AdditionalTarget = MK_TARGET(LIBLLVM_ADDITIONAL_TARGET);
+#if INCLUDE_COMPILE_TIME_UT
+    namespace compile_time_UT
+    {
+        static_assert(mk_target("None"sv) == CodeGenTarget_None);
+        static_assert(mk_target("Native"sv) == CodeGenTarget_Native);
+        static_assert(mk_target("AArch64"sv) == CodeGenTarget_AArch64);
+        static_assert(mk_target("AMDGPU"sv) == CodeGenTarget_AMDGPU);
+        static_assert(mk_target("ARM"sv) == CodeGenTarget_ARM);
+        static_assert(mk_target("AVR"sv) == CodeGenTarget_AVR);
+        static_assert(mk_target("BPF"sv) == CodeGenTarget_BPF);
+        static_assert(mk_target("Hexagon"sv) == CodeGenTarget_Hexagon);
+        static_assert(mk_target("Lanai"sv) == CodeGenTarget_Lanai);
+        static_assert(mk_target("LoongArch"sv) == CodeGenTarget_LoongArch);
+        static_assert(mk_target("MIPS"sv) == CodeGenTarget_MIPS);
+        static_assert(mk_target("MSP430"sv) == CodeGenTarget_MSP430);
+        static_assert(mk_target("NVPTX"sv) == CodeGenTarget_NVPTX);
+        static_assert(mk_target("PowerPC"sv) == CodeGenTarget_PowerPC);
+        static_assert(mk_target("RISCV"sv) == CodeGenTarget_RISCV);
+        static_assert(mk_target("Sparc"sv) == CodeGenTarget_Sparc);
+        static_assert(mk_target("SpirV"sv) == CodeGenTarget_SPIRV);
+        static_assert(mk_target("SystemZ"sv) == CodeGenTarget_SystemZ);
+        static_assert(mk_target("VE"sv) == CodeGenTarget_VE);
+        static_assert(mk_target("WebAssembly"sv) == CodeGenTarget_WebAssembly);
+        static_assert(mk_target("X86"sv) == CodeGenTarget_X86);
+        static_assert(mk_target("XCore"sv) == CodeGenTarget_XCore);
+        static_assert(mk_target("All"sv) == CodeGenTarget_All);
+
+        // validate alternate casing/spellings supported (Where available)
+        static_assert(mk_target("ARM64"sv) == CodeGenTarget_AArch64);
+        static_assert(mk_target("AmdGPU"sv) == CodeGenTarget_AMDGPU);
+        static_assert(mk_target("AmdGpu"sv) == CodeGenTarget_AMDGPU);
+        static_assert(mk_target("ARM32"sv) == CodeGenTarget_ARM);
+        static_assert(mk_target("Arm"sv) == CodeGenTarget_ARM);
+        static_assert(mk_target("Arm32"sv) == CodeGenTarget_ARM);
+        static_assert(mk_target("HEXAGON"sv) == CodeGenTarget_Hexagon);
+        static_assert(mk_target("LANAI"sv) == CodeGenTarget_Lanai);
+        static_assert(mk_target("Mips"sv) == CodeGenTarget_MIPS);
+        static_assert(mk_target("Msp430"sv) == CodeGenTarget_MSP430);
+        static_assert(mk_target("NvidiaPTX"sv) == CodeGenTarget_NVPTX);
+        static_assert(mk_target("POWERPC"sv) == CodeGenTarget_PowerPC);
+        static_assert(mk_target("RiscV"sv) == CodeGenTarget_RISCV);
+        static_assert(mk_target("SPARC"sv) == CodeGenTarget_Sparc);
+        static_assert(mk_target("SPIRV"sv) == CodeGenTarget_SPIRV);
+        static_assert(mk_target("SYSTEMZ"sv) == CodeGenTarget_SystemZ);
+        static_assert(mk_target("WEBASSEMBLY"sv) == CodeGenTarget_WebAssembly);
+        static_assert(mk_target("WASM"sv) == CodeGenTarget_WebAssembly);
+        static_assert(mk_target("x86"sv) == CodeGenTarget_X86);
+        static_assert(mk_target("XCORE"sv) == CodeGenTarget_XCore);
+        static_assert(mk_target("ALL"sv) == CodeGenTarget_All);
+
+        // validate that invalid input doesn't result in a build break for mk_target()
+        // but produces an invalid target.
+        static_assert(mk_target("NonExistent"sv) == CodeGenTarget_None);
+    }
+#endif
+
+    constexpr LibLLVMCodeGenTarget NativeTarget = mk_target(STR(LIBLLVM_NATIVE_TARGET));
+    constexpr LibLLVMCodeGenTarget AdditionalTarget = mk_target(STR(LIBLLVM_ADDITIONAL_TARGET));
+
+    static_assert(NativeTarget != CodeGenTarget_None, "LIBLLVM_NATIVE_TARGET did not resolve to a valid supported target");
+    static_assert(AdditionalTarget != CodeGenTarget_None, "LIBLLVM_ADDITIONAL_TARGET did not resolve to a valid supported target");
+
     constexpr bool NativeOnly = NativeTarget == AdditionalTarget;
     constexpr int NumTargets = NativeOnly ? 1 : 2;
 
-    constexpr bool is_enum_defined(CodeGenTarget target)
+    constexpr bool is_supported_target(LibLLVMCodeGenTarget target)
+    {
+        // Native and all are always "supported" [They are aliases for whatever is actually supported].
+        if (target == CodeGenTarget_Native || target == CodeGenTarget_All)
+        {
+            return true;
+        }
+
+        // Test to see if the target is supported by this compilation
+        // use of `constexpr if` to avoid compiler specific WARNING about redundant check
+        // when NativeTarget == AdditionalTarget
+        if constexpr (NativeOnly)
+        {
+            return target == NativeTarget;
+        }
+        else
+        {
+            return target == NativeTarget
+                || target == AdditionalTarget;
+        }
+    }
+
+    constexpr bool is_enum_defined(LibLLVMCodeGenTarget target)
     {
         switch (target)
         {
@@ -182,30 +244,31 @@ namespace
         case CodeGenTarget_LoongArch:
         case CodeGenTarget_MIPS:
         case CodeGenTarget_MSP430:
-        case CodeGenTarget_NvidiaPTX:
+        case CodeGenTarget_NVPTX:
         case CodeGenTarget_PowerPC:
         case CodeGenTarget_RISCV:
         case CodeGenTarget_Sparc:
-        case CodeGenTarget_SpirV:
+        case CodeGenTarget_SPIRV:
         case CodeGenTarget_SystemZ:
         case CodeGenTarget_VE:
         case CodeGenTarget_WebAssembly:
         case CodeGenTarget_X86:
         case CodeGenTarget_XCore:
+        case CodeGenTarget_All:
             return true;
 
-        case CodeGenTarget_All: // This is just an OR of all of the values as flags and NOT considered a defined value
+        case CodeGenTarget_None: // Not a valid value as an input, so considered undefined if received.
         default:
             return false;
         }
     }
 
-    constexpr bool has_flag(TargetRegistrationKind value, TargetRegistrationKind flag)
+    constexpr bool has_flag(LibLLVMTargetRegistrationKind value, LibLLVMTargetRegistrationKind flag)
     {
         return 0 != (static_cast<std::int32_t>(value) & static_cast<std::int32_t>(flag));
     }
 
-    void RegisterTargetNative(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetNative(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
         if (has_flag(registrations, TargetRegistration_Target))
         {
@@ -241,7 +304,7 @@ namespace
 
     }
 
-    void RegisterTargetAArch64(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetAArch64(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_AARCH64_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -276,7 +339,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetAMDGPU(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetAMDGPU(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_AMDGPU_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -311,7 +374,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetARM(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetARM(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_ARM_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -346,7 +409,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetAVR(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetAVR(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_AVR_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -381,7 +444,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetBPF(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetBPF(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_BPF_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -416,7 +479,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetHexagon(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetHexagon(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_HEXAGON_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -451,7 +514,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetLanai(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetLanai(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_LANAI_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -486,7 +549,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetLoongArch(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetLoongArch(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_LOONGARCH_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -521,7 +584,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetMIPS(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetMIPS(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_MIPS_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -556,7 +619,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetMSP430(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetMSP430(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_MSP430_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -591,7 +654,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetNvidiaPTX(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetNvidiaPTX(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_NVPTX_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -628,7 +691,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetPowerPC(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetPowerPC(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_POWERPC_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -663,7 +726,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetRISCV(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetRISCV(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_RISCV_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -698,7 +761,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetSparc(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetSparc(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_SPARC_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -733,7 +796,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetSpirV(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetSPIRV(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_SPIRV_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -770,7 +833,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetSystemZ(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetSystemZ(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_SYSTEMZ_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -805,7 +868,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetVE(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetVE(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_VE_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -840,7 +903,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetWebAssembly(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetWebAssembly(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_WEBASSEMBLY_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -875,7 +938,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetX86(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetX86(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_X86_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -910,7 +973,7 @@ namespace
 #endif
     }
 
-    void RegisterTargetXCore(TargetRegistrationKind registrations = TargetRegistration_All)
+    void RegisterTargetXCore(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_XCORE_TARGET
         if (has_flag(registrations, TargetRegistration_Target))
@@ -946,30 +1009,48 @@ namespace
         */
 #endif
     }
-}
 
-extern "C"
-{
-    LLVMErrorRef LibLLVMRegisterTarget(CodeGenTarget target, TargetRegistrationKind registrations)
+    LLVMErrorRef validate_supported_target(LibLLVMCodeGenTarget target)
     {
-        if(!is_enum_defined(target))
+        // If the target is not a known one then report that immediately
+        if (!is_enum_defined(target))
         {
             return LLVMCreateStringError("Undefined target");
         }
 
-        // TODO: This is compiler dependant
-        // Not always redundant (Compile time dependency) redundancy if ONLY one target
-        //#pragma warning(suppress:6287) // Redundant code: the left and right subexpressions are identical
-        if(target != NativeTarget && target != AdditionalTarget)
+        // test for a target supported by this build
+        if (!is_supported_target(target))
         {
             return LLVMCreateStringError("Unsupported target for this build");
         }
 
-        // NOTE: All but 2 of these will result in a NOP and won't actually be used
+        // All good - NOTE: Success for LLVMErrorRef is nullptr
+        return nullptr;
+    }
+
+    bool Failed(LLVMErrorRef err)
+    {
+        // Success for LLVMErrorRef is nullptr
+        return err != nullptr;
+    }
+}
+
+extern "C"
+{
+    LLVMErrorRef LibLLVMRegisterTarget(LibLLVMCodeGenTarget target, LibLLVMTargetRegistrationKind registrations)
+    {
+        LLVMErrorRef validationResult = validate_supported_target(target);
+        if (Failed(validationResult))
+        {
+            return validationResult;
+        }
+
+        // NOTE: All but 2 of these will result in a NOP and won't actually be used.
         //       Since the target is passed by caller it isn't a compile time constant.
-        //       It is checked above for a supported value so this saves on LOTs of
-        //       preprocessor conditionals. A good optimizer can see that most of these
-        //       are NOP and simplify this to ONLY the supported targets.
+        //       It is checked above for a supported value so this will never call into
+        //       the NOP stubs. This saves on LOTs of preprocessor conditionals. A good
+        //       optimizer can see that most of these are NOP and simplify this to ONLY
+        //       the supported targets.
         switch (target)
         {
         case CodeGenTarget_Native:
@@ -1016,7 +1097,7 @@ extern "C"
             RegisterTargetMSP430(registrations);
             return nullptr;
 
-        case CodeGenTarget_NvidiaPTX:
+        case CodeGenTarget_NVPTX:
             RegisterTargetNvidiaPTX(registrations);
             return nullptr;
 
@@ -1032,8 +1113,8 @@ extern "C"
             RegisterTargetSparc(registrations);
             return nullptr;
 
-        case CodeGenTarget_SpirV:
-            RegisterTargetSpirV(registrations);
+        case CodeGenTarget_SPIRV:
+            RegisterTargetSPIRV(registrations);
             return nullptr;
 
         case CodeGenTarget_SystemZ:
@@ -1060,8 +1141,7 @@ extern "C"
             RegisterTargetNative(registrations);
             if constexpr (!NativeOnly)
             {
-                // Recursive call but not infinitely so as specific type used and ALL is blocked
-                // as a valid value for the preprocessor setting via static_asserts above.
+                // Recursive call but not infinitely so as specific type used.
                 return LibLLVMRegisterTarget(AdditionalTarget, registrations);
             }
             return nullptr;
@@ -1076,9 +1156,9 @@ extern "C"
         return NumTargets;
     }
 
-    LLVMErrorRef LibLLVMGetRuntimeTargets(CodeGenTarget* targetArray, std::int32_t lengthOfArray)
+    LLVMErrorRef LibLLVMGetRuntimeTargets(LibLLVMCodeGenTarget* targetArray, std::int32_t lengthOfArray)
     {
-        if(lengthOfArray < NumTargets)
+        if (lengthOfArray < NumTargets)
         {
             // sadly C++17 doesn't support constexpr std::format so providing actual number in the
             // error is not an easy option.

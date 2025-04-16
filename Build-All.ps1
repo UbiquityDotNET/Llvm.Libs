@@ -1,3 +1,4 @@
+using module "PSModules/CommonBuild/CommonBuild.psd1"
 using module "PSModules/RepoBuild/RepoBuild.psd1"
 
 <#
@@ -26,7 +27,8 @@ using module "PSModules/RepoBuild/RepoBuild.psd1"
 Param(
     [string]$Configuration="Release",
     [switch]$ForceClean,
-    [switch]$SkipLLvm
+    [switch]$SkipLLvm,
+    $OnlyTargets
 )
 
 Push-Location $PSScriptRoot
@@ -56,26 +58,21 @@ try
     #       done sequentially. (~40 mins per target * 19 targets == 12hrs of run time!)
     #       This is best done overnight after veryfying at least one target builds correctly
     # for tighter testing, this can be forced to only one target
-    $targets = @([LlvmTarget]::ARM)
-    #$targets = [enum]::GetValues([LlvmTarget])
+    if ($OnlyTargets)
+    {
+        $targets = $OnlyTargets | %{[Enum]::Parse[LLvmTarget]($_)}
+    }
+    else
+    {
+        $targets = [enum]::GetValues([LlvmTarget])
+    }
+
     foreach($target in $targets)
     {
         .\Build-NativeAndOneTarget.ps1 $target $buildInfo -SkipLLvm:$SkipLLvm
     }
 
-<#
-Build final package:
-
-        $generatorOptions = @{
-            LlvmRoot = $buildInfo['LlvmRoot']
-            ExtensionsRoot = Join-Path $buildInfo['SrcRootPath'] 'LibLLVM'
-            HandleOutputPath = Join-Path $buildInfo['BuildOutputPath'] 'GeneratedCode'
-            ConfigFile = Join-Path $buildInfo['SrcRootPath'] 'LlvmBindingsGenerator' 'bindingsConfig.yml'
-        }
-
-        # run the generator to get the generated handle source files for the final package
-        Invoke-BindingsGenerator $buildInfo $generatorOptions
-#>
+    .\Build-Package.ps1 $buildInfo
 }
 catch
 {

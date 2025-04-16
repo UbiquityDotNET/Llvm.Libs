@@ -8,9 +8,11 @@
         -->
         <LlvmPlatform Condition="'$(LlvmPlatform)'==''">$(Platform)</LlvmPlatform>
         <LlvmPlatform Condition="'$(LlvmPlatform)'=='Win32'">x86</LlvmPlatform>
-        <LlvmLibsConfig>Release</LlvmLibsConfig> <!-- Force everyting to consume the Release (RelWtihDebInfo) libraries only FULL Debug is just too big to be worth it-->
-        <LlvmPlatformConfig Condition="'$(LlvmPlatformConfig)'==''">$(LlvmPlatform)-$(LlvmLibsConfig)</LlvmPlatformConfig>
+
+        <!-- TODO: Generalize this hard coded RID -->
+        <LlvmPlatformConfig Condition="'$(LlvmPlatformConfig)'==''">win-x64</LlvmPlatformConfig>
     </PropertyGroup>
+
     <PropertyGroup Label="UserMacros">
         <!-- These are not conditional as the version is bound directly to the version of LLVM built into the libraries -->
         <LlvmVersionMajor>20</LlvmVersionMajor>
@@ -20,7 +22,7 @@
 
         <LlvmLibsMetaPackageRoot>$([MSBuild]::NormalizeDirectory('$(BuildRootDir)\llvm-project\llvm'))</LlvmLibsMetaPackageRoot>
         <LlvmBasePlatformConfig>$([MSBuild]::NormalizeDirectory('$(BaseBuildOutputPath)$(LlvmPlatformConfig)'))</LlvmBasePlatformConfig>
-        <LlvmPlatformConfigLibRoot>$([MSBuild]::NormalizeDirectory('$(LlvmBasePlatformConfig)\release\lib'))</LlvmPlatformConfigLibRoot>
+        <LlvmPlatformConfigLibRoot>$([MSBuild]::NormalizeDirectory('$(LlvmBasePlatformConfig)\Release\lib'))</LlvmPlatformConfigLibRoot>
         <LlvmPlatformConfigIncRoot>$([MSBuild]::NormalizeDirectory('$(LlvmBasePlatformConfig)\include'))</LlvmPlatformConfigIncRoot>
         <LlvmCommonIncRoot>$([MSBuild]::NormalizeDirectory('$(LlvmLibsMetaPackageRoot)include'))</LlvmCommonIncRoot>
         <!--
@@ -37,10 +39,11 @@
     <!--
     TODO: Change this to an ItemGroup with GLOB so that only libs created are included
     CHALLENGE: There's an ordering problem with that and item expressions are NOT allowed as values
-               in an ItemDefinitionGroup. [This seems like a FALSE claim as the existing group that
-               uses this below applies item group expressions... RETHINK THIS for simplification...
-               Though with replacement in CMAKE in mind that might not be worth the effort]
+               in an ItemDefinitionGroup (IDG). While an IDG can contain references to it's own
+               metadata using %() it cannot reference that of another item group as it is not
+               seen at the time the group is processed.
     -->
+
     <PropertyGroup>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMAggressiveInstCombine.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMAnalysis.lib</AllLlvmLibs>
@@ -323,7 +326,8 @@
         <ClCompile>
             <AdditionalOptions>%(AdditionalOptions) /Zc:sizedDealloc-</AdditionalOptions>
             <DisableSpecificWarnings>4141;4146;4267;4244;4800;4291;4996;4624;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-            <AdditionalIncludeDirectories>$(LlvmCommonIncRoot);$(LlvmPlatformConfigIncRoot);$(LlvmExecutionEngineOrcRoot)%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>$(LlvmCommonIncRoot);$(LlvmPlatformConfigIncRoot)%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            <PreprocessorDefinitions>%(PreprocessorDefinitions);LIBLLVM_NATIVE_TARGET=$(LibLLVMNativeTarget);LIBLLVM_ADDITIONAL_TARGET=$(LibLLVMAdditionalTarget)</PreprocessorDefinitions>
         </ClCompile>
     </ItemDefinitionGroup>
 </Project>

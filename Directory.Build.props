@@ -71,7 +71,7 @@
         <When Condition="'$(MSBuildProjectExtension)'=='.vcxproj'">
             <!-- vcxproj uses a different pattern for output paths -->
             <PropertyGroup>
-                <OutputPath Condition="'$(OutputPath)'==''">$([MSBuild]::NormalizeDirectory("$(BaseOutputPath)", "$(Configuration)", "$(UnifiedPlatformPathName)"))</OutputPath>
+                <OutputPath Condition="'$(OutputPath)'==''">$([MSBuild]::NormalizeDirectory("$(BaseOutputPath)", "$(RuntimeIdentifier)"))</OutputPath>
                 <OutputPath>$([MSBuild]::EnsureTrailingSlash("$(OutputPath)"))</OutputPath>
                 <OutDir Condition="'$(OutDir)'==''">$(OutputPath)</OutDir>
             </PropertyGroup>

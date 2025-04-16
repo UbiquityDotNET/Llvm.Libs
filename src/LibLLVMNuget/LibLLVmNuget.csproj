@@ -1,0 +1,81 @@
+﻿<!--
+One of the biggest problems with the native library is the MASSIVE size of the static libraries needed to build
+the final dynamic library with support for ALL targets. Currently, it is not known how to make this plausible
+on ANY OSS build infrastructure due to either time or storage space limitations (Or, usually, both).
+
+To simplify the problem of building on a public OSS system like GitHub Actions this assumes the DLLs are built to
+ONLY the native target AND one additional target. That will then enable the selection of the correct binary based
+on the desired target, but will not allow for multiple target support beyond those two at any given time. (It
+also means that the native library handle is loaded once for the lifetime of the process. That is the libray is
+considered resolved on a per-function basis (like a delay load on Windows). The code will contain a resolver to
+locate the correct module but that is ONLY used to resolve each function ONCE. Thus the library is not completely
+released when the ILibLLvm is Disposed. [That is the implementation of that library does NOT OWN the native handle
+and reloading a different target in the same process is not an option]
+
+An alternative not implemented is to completely control the library load and P/Invokes using a COM like Vtable
+where the handle and resolved function pointers are all owned by the ILibLLVM. Though that is a HUGE change to
+the code base as it would need to "inject" such a dependency everywhere it is needed. Additionaly, the use of
+LibraryImportAttribute generation is forfit with such an approach. A custom generator could be created to handle
+this but that's a pretty significant undertaking of it's own. All in all that doesn't seem like a good long term
+strategy.
+-->
+<Project Sdk="Microsoft.Build.NoTargets">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+
+    <!--
+    TODO: These need to account for the current RID; At present, defaults to Win-x64
+          But, allows override by invoker (build scripts set it) IDE builds will use
+          the default
+     -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)'==''">win-x64</RuntimeIdentifier>
+    <LibLLVMAdditionalTarget Condition="'$(LibLLVMAdditionalTarget)'==''">AArch64</LibLLVMAdditionalTarget>
+
+    <!-- RID specific location of the libraries for each LLVM target -->
+    <RidNativeBinPath>$(BaseBuildOutputBinPath)LibLLVM\$(RuntimeIdentifier)</RidNativeBinPath>
+
+    <!-- Disable default inclusion of all items. This project doesn't use them -->
+    <EnableDefaultItems>false</EnableDefaultItems>
+
+    <!-- Disable default inclusion of analyzers. This project doesn't use them -->
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NoCommonAnalyzers>true</NoCommonAnalyzers>
+
+    <Authors>LLVM.org,Ubiquity.NET</Authors>
+    <Description>Native Extendend Bindings of LLVM source for Ubiquity.NET.Llvm [$(LlvmVersion)]. Direct use of this low level API is **STRONGLY** discouraged (You are on your own!), instead you should use the Ubiquity.NET.Llvm package, which provides a full C# object model projection of the LLVM APIs on top of this library.</Description>
+    <PackageTags>LLVM</PackageTags>
+    <PackageProjectUrl>https://github.com/UbiquityDotNET/Llvm.NET</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/UbiquityDotNET/Llvm.NET.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>Apache-2.0 WITH LLVM-exception</PackageLicenseExpression>
+    <PackageId>LibLLVM-$(RuntimeIdentifier)-$(LibLLVMAdditionalTarget)</PackageId>
+  </PropertyGroup>
+
+  <!-- Sanity/safety ensure NO referenced packages [Even if injected by Directory.Build.props etc...] -->
+  <ItemGroup>
+    <PackageReference Remove="@(PackageReference)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- DLL Extension here is RID specific; Each OS uses a different extension (Windows:dll, Linux:so, OsX:dylib) -->
+    <Content Include="$(RidNativeBinPath)\Ubiquity.NET.LibLLVM-$(LibLLVMAdditionalTarget).dll">
+        <PackagePath>runtimes/$(RuntimeIdentifier)/native</PackagePath>
+        <Link>runtimes/$(RuntimeIdentifier)/native/%(FileName)%(Extension)</Link>
+    </Content>
+    <!--
+    TODO: PDBs are windows specific, symbol handling for other platforms not yet determined.
+          May be an external file with a different extension or built-in...
+    <Content Include="$(RidNativeBinPath)\Ubiquity.NET.LibLLVM-$(LibLLVMAdditionalTarget).pdb">
+        <PackagePath>runtimes/$(RuntimeIdentifier)/native</PackagePath>
+        <Link>runtimes/$(RuntimeIdentifier)/native/%(FileName)%(Extension)</Link>
+    </Content>
+    -->
+  </ItemGroup>
+
+  <!-- Use LLvmTarget to check for supported binaries before Pack-->
+  <Target Name="VerifyBinaryDependencies" BeforeTargets="GenerateNuSpec">
+    <Error Condition="!Exists('$(RidNativeBinPath)\Ubiquity.NET.LibLLVM-$(LibLLVMAdditionalTarget).dll')" Text="Missing Binary - $(RidNativeBinPath)\Ubiquity.NET.LibLLVM-$(LibLLVMAdditionalTarget).dll)" />
+    <Error Condition="!Exists('$(RidNativeBinPath)\Ubiquity.NET.LibLLVM-$(LibLLVMAdditionalTarget).pdb')" Text="Missing Symbols - $(RidNativeBinPath)\Ubiquity.NET.LibLLVM-$(LibLLVMAdditionalTarget).pdb)" />
+  </Target>
+</Project>

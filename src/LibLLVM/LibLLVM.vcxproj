@@ -5,6 +5,8 @@
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
     <!-- Directory.Build.props NOT yet imported so this MUST essentially replicate BuildOutputPackagesDir -->
     <PackagesRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../../BuildOutput/packages'))</PackagesRoot>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)'==''">win-x64</RuntimeIdentifier>
+    <!-- TODO: Support SourceLink [See: https://github.com/dotnet/sourcelink#using-source-link-in-c-projects]-->
   </PropertyGroup>
   <Import Project="$(PackagesRoot)CSemVer.Build.Tasks.2.0.5\build\CSemVer.Build.Tasks.props" Condition="Exists('$(PackagesRoot)CSemVer.Build.Tasks.2.0.5\build\CSemVer.Build.Tasks.props')" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -27,10 +29,12 @@
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <!--
     For ease of local development in IDE, pick the most common native target.
+    FOr the additional target it is the most likely "last built" LLVM target.
     In automated/command line builds this is provided by scripting/build matrix
+    and always matches what was built for the LLVM libraries.
     -->
     <LibLLVMNativeTarget Condition="'$(LibLLVMNativeTarget)'==''">X86</LibLLVMNativeTarget>
-    <LibLLVMAdditionalTarget Condition="'$(LibLLVMAdditionalTarget)'==''">ARM</LibLLVMAdditionalTarget>
+    <LibLLVMAdditionalTarget Condition="'$(LibLLVMAdditionalTarget)'==''">XCore</LibLLVMAdditionalTarget>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -44,10 +48,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>Ubiquity.NET.$(MSBuildProjectName)-$(LlvmTargets.Replace(';', '-'))</TargetName>
+    <TargetName>Ubiquity.NET.$(MSBuildProjectName)-$(LibLLVMAdditionalTarget)</TargetName>
   </PropertyGroup>
   <!--
-  These **MUST** match the LLVM static libraries settings for a RelWithDebInfo build as that is the ONLY way those are built/packaged
+  These **MUST** match the LLVM static libraries settings for a Release build as that is the ONLY way those are built/packaged
   The DEBUG build is too large and cumbersome to manage using "FREE/OSS" build infrastructure.
   -->
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -104,7 +108,7 @@
     <ClCompile Include="ModuleBindings.cpp" />
     <ClCompile Include="OrcJITv2Bindings.cpp" />
     <ClCompile Include="PassBuilderOptionsBindings.cpp" />
-    <ClCompile Include="TargetRegistration.cpp" />
+    <ClCompile Include="TargetRegistrationBindings.cpp" />
     <ClCompile Include="TripleBindings.cpp" />
     <ClCompile Include="ValueBindings.cpp" />
   </ItemGroup>
@@ -124,7 +128,7 @@
     <ClInclude Include="include\libllvm-c\ObjectFileBindings.h" />
     <ClInclude Include="include\libllvm-c\OrcJITv2Bindings.h" />
     <ClInclude Include="include\libllvm-c\PassBuilderOptionsBindings.h" />
-    <ClInclude Include="include\libllvm-c\TargetRegistration.h" />
+    <ClInclude Include="include\libllvm-c\TargetRegistrationBindings.h" />
     <ClInclude Include="include\libllvm-c\TripleBindings.h" />
     <ClInclude Include="include\libllvm-c\ValueBindings.h" />
     <ClInclude Include="include\ValueCache.h" />

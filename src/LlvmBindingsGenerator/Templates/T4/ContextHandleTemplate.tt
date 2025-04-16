@@ -13,7 +13,9 @@
 // </auto-generated>
 // ------------------------------------------------------------------------------
 
+using System;
 using System.CodeDom.Compiler;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Ubiquity.NET.Llvm.Interop
 {

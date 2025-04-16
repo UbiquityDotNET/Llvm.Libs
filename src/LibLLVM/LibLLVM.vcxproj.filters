@@ -64,7 +64,7 @@
     <ClCompile Include="OrcJITv2Bindings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TargetRegistration.cpp">
+    <ClCompile Include="TargetRegistrationBindings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -122,7 +122,7 @@
     <ClInclude Include="include\libllvm-c\OrcJITv2Bindings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\libllvm-c\TargetRegistration.h">
+    <ClInclude Include="include\libllvm-c\TargetRegistrationBindings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

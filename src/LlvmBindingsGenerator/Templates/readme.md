@@ -46,105 +46,26 @@ The Handle implementations here follow consistent patterns for implementing each
 ### Contextual handles
 
 These handles are never manually released or disposed, though releasing their containers will make them
-invalid. The general pattern for implementing such handles is as follows:
-
-``` C#
-using System;
-using System.Collections.Generic;
-
-namespace Ubiquity.NET.Llvm.Native
-{
-    internal struct LLVMxyzRef
-        : IEquatable<LLVMxyzRef>
-    {
-        public override int GetHashCode( ) => Handle.GetHashCode( );
-
-        public override bool Equals( object obj )
-            => !( obj is null )
-             && ( obj is LLVMxyxRef r )
-             && ( r.Handle == Handle );
-
-        public bool Equals( LLVMxyxRef other )
-            => Handle == other.Handle;
-
-        public static bool operator ==( LLVMxyxRef lhs, LLVMxyxRef rhs )
-            => EqualityComparer<LLVMxyxRef>.Default.Equals( lhs, rhs );
-
-        public static bool operator !=( LLVMxyxRef lhs, LLVMxyxRef rhs )
-            => !( lhs == rhs );
-
-        internal LLVMxyxRef( nint pointer )
-        {
-            Handle = pointer;
-        }
-
-        private readonly nint Handle;
-    }
-}
-```
+invalid. The general pattern for implementing such handles is taken care of by the T4 template
+`ContextHandleTemplate.tt`
 
 ### Global Handles
 Global handles require the caller to explicitly release the resources.
 In Ubiquity.NET.Llvm these are managed with the .NET SafeHandles types through
 an Ubiquity.NET.Llvm specific derived type LlvmObject. Thus, all resources in
-LLVM requiring explicit release are handled consistently using the
-following basic pattern:
-
-``` C#
-using System;
-using System.Runtime.InteropServices;
-using System.Security;
-
-using static Ubiquity.NET.Llvm.Native.NativeMethods;
-
-namespace Ubiquity.NET.Llvm.Native
-{
-    [SecurityCritical]
-    internal class LLVMxyzRef
-        : LlvmObjectRef
-    {
-        public LLVMxyzRef( IntPtr handle, bool owner )
-            : base( owner )
-        {
-            SetHandle( handle );
-        }
-
-        [SecurityCritical]
-        protected override bool ReleaseHandle( )
-        {
-            LLVMDisposeXyz( handle );
-            return true;
-        }
-
-        private LLVMxyzRef( )
-            : base( true )
-        {
-        }
-
-        [DllImport( LibraryPath, CallingConvention = CallingConvention.Cdecl )]
-        private static extern void LLVMDisposeXyz( IntPtr @xyz );
-    }
-}
-```
+LLVM requiring explicit release are handled consistently by the T4 template `GlobalHandleTemplate.tt`
 
 ### Global Alias handles
 Global alias handles are a specialized form of global handles where they do not
 participate in ownership control/release. These are commonly used when a child
 of a global container exposes a property that references the parent container.
 In such cases the reference retrieved from the child shouldn't be used to destroy
-the parent when no longer used. 
+the child or the parent when no longer used.
 
-In Ubiquity.NET.Llvm this is represented as a distinct handle type derived from the global
-handle as follows:
-
-``` C#
-// xyz alias
-internal class LLVMxyzAlias
-    : LLVMxyzRef
-{
-    private LLVMxyzAlias()
-        : base( IntPtr.Zero, false )
-    {
-    }
-}
-```
+In Ubiquity.NET.Llvm this is represented as a distinct context handle type that has
+implicit casting to allow for simpler usage scenarios. (That, is an alias can cast to
+an unowned global handle when needed to allow passing it in to native APIs without
+taking ownership) Most APIs will have the alias type as the signature, especially for
+[In] parameters. This helps to re-inforce the intended semantics for the parameter. To
+make life easy there is an implicit cast from the global handle to an alias (which is
+just a value type) when needed.
