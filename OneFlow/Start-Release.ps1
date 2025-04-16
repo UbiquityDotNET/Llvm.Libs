@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Creates a new public release branch from a branch (or commit) as an official release tag
+    Creates a new public release branch the current branch state as an official release tag
 
 .PARAMETER commit
     [Optional] Indicates the specific commit to create the branch from. Default is the head

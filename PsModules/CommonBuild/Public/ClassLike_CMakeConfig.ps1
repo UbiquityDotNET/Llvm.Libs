@@ -71,6 +71,7 @@ function New-CMakeConfig($name, [string]$buildConfiguration, [hashtable]$buildIn
     $self = @{}
     if($IsWindows)
     {
+        # TODO: Convert this to use NIJA for faster builds... [Maybe]
         $self['Generator'] = 'Visual Studio 17 2022'
     }
     else
@@ -90,6 +91,8 @@ function New-CMakeConfig($name, [string]$buildConfiguration, [hashtable]$buildIn
     if($IsWindows)
     {
         # running on ARM64 is not tested or supported
+        # This might not be needed now that the build is auto configuring the "VCVARS"
+        # Ninja build might also remove the need for this...
         if ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq "X64" )
         {
             $self['CMakeCommandArgs'].Add('-Thost=x64') | Out-Null
@@ -113,7 +116,7 @@ function Invoke-GenerateCMakeConfig([hashtable]$self, [hashtable] $additionalBui
 {
     Assert-IsCMakeConfig $self
 
-    Write-Information "Generating cmake build support for $($self['Name'])"
+    Write-Information "Generating CMake build support for $($self['Name'])"
     # if the output path doesn't exist, create it now
     if(!(Test-Path -PathType Container $self['BuildRoot'] ))
     {

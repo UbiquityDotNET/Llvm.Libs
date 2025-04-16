@@ -18,3 +18,11 @@ as well). Thus to help keep things sane, the LLVM libraries are always RelWithDe
 and this library matches that. (Mismatches in debug/release settings can cause a real nightmare of
 compiler/linker warnings and errors due to unexpected missing libraries etc... Not to mention the
 problems of publishing a debug build (The MSVC debug libraries are NOT part of any redist package.)
+
+# Naming
+>[!IMPORTANT]
+> Naming matters, LibLLVMGenerator filters files and only produces output for names that match the
+> following pattern!
+
+Headers MUST exist in this "include" folder AND the filename (without extensions) must end in
+`Bindings`. That combination is what defines the file as an "extension".
