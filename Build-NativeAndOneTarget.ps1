@@ -38,6 +38,7 @@ This script is unfortunately necessary due to several factors:
      to handle them.
 #>
 Param(
+    [ValidateSet("AArch64", "AMDGPU", "ARM", "AVR", "BPF", "Hexagon", "Lanai", "LoongArch", "Mips", "MSP430", "NVPTX", "PowerPC", "RISCV", "Sparc", "SPIRV", "SystemZ", "VE", "WebAssembly", "X86", "XCore")]
     $AdditionalTarget,
     [hashtable]$buildInfo,
     [ValidateSet('Release','Debug')]
@@ -54,6 +55,12 @@ try
     if(!$buildInfo)
     {
         $buildInfo = Initialize-BuildEnvironment -FullInit:$FullInit
+    }
+
+    # Validate that $AdditionalTarget is not null or empty
+    if (-not $AdditionalTarget)
+    {
+        throw "The AdditionalTarget parameter is required and cannot be null or empty."
     }
 
     $AddtionalTarget = [LlvmTarget]$AdditionalTarget
