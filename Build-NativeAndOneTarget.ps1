@@ -38,7 +38,7 @@ This script is unfortunately necessary due to several factors:
      to handle them.
 #>
 Param(
-    [LlvmTarget]$AdditionalTarget,
+    $AdditionalTarget,
     [hashtable]$buildInfo,
     [ValidateSet('Release','Debug')]
     [string]$Configuration="Release",
