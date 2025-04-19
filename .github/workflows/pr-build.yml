@@ -66,6 +66,7 @@ jobs:
   build_meta_package:
     needs: build_target
     runs-on: windows-latest
+    steps:
       - name: Build RID specific Metapackage
         run: .\Build-Package.ps1
 
