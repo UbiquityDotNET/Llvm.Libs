@@ -18,26 +18,26 @@ jobs:
     strategy:
        matrix:
          LlvmAdditionalTarget: [
-             "AArch64",
-             "AMDGPU",
-             "ARM",
-             "AVR",
-             "BPF",
-             "Hexagon",
-             "Lanai",
-             "LoongArch",
-             "Mips",
-             "MSP430",
-             "NVPTX",
-             "PowerPC",
-             "RISCV",
-             "Sparc",
-             "SPIRV",
-             "SystemZ",
-             "VE",
-             "WebAssembly",
-             "X86",
-             "XCore"
+             AArch64,
+             AMDGPU,
+             ARM,
+             AVR,
+             BPF,
+             Hexagon,
+             Lanai,
+             LoongArch,
+             Mips,
+             MSP430,
+             NVPTX,
+             PowerPC,
+             RISCV,
+             Sparc,
+             SPIRV,
+             SystemZ,
+             VE,
+             WebAssembly,
+             X86,
+             XCore
          ]
     runs-on: windows-latest
     steps:
@@ -48,7 +48,8 @@ jobs:
           fetch-depth: 0
 
       - name: Build Source
-        run: .\Build-NativeAndOneTarget.ps1 -ForceClean "${{ matrix.LlvmAdditionalTarget }}"
+        shell: pwsh
+        run: .\Build-NativeAndOneTarget.ps1 -ForceClean '${{ matrix.LlvmAdditionalTarget }}'
 
       - name: Publish build logs
         if: always() && github.event_name == 'pull_request'
@@ -68,6 +69,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Build RID specific Metapackage
+        shell: pwsh
         run: .\Build-Package.ps1
 
       - name: Upload RID specific Meta Package
