@@ -51,17 +51,16 @@ jobs:
         shell: pwsh
         run: .\Build-NativeAndOneTarget.ps1 -ForceClean -AdditionalTarget '${{ matrix.LlvmAdditionalTarget }}'
 
-
-      - name: Publish build logs
-          if: always() && github.event_name == 'pull_request'
-          uses: actions/upload-artifact@v4
-          with:
+      - name: Upload build logs
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
           name: Build Logs-${{ matrix.LlvmAdditionalTarget }}
           path: .\BuildOutput\BinLogs
 
-      - name: Publish NuGET Packages
-          uses: actions/upload-artifact@v4
-          with:
+      - name: Upload NuGET Packages
+        uses: actions/upload-artifact@v4
+        with:
           name: Nuget Packages-${{ matrix.LlvmAdditionalTarget }}
           path: .\BuildOutput\Nuget
 
