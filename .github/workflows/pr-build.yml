@@ -49,7 +49,7 @@ jobs:
 
       - name: Build Source
         shell: pwsh
-        run: .\Build-NativeAndOneTarget.ps1 -ForceClean '${{ matrix.LlvmAdditionalTarget }}'
+        run: .\Build-NativeAndOneTarget.ps1 -ForceClean -AdditionalTarget '${{ matrix.LlvmAdditionalTarget }}'
 
       - name: Publish build logs
         if: always() && github.event_name == 'pull_request'

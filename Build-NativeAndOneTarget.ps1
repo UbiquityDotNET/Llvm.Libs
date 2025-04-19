@@ -57,10 +57,9 @@ try
         $buildInfo = Initialize-BuildEnvironment -FullInit:$FullInit
     }
 
-    # Validate that $AdditionalTarget is not null or empty
-    if (-not $AdditionalTarget)
+    if ([string]::IsNullOrWhiteSpace($AdditionalTarget))
     {
-        throw "The AdditionalTarget parameter is required and cannot be null or empty."
+        throw "The AdditionalTarget parameter is required and cannot be null, empty, or all whitespace."
     }
 
     $AddtionalTarget = [LlvmTarget]$AdditionalTarget
