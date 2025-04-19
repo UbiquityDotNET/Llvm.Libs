@@ -39,7 +39,7 @@ jobs:
              "X86",
              "XCore"
          ]
-
+    runs-on: windows-latest
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
