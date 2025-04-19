@@ -48,7 +48,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build Source
-        run: .\Build-NativeAndOneTarget.ps1 -ForceClean ${{ matrix.LlvmTarget }}
+        run: .\Build-NativeAndOneTarget.ps1 -ForceClean ${{ matrix.LlvmAdditionalTarget }}
 
       - name: Publish build logs
         if: always() && github.event_name == 'pull_request'
