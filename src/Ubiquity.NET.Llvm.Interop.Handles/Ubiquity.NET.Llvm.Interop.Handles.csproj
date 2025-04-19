@@ -1,0 +1,75 @@
+﻿<!--
+Project to build the NUGET package containing the generated source for the handles.
+The generated code has the following requirements of the consumer:
+* Ubiquity.NET.Llvm.Interop.IContextHandle<T>
+    - All context handles are derived from this interface which is assumed to have a
+      static abstract factory method declared.
+* Ubiquity.NET.Llvm.Interop.ContextHandleMarshaller<T>
+    - Context handles declare this type as the marshaller for the handle via a
+      NativeMarshallingAttribute on the handle
+* Ubiquity.NET.Llvm.Interop.GlobalHandleBase
+    - SafeHandle derived type to act as the base for all global handles. Most
+      of the support is in this base. The generated derived types have only
+      basic functionality such as resource release and IEquatable<T> implementations
+-->
+<Project Sdk="Microsoft.Build.NoTargets">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+
+    <!--
+    To support source code pacakge, this must use a NUSPEC file directly. The CSPROJ system
+    for MSBUILD does NOT support setting the "buildaction" for files in a package. It determines
+    that on it's own based on the target location and provides no mechanism for overriding it.
+    -->
+    <NuSpecFile>Ubiquity.NET.Llvm.Interop.Handles.nuspec</NuSpecFile>
+
+    <!-- Disable default inclusion of all items. This project doesn't use them -->
+    <EnableDefaultItems>false</EnableDefaultItems>
+
+    <!-- Disable default inclusion of analyzers. This project doesn't use them -->
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NoCommonAnalyzers>true</NoCommonAnalyzers>
+
+    <Authors>LLVM.org,Ubiquity.NET</Authors>
+    <Description>Generated LLVM handle types for Ubiquity.NET.Llvm.Interop [$(LlvmVersion)]. Direct use of this package **STRONGLY** discouraged (You are on your own!), instead you should use the Ubiquity.NET.Llvm package, which provides a full C# object model projection of the LLVM APIs on top of this library.</Description>
+    <PackageTags>LLVM</PackageTags>
+    <PackageProjectUrl>https://github.com/UbiquityDotNET/Llvm.NET</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/UbiquityDotNET/Llvm.NET.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>Apache-2.0 WITH LLVM-exception</PackageLicenseExpression>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <None Include="Ubiquity.NET.Llvm.Interop.Handles.nuspec" />
+  </ItemGroup>
+
+  <!-- Sanity/safety ensure NO referenced packages [Even if injected by Directory.Build.packages etc...] -->
+  <ItemGroup>
+    <PackageReference Remove="@(PackageReference)" />
+  </ItemGroup>
+
+  <!--
+  Provide the standard properties for this project AND the source path of the generated files
+  to the package generation so that the NUSPEC file will complete the pack. This project MUST
+  use a NUSPEC file as the msbuild common project system does NOT provide any means to designate
+  content files with a build action of "Compile" (The default oddly). It does it's own undocumented
+  heuristics, apparently based on the package path. Ultimately there is no option to force source
+  files to use a build action of compile, so a NUSPEC is required.
+  -->
+  <Target Name="SetNuspecProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>configuration=$(Configuration)</NuspecProperties>
+      <NuspecProperties>$(NuspecProperties);packageID=$(PackageID)</NuspecProperties>
+      <NuspecProperties>$(NuspecProperties);version=$(PackageVersion)</NuspecProperties>
+      <NuspecProperties>$(NuspecProperties);authors=$(Authors)</NuspecProperties>
+      <NuspecProperties>$(NuspecProperties);projectUrl=$(PackageProjectUrl)</NuspecProperties>
+      <NuspecProperties>$(NuspecProperties);description=$(Description)</NuspecProperties>
+      <NuspecProperties>$(NuspecProperties);tags=$(PackageTags)</NuspecProperties>
+      <NuspecProperties>$(NuSpecProperties);licExpression=$(PackageLicenseExpression)</NuspecProperties>
+      <NuSpecProperties>$(NuSpecProperties);tfmGroup=$(TargetFramework)</NuSpecProperties>
+      <NuspecProperties>$(NuspecProperties);GeneratedSourceRoot=$(BaseBuildOutputPath)GeneratedCode</NuspecProperties>
+    </PropertyGroup>
+  </Target>
+</Project>

@@ -1,0 +1,112 @@
+﻿// -----------------------------------------------------------------------
+// <copyright file="LibLlvmGeneratorLibrary.cs" company="Ubiquity.NET Contributors">
+// Copyright (c) Ubiquity.NET Contributors. All rights reserved.
+// </copyright>
+// -----------------------------------------------------------------------
+
+using System.Collections.Generic;
+using System.IO;
+
+using CppSharp.AST;
+
+using LlvmBindingsGenerator.Configuration;
+using LlvmBindingsGenerator.Configuration.Yaml;
+using LlvmBindingsGenerator.Passes;
+
+namespace LlvmBindingsGenerator
+{
+    /// <summary>ILibrary implementation for the Ubiquity.NET.Llvm Interop</summary>
+    /// <remarks>
+    /// This class provides the library specific bridging from the generalized
+    /// CppSharp infrastructure for the specific needs of the Ubiquity.NET.Llvm.Interop library
+    /// </remarks>
+    internal class LibLlvmGeneratorLibrary
+        : ILibrary
+    {
+        /// <summary>Initializes a new instance of the <see cref="LibLlvmGeneratorLibrary"/> class.</summary>
+        /// <param name="options">Command line options to use</param>
+        /// <remarks>
+        /// The <paramref name="llvmRoot"/> only needs to have the files required to parse the LLVM-C API
+        /// </remarks>
+        public LibLlvmGeneratorLibrary( Options options )
+        {
+            CmdLineOptions = options;
+            Configuration = new ReadOnlyConfig( YamlConfiguration.ParseFrom( options.ConfigFile ) );
+
+            CommonInclude = Path.Combine( options.LlvmRoot, "include" );
+            // NOTE: The target specific LLVMInitializeXXX APIs are included in CMAKE generated headers
+            // This is OK as they should NOT appear in the set of APIs exported from the library anyway
+            // Instead LibLLVM handles all target registration in an extended abstract API LibLLVMRegisterTarget(...)
+            // that handles the behavior for the supported targets of that binaries build.
+            ExtensionsInclude = Path.Combine( options.ExtensionsRoot, "include" );
+
+            InternalTypePrinter = new LibLLVMTypePrinter();
+
+            // Hook in the custom type printer via static delegate
+            Type.TypePrinterDelegate = t => InternalTypePrinter.GetName( t, TypeNameKind.Native );
+        }
+
+        public void Setup( IDriver driver )
+        {
+            Driver = driver;
+            driver.Options.UseHeaderDirectories = true;
+            driver.Options.GenerationOutputMode = CppSharp.GenerationOutputMode.FilePerUnit;
+
+            // For generating the EXPORTS or the more generic handle types force use of MSVC settings
+            // For non-Windows platforms it won't matter anyway as the exports.def isn't used and the
+            // generated handle code is platform independent.
+            driver.ParserOptions.SetupMSVC();
+            driver.ParserOptions.AddIncludeDirs( CommonInclude );
+            driver.ParserOptions.AddIncludeDirs( ExtensionsInclude );
+
+            var coreHeaders = Directory.EnumerateFiles( Path.Combine( CommonInclude, "llvm-c" ), "*.h", SearchOption.AllDirectories );
+            var extHeaders = Directory.EnumerateFiles( Path.Combine( ExtensionsInclude, "libllvm-c" ), "*.h", SearchOption.AllDirectories );
+
+            // Library used needs a module and name, even if it isn't used...
+            var module = driver.Options.AddModule( "Ubiquity.NET.Llvm.Interop" );
+            module.Headers.AddRange( coreHeaders );
+            module.Headers.AddRange( extHeaders );
+        }
+
+        public void SetupPasses( )
+        {
+            // Analysis passes that markup, but don't otherwise modify the AST run first
+            // always start the passes with the IgnoreSystemHeaders pass to ensure that
+            // transformation only occurs for the desired headers. Other passes depend on
+            // TranslationUnit.IsGenerated to ignore headers.
+            Driver!.AddTranslationUnitPass( new IgnoreSystemHeadersPass( Configuration.IgnoredHeaders ) );
+            Driver!.AddTranslationUnitPass( new IgnoreDuplicateNamesPass( ) );
+
+            // modifying pass(es)
+            Driver!.AddTranslationUnitPass( new MarkFunctionsInternalPass( ) );
+
+            // Verification/sanity checking passes
+            Driver!.AddTranslationUnitPass( new ValidateExtensionNamingPass( ) );
+        }
+
+        public void Preprocess( ASTContext ctx )
+        {
+            // purge all the CppSharp type mapping to prevent any conversions/mapping
+            // Only the raw source should be in the AST until later stages adjust it.
+            Driver!.Context.TypeMaps.TypeMaps.Clear();
+            InternalTypePrinter.Context = Driver.Context;
+        }
+
+        public void Postprocess( ASTContext ctx )
+        {
+        }
+
+        public IEnumerable<ICodeGenerator> CreateGenerators( )
+        {
+            var templateFactory = new LibLlvmTemplateFactory( Configuration );
+            return templateFactory.CreateTemplates( Driver!.Context, CmdLineOptions );
+        }
+
+        private IDriver? Driver;
+        private readonly LibLLVMTypePrinter InternalTypePrinter;
+        private readonly ReadOnlyConfig Configuration;
+        private readonly string CommonInclude;
+        private readonly string ExtensionsInclude;
+        private readonly Options CmdLineOptions;
+    }
+}

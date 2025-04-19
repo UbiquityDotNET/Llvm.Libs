@@ -1,0 +1,80 @@
+<Project>
+    <!--
+    Description:
+        This property file is imported by the projects in this repository to set global locations
+        common to all of the projects for a consistent build.
+    -->
+    <!--
+    Allow for a parent to provide/override the defaults provided here
+    Projects importing this property sheet can still override those settings.
+
+    Implementation Note:
+        ALL properties defined here should be done conditionally to allow inheriting from
+        a parent. Conditional properties makes this project a well behaved sub module for
+        other projects that might want to set the build outputs etc... into a different place.
+    -->
+    <PropertyGroup>
+        <!-- Default to x64/AnyCPU | Release build if not otherwise specified -->
+        <Platform Condition="'$(Platform)'=='' AND '$(MSBuildProjectExtension)'!='.vcxproj'">AnyCPU</Platform>
+        <Platform Condition="'$(Platform)'=='' AND '$(MSBuildProjectExtension)'=='.vcxproj'">x64</Platform>
+        <Platform Condition="$(Platform)=='x86' AND '$(MSBuildProjectExtension)'=='.vcxproj'">Win32</Platform>
+        <UnifiedPlatformPathName Condition="'$(UnifiedPlatformPathName)'==''">$(Platform)</UnifiedPlatformPathName>
+        <UnifiedPlatformPathName Condition="'$(UnifiedPlatformPathName)'=='Win32'">x86</UnifiedPlatformPathName>
+        <UnifiedPlatformPathName Condition="'$(UnifiedPlatformPathName)'=='AnyCPU'">x64</UnifiedPlatformPathName>
+
+        <Configuration Condition="'$(Configuration)'==''">Release</Configuration>
+
+        <!-- Use the location of this file (at the top of the build tree) to define the root directory, if not already set -->
+        <BuildRootDir Condition="'$(BuildRootDir)'==''">$(MSBuildThisFileDirectory)</BuildRootDir>
+        <BuildRootDir>$([MSBuild]::EnsureTrailingSlash("$(BuildRootDir)"))</BuildRootDir>
+
+        <!-- Put build output and intermediate output files into a well known location outside of the source tree -->
+        <BaseBuildOutputPath Condition="'$(BaseBuildOutputPath)'==''">$([MSBuild]::NormalizeDirectory("$(BuildRootDir)", "BuildOutput"))</BaseBuildOutputPath>
+        <BaseBuildOutputPath>$([MSBuild]::EnsureTrailingSlash("$(BaseBuildOutputPath)"))</BaseBuildOutputPath>
+
+        <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'==''" >$([MSBuild]::NormalizeDirectory("$(BaseBuildOutputPath)", "Intermediate", "$(MSBuildProjectName)"))</BaseIntermediateOutputPath>
+        <IntDir Condition="'$(IntDir)'==''">$([MSBuild]::NormalizeDirectory("$(BaseIntermediateOutputPath)", "$(UnifiedPlatformPathName)", "$(Configuration)"))</IntDir>
+        <BaseBuildOutputBinPath Condition="'$(BaseBuildOutputBinPath)'==''">$([MSBuild]::NormalizeDirectory("$(BaseBuildOutputPath)", "bin"))</BaseBuildOutputBinPath>
+        <BaseOutputPath Condition="'$(BaseOutputPath)'==''">$([MSBuild]::NormalizeDirectory("$(BaseBuildOutputBinPath)", "$(MSBuildProjectName)"))</BaseOutputPath>
+        <PackageOutputPath Condition="'$(PackageOutputPath)'==''">$([MSBuild]::NormalizeDirectory("$(BaseBuildOutputPath)","NuGet"))</PackageOutputPath>
+
+        <BuildOutputPackagesDir Condition="'$(BuildOutputPackagesDir)'==''">$(BaseBuildOutputPath)packages\</BuildOutputPackagesDir>
+
+        <BuildVersionXml Condition="'$(BuildVersionXmlFile)'==''">$(MSBuildThisFileDirectory)BuildVersion.xml</BuildVersionXml>
+        <IsAutomatedBuild Condition="'$(IsAutomatedBuild)'==''">false</IsAutomatedBuild>
+        <IsPullRequestBuild Condition="'$(IsPullRequestBuild)'==''">false</IsPullRequestBuild>
+        <IsReleaseBuild Condition="'$(IsReleaseBuild)'==''">false</IsReleaseBuild>
+        <BuildTime Condition="'$(BuildTime)'=='' AND '$(APPVEYOR_REPO_COMMIT_TIMESTAMP)'!=''">$(APPVEYOR_REPO_COMMIT_TIMESTAMP)</BuildTime>
+        <!--<RuntimeIdentifiers>win-x64</RuntimeIdentifiers>-->
+    </PropertyGroup>
+    <Choose>
+        <!-- Apply standard properties for all C# projects -->
+        <When Condition="'$(MSBuildProjectExtension)'=='.csproj' and '$(DisableDirProps)'!='true'">
+            <PropertyGroup>
+                <!-- Enable built-in support for central package management -->
+                <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
+                <Determenistic>true</Determenistic>
+                <IsTestProject>$(MSBuildProjectName.Contains('UT'))</IsTestProject>
+                <Nullable>enable</Nullable>
+                <!--
+                DO NOT ALLOW Implicit using msbuild feature - EVIL; causes mass issues and frustration moving code between projects when one doesn't
+                support it or uses a different version. Not to mention hiding the actual namespaces involved, making resolving conflicts HARDER.
+                -->
+                <ImplicitUsings>disable</ImplicitUsings>
+                <!-- NOTE: Top-Level statements blocked as an error in .editorconfig and ImplicitUsings 'feature' VERIFIED in the targets file -->
+            </PropertyGroup>
+            <!--<ItemGroup Condition="'$(NoCommonAnalyzers)'!='true'">
+                <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
+            </ItemGroup>-->
+        </When>
+        <When Condition="'$(MSBuildProjectExtension)'=='.vcxproj'">
+            <!-- vcxproj uses a different pattern for output paths -->
+            <PropertyGroup>
+                <OutputPath Condition="'$(OutputPath)'==''">$([MSBuild]::NormalizeDirectory("$(BaseOutputPath)", "$(RuntimeIdentifier)"))</OutputPath>
+                <OutputPath>$([MSBuild]::EnsureTrailingSlash("$(OutputPath)"))</OutputPath>
+                <OutDir Condition="'$(OutDir)'==''">$(OutputPath)</OutDir>
+            </PropertyGroup>
+        </When>
+    </Choose>
+</Project>
