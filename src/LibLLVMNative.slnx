@@ -22,6 +22,20 @@
     <File Path="../ReadMe.md" />
     <File Path="LibLLVM/LlvmApplication.props" />
   </Folder>
+  <Folder Name="/Solution Items/GitHub/" Id="f12d85e1-a53b-41ab-8cf6-be97599bd6d1" />
+  <Folder Name="/Solution Items/GitHub/ISSUE_TEMPLATE/" Id="5aeacca0-6ced-444c-bb49-874fb4f21108">
+    <File Path="../.github/ISSUE_TEMPLATE/bug_report.md" />
+    <File Path="../.github/ISSUE_TEMPLATE/feature_request.md" />
+  </Folder>
+  <Folder Name="/Solution Items/GitHub/Workflows/" Id="18c269cf-8c7e-4139-a5b9-b33c942a8699">
+    <File Path="../.github/workflows/pr-build.yml" />
+    <File Path="../.github/workflows/release-build.yml" />
+  </Folder>
+  <Folder Name="/Solution Items/OneFlow/" Id="02ea681e-c7d8-13c7-8484-4ac65e1b71e8">
+    <File Path="../OneFlow/Publish-Release.ps1" />
+    <File Path="../OneFlow/ReadMe.md" />
+    <File Path="../OneFlow/Start-Release.ps1" />
+  </Folder>
   <Project Path="../PsModules/CommonBuild/CommonBuild.pssproj" Type="f5034706-568f-408a-b7b3-4d38c6db8a32" Id="6cafc0c6-a428-4d30-a9f9-700e829fea51">
     <Platform Project="AnyCPU" />
   </Project>
