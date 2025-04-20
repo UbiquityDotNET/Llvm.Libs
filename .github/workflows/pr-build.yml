@@ -18,59 +18,67 @@ jobs:
     strategy:
        matrix:
          LlvmAdditionalTarget: [
-             "AArch64",
-             "AMDGPU",
-             "ARM",
-             "AVR",
-             "BPF",
-             "Hexagon",
-             "Lanai",
-             "LoongArch",
-             "Mips",
-             "MSP430",
-             "NVPTX",
-             "PowerPC",
-             "RISCV",
-             "Sparc",
-             "SPIRV",
-             "SystemZ",
-             "VE",
-             "WebAssembly",
-             "X86",
-             "XCore"
+             AArch64,
+             AMDGPU,
+             ARM,
+             AVR,
+             BPF,
+             Hexagon,
+             Lanai,
+             LoongArch,
+             Mips,
+             MSP430,
+             NVPTX,
+             PowerPC,
+             RISCV,
+             Sparc,
+             SPIRV,
+             SystemZ,
+             VE,
+             WebAssembly,
+             X86,
+             XCore
          ]
-
+    runs-on: windows-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Build Source
-        run: .\Build-NativeAndOneTarget.ps1 -ForceClean ${{ matrix.LlvmTarget }}
+        shell: pwsh
+        run: .\Build-NativeAndOneTarget.ps1 -ForceClean -AdditionalTarget '${{ matrix.LlvmAdditionalTarget }}'
 
-      - name: Publish build logs
+      - name: Upload build logs
         if: always() && github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
-          name: Build Logs
+          name: BuildLogs-win-x64-${{ matrix.LlvmAdditionalTarget }}
           path: .\BuildOutput\BinLogs
 
-      - name: Publish NuGET Packages
-        uses: actions/upload-artifact@v1
+      - name: Upload NuGET Packages
+        uses: actions/upload-artifact@v4
         with:
-          name: Nuget Packages
+          name: win-x64-${{ matrix.LlvmAdditionalTarget }}
           path: .\BuildOutput\Nuget
 
   build_meta_package:
-    needs: build_target
     runs-on: windows-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
       - name: Build RID specific Metapackage
+        shell: pwsh
         run: .\Build-Package.ps1
 
       - name: Upload RID specific Meta Package
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
-          name: Nuget Packages
+          name: win-x64-meta-package
           path: .\BuildOutput\Nuget

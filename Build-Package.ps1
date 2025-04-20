@@ -26,6 +26,9 @@ try
         $buildInfo = Initialize-BuildEnvironment -FullInit:$FullInit
     }
 
+    # Download and unpack the LLVM source from the versioned release tag if not already present
+    Clone-LlvmFromTag $buildInfo
+
     # Build and Run source generator as it is needed to create the handle type source code in the package
     $extensionsRoot = Join-Path $buildInfo['SrcRootPath'] 'LibLLVM'
     $generatorOptions = @{

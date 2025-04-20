@@ -38,27 +38,14 @@ This script is unfortunately necessary due to several factors:
      to handle them.
 #>
 Param(
-    [LlvmTarget]$AdditionalTarget,
+    [ValidateSet("AArch64", "AMDGPU", "ARM", "AVR", "BPF", "Hexagon", "Lanai", "LoongArch", "Mips", "MSP430", "NVPTX", "PowerPC", "RISCV", "Sparc", "SPIRV", "SystemZ", "VE", "WebAssembly", "X86", "XCore")]
+    $AdditionalTarget,
     [hashtable]$buildInfo,
     [ValidateSet('Release','Debug')]
     [string]$Configuration="Release",
     [switch]$FullInit,
     [switch]$SkipLLvm
 )
-
-<#
-Number of processors < 6;
-This is generally an inefficient number of cores available (Ideally 6-8 are needed for a timely build)
-On an automated build service this may cause the build to exceed the time limit allocated for a build
-job. (As an example AppVeyor has a 1hr per job limit with VMs containing only 2 cores, which is
-unfortunately just not capable of completing the build for a single platform+configuration in time,
-let alone multiple combinations.)
-#>
-
-if( [System.Environment]::ProcessorCount -lt 6 )
-{
-    Write-Warning "ProcessorCount{ $([System.Environment]::ProcessorCount) } < 6; Performance will suffer"
-}
 
 Push-location $PSScriptRoot
 
@@ -68,6 +55,11 @@ try
     if(!$buildInfo)
     {
         $buildInfo = Initialize-BuildEnvironment -FullInit:$FullInit
+    }
+
+    if ([string]::IsNullOrWhiteSpace($AdditionalTarget))
+    {
+        throw "The AdditionalTarget parameter is required and cannot be null, empty, or all whitespace."
     }
 
     $AddtionalTarget = [LlvmTarget]$AdditionalTarget
