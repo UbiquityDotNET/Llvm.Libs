@@ -65,7 +65,6 @@ jobs:
           path: .\BuildOutput\Nuget
 
   build_meta_package:
-    needs: build_target
     runs-on: windows-latest
     steps:
       - name: Checkout Repo
