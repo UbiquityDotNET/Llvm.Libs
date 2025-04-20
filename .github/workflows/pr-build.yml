@@ -4,7 +4,6 @@ on:
     branches:
       - develop
       - llvm_20
-
     paths-ignore:
       - '**.md'
 
@@ -12,6 +11,8 @@ on:
     branches:
       - develop
       - llvm_20
+    paths-ignore:
+      - '**.md'
 
 jobs:
   build_target:
