@@ -6,7 +6,8 @@ function New-LlvmCmakeConfig
         [LlvmTarget]$additionalTarget,
         [string]$buildConfig,
         [hashtable]$buildInfo,
-        [string]$cmakeSrcRoot = $buildInfo['LlvmRoot']
+        [string]$cmakeSrcRoot = $buildInfo['LlvmRoot'],
+        [switch]$AllTargets
     )
 
     $cmakeConfig = New-CMakeConfig $name $buildConfig $buildInfo $cmakeSrcRoot
@@ -30,12 +31,12 @@ function New-LlvmCmakeConfig
     $buildVars['LLVM_INCLUDE_TESTS'] = "OFF"
     $buildVars['LLVM_INCLUDE_TOOLS'] = "OFF"
     $buildVars['LLVM_INCLUDE_UTILS'] = "OFF"
-    $buildVars['LLVM_TARGETS_TO_BUILD'] = "$(Get-NativeTarget);$additionalTarget"
+    $buildVars['LLVM_TARGETS_TO_BUILD']  = $AllTargets ? "all" : "$(Get-NativeTarget);$additionalTarget"
     $buildVars['LLVM_ADD_NATIVE_VISUALIZERS_TO_SOLUTION'] = "ON"
 
     if ($IsWindows)
     {
-        $buildVars['LLVM_ENABLE_PDB'] = "TRUE"
+        $buildVars['LLVM_ENABLE_PDB'] = "ON"
     }
 
     return $cmakeConfig

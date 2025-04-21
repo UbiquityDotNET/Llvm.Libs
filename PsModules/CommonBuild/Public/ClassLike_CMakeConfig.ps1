@@ -71,7 +71,7 @@ function New-CMakeConfig($name, [string]$buildConfiguration, [hashtable]$buildIn
     $self = @{}
     if($IsWindows)
     {
-        # TODO: Convert this to use NIJA for faster builds... [Maybe]
+        # TODO: Convert this to use NINJA for faster builds... [Maybe]
         $self['Generator'] = 'Visual Studio 17 2022'
     }
     else
@@ -125,7 +125,8 @@ function Invoke-GenerateCMakeConfig([hashtable]$self, [hashtable] $additionalBui
 
     # Construct full set of CMAKE args from fixed options and configuration variables
     $cmakeArgs = New-Object System.Collections.ArrayList
-    $cmakeArgs.Add("-G $($self['Generator'])" ) | Out-Null
+    $cmakeArgs.AddRange(@('-G', "$($self['Generator'])") ) | Out-Null
+    $cmakeArgs.AddRange(@('-B', "$($self['BuildRoot'])") ) | Out-Null
     foreach( $param in $self['CMakeCommandArgs'] )
     {
         $cmakeArgs.Add( $param ) | Out-Null
@@ -154,21 +155,10 @@ function Invoke-GenerateCMakeConfig([hashtable]$self, [hashtable] $additionalBui
 
     $cmakeArgs.Add( $self['SrcRoot'] ) | Out-Null
     Invoke-TimedBlock "CMAKE Generate" {
-        Push-Location $self['BuildRoot']
-        try
-        {
-            Write-Information "cmake $cmakeArgs"
-            # Splat the array of args as distinct for external invoke
-            Invoke-External cmake @cmakeArgs
-        }
-        catch
-        {
-            throw
-        }
-        finally
-        {
-            Pop-Location
-        }
+        Write-Information "cmake $cmakeArgs"
+
+        # Splat the array of args as distinct elements for external invoke
+        Invoke-External cmake @cmakeArgs
     }
 }
 
@@ -177,14 +167,25 @@ function Invoke-GenerateCMakeConfig([hashtable]$self, [hashtable] $additionalBui
 # see: https://github.com/PowerShell/PowerShell/issues/13637
 New-Alias -Name Generate-CMakeConfig -Value Invoke-GenerateCMakeConfig
 
-function Build-CmakeConfig([hashtable]$self)
+function Build-CmakeConfig([hashtable]$self, $targets)
 {
     Assert-IsCMakeConfig $self
+    $cmakeArgs = [System.Collections.ArrayList]@('--build', "$($self['BuildRoot'])", '--config', "$($self['ConfigurationType'])")
+    if($targets)
+    {
+        $cmakeArgs.Add('-t')
+        $cmakeArgs.AddRange($targets)
+    }
+
+    if($self['BuildCommandArgs'].Length -gt 0)
+    {
+        $cmakeArgs.AddRange( @('--', "$($self['BuildCommandArgs'])") )
+    }
+
     Invoke-TimedBlock "CMake Building $($self['Name'])" {
-        $cmakeArgs = @('--build', "$($self['BuildRoot'])", '--config', "$($self['ConfigurationType'])", '--', "$($self['BuildCommandArgs'])")
         Write-Information "cmake $([string]::Join(' ', $cmakeArgs))"
 
-        # Splat the array of args as distinct for external invoke
+        # Splat the array of args as distinct items for external invoke
         Invoke-External cmake @cmakeArgs
     }
 }

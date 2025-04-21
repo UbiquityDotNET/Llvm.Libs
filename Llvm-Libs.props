@@ -125,16 +125,16 @@
         <AllLlvmLibs>$(AllLlvmLibs);LLVMSymbolize.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMTableGen.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMTableGenBasic.lib</AllLlvmLibs>
-        <!--<AllLlvmLibs>$(AllLlvmLibs);LLVMTableGenCommon.lib</AllLlvmLibs>-->
         <AllLlvmLibs>$(AllLlvmLibs);LLVMTarget.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMTargetParser.lib</AllLlvmLibs>
-        <!--<AllLlvmLibs>$(AllLlvmLibs);LLVMTelemetry.lib</AllLlvmLibs>-->
         <AllLlvmLibs>$(AllLlvmLibs);LLVMTextAPI.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMTextAPIBinaryReader.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMTransformUtils.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMVectorize.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMWindowsDriver.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMWindowsManifest.lib</AllLlvmLibs>
+        <!--<AllLlvmLibs>$(AllLlvmLibs);LLVMTelemetry.lib</AllLlvmLibs>-->
+        <!--<AllLlvmLibs>$(AllLlvmLibs);LLVMTableGenCommon.lib</AllLlvmLibs>-->
     </PropertyGroup>
 
     <PropertyGroup Condition="$(LlvmTargets.Contains('AArch64'))">
@@ -307,7 +307,6 @@
         <AllLlvmLibs>$(AllLlvmLibs);LLVMXCoreDesc.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMXCoreDisassembler.lib</AllLlvmLibs>
         <AllLlvmLibs>$(AllLlvmLibs);LLVMXCoreInfo.lib</AllLlvmLibs>
-        <AllLlvmLibs>$(AllLlvmLibs);LLVMXRay.lib</AllLlvmLibs>
     </PropertyGroup>
 
     <ItemDefinitionGroup>
