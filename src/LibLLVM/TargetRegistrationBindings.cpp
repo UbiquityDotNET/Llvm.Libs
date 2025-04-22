@@ -17,11 +17,14 @@ using namespace std::string_view_literals;
 //
 // EXPERIMENTAL: ARC, CSKY, DirectX, M68k, XTensa
 
-#define STR_(t) #t
-#define STR(t) STR_(t)
-
 namespace
 {
+    template<class TCollection, typename TElement>
+    constexpr bool contains(TCollection&& c, TElement v)
+    {
+        return std::find(std::begin(c), std::end(c), v) != std::end(c);
+    };
+
     // Converts a string into a target; This has some flexibility
     // on casing and spellings to allow for simpler build infrastructure
     // The names used in the preprocessor symbols don't need to be
@@ -198,36 +201,69 @@ namespace
     }
 #endif
 
-    constexpr LibLLVMCodeGenTarget NativeTarget = mk_target(STR(LIBLLVM_NATIVE_TARGET));
-    constexpr LibLLVMCodeGenTarget AdditionalTarget = mk_target(STR(LIBLLVM_ADDITIONAL_TARGET));
-
-    static_assert(NativeTarget != CodeGenTarget_None, "LIBLLVM_NATIVE_TARGET did not resolve to a valid supported target");
-    static_assert(AdditionalTarget != CodeGenTarget_None, "LIBLLVM_ADDITIONAL_TARGET did not resolve to a valid supported target");
-
-    constexpr bool NativeOnly = NativeTarget == AdditionalTarget;
-    constexpr int NumTargets = NativeOnly ? 1 : 2;
-
-    constexpr bool is_supported_target(LibLLVMCodeGenTarget target)
-    {
-        // Native and all are always "supported" [They are aliases for whatever is actually supported].
-        if (target == CodeGenTarget_Native || target == CodeGenTarget_All)
-        {
-            return true;
-        }
-
-        // Test to see if the target is supported by this compilation
-        // use of `constexpr if` to avoid compiler specific WARNING about redundant check
-        // when NativeTarget == AdditionalTarget
-        if constexpr (NativeOnly)
-        {
-            return target == NativeTarget;
-        }
-        else
-        {
-            return target == NativeTarget
-                || target == AdditionalTarget;
-        }
-    }
+    // compile time const array of all supported targets for this build
+    constexpr std::array AvailableTargets {
+     #if (LLVM_HAS_AARCH64_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_AArch64,
+     #endif
+     #if (LLVM_HAS_AMDGPU_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_AMDGPU,
+     #endif
+     #if (LLVM_HAS_ARM_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_ARM,
+     #endif
+     #if (LLVM_HAS_AVR_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_AVR,
+     #endif
+     #if (LLVM_HAS_BPF_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_BPF,
+     #endif
+     #if (LLVM_HAS_HEXAGON_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_Hexagon,
+     #endif
+     #if (LLVM_HAS_LANAI_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_Lanai,
+     #endif
+     #if (LLVM_HAS_LOONGARCH_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_LoongArch,
+     #endif
+     #if (LLVM_HAS_MIPS_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_MIPS,
+     #endif
+     #if (LLVM_HAS_MSP430_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_MSP430,
+     #endif
+     #if (LLVM_HAS_NVPTX_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_NVPTX,
+     #endif
+     #if (LLVM_HAS_POWERPC_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_PowerPC,
+     #endif
+     #if (LLVM_HAS_RISCV_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_RISCV,
+     #endif
+     #if (LLVM_HAS_SPARC_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_Sparc,
+     #endif
+     #if (LLVM_HAS_SPIRV_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_SPIRV,
+     #endif
+     #if (LLVM_HAS_SYSTEMZ_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_SystemZ,
+     #endif
+     #if (LLVM_HAS_VE_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_VE,
+     #endif
+     #if (LLVM_HAS_WEBASSEMBLY_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_WebAssembly,
+     #endif
+     #if (LLVM_HAS_X86_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_X86,
+     #endif
+     #if (LLVM_HAS_XCORE_TARGET)
+        LibLLVMCodeGenTarget::CodeGenTarget_XCore,
+     #endif
+    };
 
     constexpr bool is_enum_defined(LibLLVMCodeGenTarget target)
     {
@@ -263,6 +299,17 @@ namespace
         }
     }
 
+    constexpr bool is_supported_target(LibLLVMCodeGenTarget target)
+    {
+        // Native and all are always "supported" [They are aliases for whatever is actually supported].
+        if (target == CodeGenTarget_Native || target == CodeGenTarget_All)
+        {
+            return true;
+        }
+
+        return contains(AvailableTargets, target);
+    }
+
     constexpr bool has_flag(LibLLVMTargetRegistrationKind value, LibLLVMTargetRegistrationKind flag)
     {
         return 0 != (static_cast<std::int32_t>(value) & static_cast<std::int32_t>(flag));
@@ -270,22 +317,14 @@ namespace
 
     void RegisterTargetNative(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
-        if (has_flag(registrations, TargetRegistration_Target))
+        // For native registration all three are done at once.
+        if ( has_flag(registrations, TargetRegistration_Target)
+          || has_flag(registrations, TargetRegistration_TargetInfo)
+          || has_flag(registrations, TargetRegistration_TargetMachine)
+        )
         {
             LLVMInitializeNativeTarget();
         }
-
-        /* Not supported for the this target
-        if( registrations.HasFlag( TargetRegistration.TargetInfo ) )
-        {
-            LLVMInitializeNativeTargetInfo( );
-        }
-
-        if( registrations.HasFlag( TargetRegistration.TargetMachine ) )
-        {
-            LLVMInitializeNativeTargetMC( );
-        }
-        */
 
         if (has_flag(registrations, TargetRegistration_AsmPrinter))
         {
@@ -678,12 +717,12 @@ namespace
         }
 
         /* Not supported for this target
-        if( registrations.HasFlag( TargetRegistration.Disassembler ) )
+        if( has_flag(registrations, TargetRegistration_Disassembler ) )
         {
             LLVMInitializeNVPTXDisassembler( );
         }
 
-        if( registrations.HasFlag( TargetRegistration.AsmParser ) )
+        if( has_flag(registrations, TargetRegistration_AsmParser ) )
         {
             LLVMInitializeNVPTXAsmParser( );
         }
@@ -820,12 +859,12 @@ namespace
         }
 
         /* Not supported for this target
-        if( registrations.HasFlag( TargetRegistration.Disassembler ) )
+        if( has_flag(registrations, TargetRegistration_Disassembler ) )
         {
             LLVMInitializeSPIRVDisassembler( );
         }
 
-        if( registrations.HasFlag( TargetRegistration.AsmParser ) )
+        if( has_flag(registrations, TargetRegistration_AsmParser ) )
         {
             LLVMInitializeSPIRVAsmParser( );
         }
@@ -1002,12 +1041,45 @@ namespace
         }
 
         /* Not supported for this target
-        if( registrations.HasFlag( TargetRegistration.AsmParser ) )
+        if( has_flag(registrations, TargetRegistration_AsmParser ) )
         {
             LLVMInitializeXCoreAsmParser( );
         }
         */
 #endif
+    }
+
+    void RegisterAllTargets(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
+    {
+        if ( has_flag(registrations, TargetRegistration_Target))
+        {
+            LLVMInitializeAllTargets();
+        }
+
+        if (has_flag(registrations, TargetRegistration_TargetInfo))
+        {
+            LLVMInitializeAllTargetInfos();
+        }
+
+        if (has_flag(registrations, TargetRegistration_TargetMachine))
+        {
+            LLVMInitializeAllTargetMCs();
+        }
+
+        if (has_flag(registrations, TargetRegistration_AsmPrinter))
+        {
+            LLVMInitializeAllAsmPrinters();
+        }
+
+        if (has_flag(registrations, TargetRegistration_Disassembler))
+        {
+            LLVMInitializeAllDisassemblers();
+        }
+
+        if( has_flag(registrations, TargetRegistration_AsmParser ) )
+        {
+            LLVMInitializeAllAsmParsers( );
+        }
     }
 
     LLVMErrorRef validate_supported_target(LibLLVMCodeGenTarget target)
@@ -1138,12 +1210,7 @@ extern "C"
             return nullptr;
 
         case CodeGenTarget_All:
-            RegisterTargetNative(registrations);
-            if constexpr (!NativeOnly)
-            {
-                // Recursive call but not infinitely so as specific type used.
-                return LibLLVMRegisterTarget(AdditionalTarget, registrations);
-            }
+            RegisterAllTargets(registrations);
             return nullptr;
 
         default:
@@ -1153,25 +1220,21 @@ extern "C"
 
     std::int32_t LibLLVMGetNumTargets()
     {
-        return NumTargets;
+        return AvailableTargets.size();
     }
 
     LLVMErrorRef LibLLVMGetRuntimeTargets(LibLLVMCodeGenTarget* targetArray, std::int32_t lengthOfArray)
     {
-        if (lengthOfArray < NumTargets)
+        // size needs to have at least the available targets.
+        // Unused additional elements are left uninitialized...
+        if (lengthOfArray < AvailableTargets.size())
         {
             // sadly C++17 doesn't support constexpr std::format so providing actual number in the
             // error is not an easy option.
             return LLVMCreateStringError("Invalid array length provided");
         }
 
-        targetArray[0] = NativeTarget;
-
-        if constexpr (!NativeOnly)
-        {
-            targetArray[1] = AdditionalTarget;
-        }
-
+        std::copy_n(std::begin(AvailableTargets), lengthOfArray, targetArray);
         return nullptr;
     }
 }

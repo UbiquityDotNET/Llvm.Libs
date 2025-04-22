@@ -24,12 +24,11 @@ strategy.
     <TargetFramework>net9.0</TargetFramework>
 
     <!--
-    TODO: These need to account for the current RID; At present, defaults to Win-x64
+    TODO: Thia needs to account for the current RID; At present, defaults to Win-x64
           But, allows override by invoker (build scripts set it) IDE builds will use
           the default
      -->
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)'==''">win-x64</RuntimeIdentifier>
-    <LibLLVMAdditionalTarget Condition="'$(LibLLVMAdditionalTarget)'==''">AArch64</LibLLVMAdditionalTarget>
 
     <!-- RID specific location of the libraries for each LLVM target -->
     <RidNativeBinPath>$(BaseBuildOutputBinPath)LibLLVM\$(RuntimeIdentifier)</RidNativeBinPath>
@@ -49,7 +48,7 @@ strategy.
     <RepositoryUrl>https://github.com/UbiquityDotNET/Llvm.NET.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>Apache-2.0 WITH LLVM-exception</PackageLicenseExpression>
-    <PackageId>LibLLVM-$(RuntimeIdentifier)-$(LibLLVMAdditionalTarget)</PackageId>
+    <PackageId>LibLLVM-$(RuntimeIdentifier)</PackageId>
   </PropertyGroup>
 
   <!-- Sanity/safety ensure NO referenced packages [Even if injected by Directory.Build.props etc...] -->
@@ -58,24 +57,15 @@ strategy.
   </ItemGroup>
 
   <ItemGroup>
-    <!-- DLL Extension here is RID specific; Each OS uses a different extension (Windows:dll, Linux:so, OsX:dylib) -->
-    <Content Include="$(RidNativeBinPath)\Ubiquity.NET.LibLLVM-$(LibLLVMAdditionalTarget).dll">
+    <!-- TODO: DLL Extension here is RID specific; Each OS uses a different extension (Windows:dll, Linux:so, OsX:dylib) -->
+    <Content Include="$(RidNativeBinPath)\Ubiquity.NET.LibLLVM.dll">
         <PackagePath>runtimes/$(RuntimeIdentifier)/native</PackagePath>
         <Link>runtimes/$(RuntimeIdentifier)/native/%(FileName)%(Extension)</Link>
     </Content>
-    <!--
-    TODO: PDBs are windows specific, symbol handling for other platforms not yet determined.
-          May be an external file with a different extension or built-in...
-    <Content Include="$(RidNativeBinPath)\Ubiquity.NET.LibLLVM-$(LibLLVMAdditionalTarget).pdb">
-        <PackagePath>runtimes/$(RuntimeIdentifier)/native</PackagePath>
-        <Link>runtimes/$(RuntimeIdentifier)/native/%(FileName)%(Extension)</Link>
-    </Content>
-    -->
   </ItemGroup>
 
   <!-- Use LLvmTarget to check for supported binaries before Pack-->
   <Target Name="VerifyBinaryDependencies" BeforeTargets="GenerateNuSpec">
-    <Error Condition="!Exists('$(RidNativeBinPath)\Ubiquity.NET.LibLLVM-$(LibLLVMAdditionalTarget).dll')" Text="Missing Binary - $(RidNativeBinPath)\Ubiquity.NET.LibLLVM-$(LibLLVMAdditionalTarget).dll)" />
-    <Error Condition="!Exists('$(RidNativeBinPath)\Ubiquity.NET.LibLLVM-$(LibLLVMAdditionalTarget).pdb')" Text="Missing Symbols - $(RidNativeBinPath)\Ubiquity.NET.LibLLVM-$(LibLLVMAdditionalTarget).pdb)" />
+    <Error Condition="!Exists('$(RidNativeBinPath)\Ubiquity.NET.LibLLVM.dll')" Text="Missing Binary - $(RidNativeBinPath)\Ubiquity.NET.LibLLVM.dll)" />
   </Target>
 </Project>

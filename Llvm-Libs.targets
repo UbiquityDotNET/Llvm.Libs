@@ -1,18 +1,7 @@
 ﻿<Project InitialTargets="VerifyLlvmVersion">
     <Target Name="VerifyLlvmVersion">
-        <Error Condition="'$(LlvmVersionMajor)'!='20' OR $(LlvmVersionMinor)!='1' OR $(LlvmVersionPatch)!='1'"
-               Text="Llvm Version property was altered (Now: $(LlvmVersionMajor).$(LlvmVersionMinor).$(LlvmVersionPatch)), this will likely cause broken builds or runtime failures"
+        <Error Condition="'$(LlvmVersionMajor)'!='20' OR $(LlvmVersionMinor)!='1' OR $(LlvmVersionPatch)!='3'"
+               Text="Llvm Version property MISMATCH (Now: $(LlvmVersionMajor).$(LlvmVersionMinor).$(LlvmVersionPatch)), this will likely cause broken builds or runtime failures"
                />
-         <Message Importance="High" Text="LlvmTargets: $(LlvmTargets)"/>
-         <Message Importance="High" Text="LibLLVMNativeTarget: $(LibLLVMNativeTarget)"/>
-         <Message Importance="High" Text="LibLLVMAdditionalTarget: $(LibLLVMAdditionalTarget)"/>
-         <Message Importance="High" Text="_LibLlvmNativeOnlyTarget: $(_LibLlvmNativeOnlyTarget)"/>
-    </Target>
-    <Target Name="VerifyLLvmTargets" BeforeTargets="Build">
-        <Error Condition="$([System.String]::IsNullOrWhiteSpace($(LlvmTargets)))" Text="Missing LlvmTargets property - NO targets included; At lease one target is required"/>
-        <Message Importance="High" Text="LlvmTargets: $(LlvmTargets)"/>
-        <Error Condition="$(LlvmTargets.Split(';').Length)&gt;2" Text="Incorrect number of targets [$(LlvmTargets.Split(';').Length)]; Maximum is 2"/>
-        <Error Condition="'$(LlvmTargets)'==''" Text="No Targets specified - broken build infrastructure!"/>
-        <Error Condition="'$(_LibLlvmNativeOnlyTarget)'!='true' AND '$(LibLLVMAdditionalTarget)'==''" Text="LibLLVMAdditionalTarget is blank when it MUST contain a target."/>
     </Target>
 </Project>

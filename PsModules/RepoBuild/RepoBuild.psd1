@@ -48,13 +48,7 @@ RequiredModules = @(Join-Path $PsScriptRoot '..' CommonBuild CommonBuild.psd1)
 # RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-# This works around the problem of exporting PS classes and enums from a script module. (Sadly,
-# there are LOTS of problems with that, including that they MUST all be declared in the top level
-# PSM1 script file - NOT dot source either!) SO to maintain a simpler editing/maintenance process
-# the enums and classes are declared in distinct PS1 script files and run here in the scope of the
-# importer BEFORE anything else in this module. That way they are all available to the importer.
-# [Sigh, what a mess...]
-ScriptsToProcess = @(Join-Path $PsScriptRoot 'Public' 'EnumsAndClasses' '*.ps1')
+#ScriptsToProcess = @()
 
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
@@ -71,6 +65,7 @@ FunctionsToExport = @(
     'Invoke-CloneLlvmFromTag',
     'Get-FunctionsToExport',
     'Get-NativeTarget',
+    'Get-LlvmTargets',
     'Get-LlvmVersionString',
     'Initialize-BuildEnvironment',
     'Invoke-BindingsGenerator',

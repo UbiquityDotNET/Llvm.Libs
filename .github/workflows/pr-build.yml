@@ -11,35 +11,12 @@ on:
     branches:
       - develop
       - llvm_20
+
     paths-ignore:
       - '**.md'
 
 jobs:
   build_target:
-    strategy:
-       matrix:
-         LlvmAdditionalTarget: [
-             AArch64,
-             AMDGPU,
-             ARM,
-             AVR,
-             BPF,
-             Hexagon,
-             Lanai,
-             LoongArch,
-             Mips,
-             MSP430,
-             NVPTX,
-             PowerPC,
-             RISCV,
-             Sparc,
-             SPIRV,
-             SystemZ,
-             VE,
-             WebAssembly,
-             X86,
-             XCore
-         ]
     runs-on: windows-latest
     steps:
       - name: Checkout Repo
@@ -50,22 +27,22 @@ jobs:
 
       - name: Build Source
         shell: pwsh
-        run: .\Build-NativeAndOneTarget.ps1 -ForceClean -AdditionalTarget '${{ matrix.LlvmAdditionalTarget }}'
+        run: .\Build-LibLLVMAndPackage.ps1 -FullInit
 
       - name: Upload build logs
         if: always() && github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: BuildLogs-win-x64-${{ matrix.LlvmAdditionalTarget }}
+          name: BuildLogs-win-x64
           path: .\BuildOutput\BinLogs
 
       - name: Upload NuGET Packages
         uses: actions/upload-artifact@v4
         with:
-          name: win-x64-${{ matrix.LlvmAdditionalTarget }}
+          name: win-x64-nuget
           path: .\BuildOutput\Nuget
 
-  build_meta_package:
+  build_hndle_package:
     runs-on: windows-latest
     steps:
       - name: Checkout Repo
@@ -74,12 +51,12 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Build RID specific Metapackage
+      - name: Build Handle Source package
         shell: pwsh
-        run: .\Build-Package.ps1
+        run: .\Build-HandlesPackage.ps1 -FullInit
 
-      - name: Upload RID specific Meta Package
+      - name: Upload Handle Package
         uses: actions/upload-artifact@v4
         with:
-          name: win-x64-meta-package
+          name: interop-handle-package
           path: .\BuildOutput\Nuget

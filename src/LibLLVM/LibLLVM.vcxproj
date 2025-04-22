@@ -27,14 +27,6 @@
     <GenerateVersionInfoHeader>true</GenerateVersionInfoHeader>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
-    <!--
-    For ease of local development in IDE, pick the most common native target.
-    FOr the additional target it is the most likely "last built" LLVM target.
-    In automated/command line builds this is provided by scripting/build matrix
-    and always matches what was built for the LLVM libraries.
-    -->
-    <LibLLVMNativeTarget Condition="'$(LibLLVMNativeTarget)'==''">X86</LibLLVMNativeTarget>
-    <LibLLVMAdditionalTarget Condition="'$(LibLLVMAdditionalTarget)'==''">XCore</LibLLVMAdditionalTarget>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -48,46 +40,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>Ubiquity.NET.$(MSBuildProjectName)-$(LibLLVMAdditionalTarget)</TargetName>
+    <TargetName>Ubiquity.NET.$(MSBuildProjectName)</TargetName>
   </PropertyGroup>
-  <!--
-  These **MUST** match the LLVM static libraries settings for a Release build as that is the ONLY way those are built/packaged
-  The DEBUG build is too large and cumbersome to manage using "FREE/OSS" build infrastructure.
-  -->
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <AdditionalOptions>%(AdditionalOptions) /Zc:__cplusplus /bigobj -w14062 /Gw /EHs-c-</AdditionalOptions>
-      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
-      <AdditionalIncludeDirectories>include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ConformanceMode>true</ConformanceMode>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4141;4146;4244;4267;4291;4351;4456;4457;4458;4459;4503;4624;4722;4100;4127;4512;4505;4610;4510;4702;4245;4706;4310;4701;4703;4389;4611;4805;4204;4577;4091;4592;4319;4709;5105;4324;4251;4275</DisableSpecificWarnings>
-      <ExceptionHandling />
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <Optimization>MaxSpeed</Optimization>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <TreatSpecificWarningsAsErrors>4238</TreatSpecificWarningsAsErrors>
-      <UseFullPaths>false</UseFullPaths>
-      <UseStandardPreprocessor>true</UseStandardPreprocessor>
-      <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_HAS_EXCEPTIONS=0;_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_CRT_NONSTDC_NO_WARNINGS;_SCL_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;UNICODE;_UNICODE;__STDC_CONSTANT_MACROS;__STDC_FORMAT_MACROS;__STDC_LIMIT_MACROS;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
-      <ObjectFileName>$(IntDir)</ObjectFileName>
-      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <ModuleDefinitionFile>EXPORTS.g.DEF</ModuleDefinitionFile>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
     <None Include="EXPORTS.g.DEF" />
