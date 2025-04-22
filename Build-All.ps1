@@ -3,7 +3,7 @@ using module "PSModules/RepoBuild/RepoBuild.psd1"
 
 <#
 .SYNOPSIS
-    Script to build all of the LLvm.NET Interop code base
+    Script to build all of the LLvm.NET Interop code base.
 
 .PARAMETER Configuration
     This sets the build configuration to use, default is "Release" though for inner loop development this
@@ -12,9 +12,18 @@ using module "PSModules/RepoBuild/RepoBuild.psd1"
 .PARAMETER ForceClean
     Forces a complete clean (Recursive delete of the build output)
 
+.PARAMETER SkipLLVM
+    Skips generate and build of LLVM libraries (Assumes already done once). This can dramatically
+    inmprove the local loop for developer work. Most of the time is spent on the actual dynamic
+    library or extensions. Once a LLVM build exists for a given version it is rarely needed again
+    for local use.
+
 .DESCRIPTION
     This script is NOT used by the automated build to perform the actual build. Instead this
     is used to automate local builds and validate stages before commiting changes to the repo.
+    It will serialize the build for the current RID and handles. (The automated build can run
+    various stages in parallel, including each RID)
+
     The Ubiquity.NET family of projects all employ a PowerShell driven build that is generally
     divorced from the automated build infrastructure used. This is done for several reasons, but
     the most important ones are the ability to reproduce the build locally for inner development
@@ -27,8 +36,7 @@ using module "PSModules/RepoBuild/RepoBuild.psd1"
 Param(
     [string]$Configuration="Release",
     [switch]$ForceClean,
-    [switch]$SkipLLvm,
-    $OnlyTargets
+    [switch]$SkipLLvm
 )
 
 Push-Location $PSScriptRoot
@@ -49,30 +57,13 @@ try
         remove-Item -Recurse -Force -Path $buildInfo['BuildOutputPath'] -ProgressAction SilentlyContinue
     }
 
-    New-Item -ItemType Directory $buildInfo['NuGetOutputPath'] -ErrorAction SilentlyContinue | Out-Null
-
-    # run the matrix of targets for this run-time on this machine
-    # NOTE: This will produce a VERY large output and will almost certainly fail
-    #       to run in an automated build. This script is intended for use with local
-    #       builds and will take a LONG time to run all of these as they must be
-    #       done sequentially. (~40 mins per target * 19 targets == 12hrs of run time!)
-    #       This is best done overnight after veryfying at least one target builds correctly
-    # for tighter testing, this can be forced to only one target
-    if ($OnlyTargets)
-    {
-        $targets = $OnlyTargets | %{[Enum]::Parse[LLvmTarget]($_)}
-    }
-    else
-    {
-        $targets = [enum]::GetValues([LlvmTarget])
-    }
-
-    foreach($target in $targets)
-    {
-        .\Build-NativeAndOneTarget.ps1 $target $buildInfo -SkipLLvm:$SkipLLvm
-    }
-
-    .\Build-Package.ps1 $buildInfo
+    # TODO: iterate over all supported runtimes. Current win-x64 is the only one supported
+    #       Not really sure if that's even possible for local builds as it requires the RID
+    #       of this session to match the intended build...
+    # On an automated build these two steps can and do occur in parallel as there are no binary
+    # dependecies between them.
+    .\Build-LibLLVMAndPackage.ps1 $buildInfo -SkipLLvm:$SkipLLvm -Configuration $Configuration
+    .\Build-HandlesPackage.ps1 $buildInfo -SkipLLvm:$SkipLLvm
 }
 catch
 {

@@ -7,7 +7,7 @@
     <RootNamespace>MyApplication</RootNamespace>
     <AssemblyName>MyApplication</AssemblyName>
     <Name>RepoBuild</Name>
-    <DebugArguments>-SkipLlvm</DebugArguments>
+    <DebugArguments>LlvmCore</DebugArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,10 +35,6 @@
     but the 'PowerShell Tools for Visual Studio 2022' project system can't handle that
     and complains.
 
-    Additionally to work around problems of exporting PS enums and classes they are
-    contained in a distinct subfolder of Public to allow running them all in the inporting
-    space. Use of a subfolder including glob would break that.
-
     Also NOTE that folder delimiters are forced to use WINDOWS ONLY '\'
     despite the fact that msbuild is generally agnostic. Again the VSIX extension can't
     handle things properly without it. (Ditto for the `Folder` Items as well...)
@@ -49,14 +45,12 @@
     uses a glob pattern to find all of the script files and exports the functions contained
     within it.
     -->
-    <Compile Include="Public\EnumsAndClasses\*.ps1" />
     <Compile Include="Public\*.ps1" />
     <Compile Include="Private\*.ps1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Private\" />
     <Folder Include="Public\" />
-    <Folder Include="Public\EnumsAndClasses\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\PowerShell Tools for Visual Studio\PowerShellTools.targets" Condition="Exists('$(MSBuildExtensionsPath)\PowerShell Tools for Visual Studio\PowerShellTools.targets')" />
 </Project>

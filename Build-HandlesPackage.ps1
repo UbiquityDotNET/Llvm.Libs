@@ -41,14 +41,8 @@ try
     # run the generator so the generated handle source output is available to the pack
     Invoke-BindingsGenerator $buildInfo $generatorOptions
 
-    # TODO: Need to build the sources as a distinct package AND each RID gets a "meta" package to
-    # reference each of the target packages (each one is created distinct to allow posting
-    # to NuGet service etc... Otherwise it's too big!)
-
-    # Build Package For the generated source handles AND the per RID meta package
-    # TODO: Split this out as the handles are NOT per-rid, they are a one time thing
+    # Build Package For the generated source handles
     Invoke-external dotnet pack (Join-Path $buildInfo['SrcRootPath'] 'Ubiquity.NET.Llvm.Interop.Handles' 'Ubiquity.NET.Llvm.Interop.Handles.csproj')
-    Invoke-external dotnet pack (Join-Path $buildInfo['SrcRootPath'] 'LibLLVMNugetMetaPackage' 'LibLLVMNugetMetaPackage.csproj')
 }
 catch
 {

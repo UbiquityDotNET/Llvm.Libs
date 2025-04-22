@@ -9,8 +9,8 @@
     <File Path="../.gitignore" />
     <File Path="../.gitmodules" />
     <File Path="../Build-All.ps1" />
-    <File Path="../Build-NativeAndOneTarget.ps1" />
-    <File Path="../Build-Package.ps1" />
+    <File Path="../Build-HandlesPackage.ps1" />
+    <File Path="../Build-LibLLVMAndPackage.ps1" />
     <File Path="../BuildVersion.xml" />
     <File Path="../Directory.Build.props" />
     <File Path="../Directory.Build.targets" />
@@ -46,7 +46,6 @@
     <BuildType Project="Release" />
   </Project>
   <Project Path="LibLLVMNuget/LibLLVmNuget.csproj" />
-  <Project Path="LibLLVMNugetMetaPackage/LibLLVmNugetMetaPackage.csproj" />
   <Project Path="LlvmBindingsGenerator/LlvmBindingsGenerator.csproj" />
   <Project Path="Ubiquity.NET.Llvm.Interop.Handles/Ubiquity.NET.Llvm.Interop.Handles.csproj" />
 </Solution>

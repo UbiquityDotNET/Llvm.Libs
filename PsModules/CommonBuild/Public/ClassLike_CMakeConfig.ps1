@@ -64,15 +64,15 @@ function New-CMakeConfig($name, [string]$buildConfiguration, [hashtable]$buildIn
 .PARAMETER buildInfo
     Hashtable containing the standard build information.
 
-.PARAMETER cmakrSrcRoot
+.PARAMETER cmakeSrcRoot
     Root of the CMAKE source files to build
 #>
     # start with an empty hash table and build up from there...
     $self = @{}
     if($IsWindows)
     {
-        # TODO: Convert this to use NINJA for faster builds... [Maybe]
-        $self['Generator'] = 'Visual Studio 17 2022'
+        #$self['Generator'] = 'Visual Studio 17 2022'
+        $self['Generator'] = 'Ninja'
     }
     else
     {
@@ -87,27 +87,35 @@ function New-CMakeConfig($name, [string]$buildConfiguration, [hashtable]$buildIn
     $self['CMakeCommandArgs'] = [System.Collections.ArrayList]@()
     $self['BuildCommandArgs'] = [System.Collections.ArrayList]@()
     $self['InheritEnvironments'] = [System.Collections.ArrayList]@()
+    $self['CMakeBuildVariables'] = @{}
 
-    if($IsWindows)
+    # single config generator; Requires setting the configuration type
+    # as a build var during generation (Otherwise, debug is assumed...)
+    if($self['Generator'] -ieq 'Ninja')
     {
-        # running on ARM64 is not tested or supported
-        # This might not be needed now that the build is auto configuring the "VCVARS"
-        # Ninja build might also remove the need for this...
-        if ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq "X64" )
-        {
-            $self['CMakeCommandArgs'].Add('-Thost=x64') | Out-Null
-            $self['InheritEnvironments'].Add('msvc_x64_x64') | Out-Null
-        }
-        else
-        {
-            $self['InheritEnvironments'].Add('msvc_x64') | Out-Null
-        }
-
-        # pass the /m switch to MSBUILD to enable parallel builds on all available CPU cores
-        $self['BuildCommandArgs'].Add('/m') | Out-Null
+        $self['CMakeBuildVariables']['CMAKE_BUILD_TYPE']=$self['ConfigurationType']
     }
 
-    $self['CMakeBuildVariables'] = @{}
+    # Not needed with Ninja builds
+    #if($IsWindows)
+    #{
+    #    # running on ARM64 is not tested or supported
+    #    # This might not be needed now that the build is auto configuring the "VCVARS"
+    #    # Ninja build might also remove the need for this...
+    #    if ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq "X64" )
+    #    {
+    #        $self['CMakeCommandArgs'].Add('-Thost=x64') | Out-Null
+    #        $self['InheritEnvironments'].Add('msvc_x64_x64') | Out-Null
+    #    }
+    #    else
+    #    {
+    #        $self['InheritEnvironments'].Add('msvc_x64') | Out-Null
+    #    }
+    #
+    #    # pass the /m switch to MSBUILD to enable parallel builds on all available CPU cores
+    #    $self['BuildCommandArgs'].Add('/m') | Out-Null
+    #}
+
     Assert-IsCMakeConfig $self
     return $self
 }
@@ -155,7 +163,7 @@ function Invoke-GenerateCMakeConfig([hashtable]$self, [hashtable] $additionalBui
 
     $cmakeArgs.Add( $self['SrcRoot'] ) | Out-Null
     Invoke-TimedBlock "CMAKE Generate" {
-        Write-Information "cmake $cmakeArgs"
+        Write-Information  "cmake $($cmakeArgs -join ' ')"
 
         # Splat the array of args as distinct elements for external invoke
         Invoke-External cmake @cmakeArgs
@@ -173,7 +181,7 @@ function Build-CmakeConfig([hashtable]$self, $targets)
     $cmakeArgs = [System.Collections.ArrayList]@('--build', "$($self['BuildRoot'])", '--config', "$($self['ConfigurationType'])")
     if($targets)
     {
-        $cmakeArgs.Add('-t')
+        $cmakeArgs.Add('-t') | Out-Null
         $cmakeArgs.AddRange($targets)
     }
 
@@ -183,7 +191,7 @@ function Build-CmakeConfig([hashtable]$self, $targets)
     }
 
     Invoke-TimedBlock "CMake Building $($self['Name'])" {
-        Write-Information "cmake $([string]::Join(' ', $cmakeArgs))"
+        Write-Information "cmake $($cmakeArgs -join ' ')"
 
         # Splat the array of args as distinct items for external invoke
         Invoke-External cmake @cmakeArgs

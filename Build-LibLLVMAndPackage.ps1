@@ -3,43 +3,23 @@ using module "PSModules/RepoBuild/RepoBuild.psd1"
 
 <#
 .SYNOPSIS
-    Builds the native code Extended LLVM C API DLL for a target
+    Builds the native code Extended LLVM C API DLL for the current RID.
 
 .PARAMETER Configuration
     This sets the build configuration to use, default is "Release" though for inner loop development this may be set to "Debug"
-
-.PARAMETER AdditionalTarget
-    Specifies the one target (besides the native target for the runtime of the current build).
 
 .PARAMETER FullInit
     Performs a full initialization. A full initialization includes forcing a re-capture of the time stamp for local builds
     as well as writes details of the initialization to the information and verbose streams.
 
-.NOTE
-This script is unfortunately necessary due to several factors:
-  1. SDK projects cannot reference VCXPROJ files correctly since they are multi-targeting
-     and VCXproj projects are not
-  2. packages.config NUGET is hostile to shared version control as it insists on placing full
-     paths to the NuGet dependencies and build artifacts into the project file. (e.g. adding a
-     NuGet dependency modifies the project file to inject hard coded FULL paths guaranteed to
-     fail on any version controlled project when built on any other machine)
-  3. Packing the final NugetPackage needs the output of the native code project AND that of
-     the managed interop library. But as stated in #1 there can't be a dependency so something
-     has to manage the build ordering independent of the multi-targeting.
-
-  The solution to all of the above is a combination of elements
-  1. The LlvmBindingsGenerator is an SDK project. And generally independent of the native
-     code bits (State of the LLVM libs build is not relevant to this project; It only needs
-     the source code [headers really] as the input)
-  2. This script to control the ordering of the build so that the native code is built, then the
-     interop lib is restored and finally the interop lib is built with multi-targeting.
-  3. The interop assembly project includes the NuGet packing with "content" references to the
-     native assemblies to place the binaries in the correct "native" "runtimes" folder for NuGet
-     to handle them.
+.DESCRIPTION
+    This builds the per RID Nuget library and NUGET package to indlcude it. The FullInit is important for local builds as
+    it alters the version number used in naming and generation. Thus if only building some parts it is usefull for local
+    builds not to set this. For an automated build it shoud always be set to force use of the commit of the repo as an ID
+    for the build. In such cases the timestamp of the HEAD of the commit for the branch/PR is used so a consistent version
+    is used for ALL builds of the same source - even across multiple runners operating in parallel.
 #>
 Param(
-    [ValidateSet("AArch64", "AMDGPU", "ARM", "AVR", "BPF", "Hexagon", "Lanai", "LoongArch", "Mips", "MSP430", "NVPTX", "PowerPC", "RISCV", "Sparc", "SPIRV", "SystemZ", "VE", "WebAssembly", "X86", "XCore")]
-    $AdditionalTarget,
     [hashtable]$buildInfo,
     [ValidateSet('Release','Debug')]
     [string]$Configuration="Release",
@@ -57,15 +37,11 @@ try
         $buildInfo = Initialize-BuildEnvironment -FullInit:$FullInit
     }
 
-    if ([string]::IsNullOrWhiteSpace($AdditionalTarget))
-    {
-        throw "The AdditionalTarget parameter is required and cannot be null, empty, or all whitespace."
-    }
-
-    $AddtionalTarget = [LlvmTarget]$AdditionalTarget
     $currentRid = [System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier
 
-    #inner loop optimization (shaves ~15s off build if already done)
+    # inner loop optimization (shaves time off build if already done)
+    # Most common inner loop work is with the extended API and final DLL
+    # not with LLVM itself, so this keeps the loop short.
     if(!$SkipLLvm)
     {
         # Download and unpack the LLVM source from the versioned release tag if not already present
@@ -76,18 +52,21 @@ try
         # waster if forgotten. So, test it here as early as possible.)
         Assert-LlvmSourceVersion $buildInfo
 
-        # Verify Cmake version info (Official minimum for LLVM as of 20.1.1)
+        # Verify Cmake version info (Official minimum for LLVM as of 20.1.3)
         Assert-CmakeInfo ([Version]::new(3, 20, 0))
 
-        $nativeTarget = Get-NativeTarget
-        Invoke-TimedBlock "CMAKE generate/Build LLVM libs for '$currentRid'" {
-            $cmakeConfig = New-LlvmCMakeConfig $currentRid $AdditionalTarget 'Release' $buildInfo
-            Generate-CMakeConfig $cmakeConfig
-            Build-CMakeConfig $cmakeConfig
-        }
+        $cmakeConfig = New-LlvmCMakeConfig -AllTargets -Name $currentRid -BuildConfig $Configuration -BuildInfo $buildInfo
+        Generate-CMakeConfig $cmakeConfig
+        Build-CmakeConfig $cmakeConfig @('lib/all')
+
+        # Notify size of build ouput directory as that's a BIG player in total space used in an
+        # automated build sceanrio. (OSS build systems often limit space so it's important to know)
+        $postBuildSize = Get-ChildItem -Recurse $cmakeConfig['BuildRoot'] | Measure-Object -Property Length -sum | %{[math]::round($_.Sum /1Gb, 3)}
+        Write-Information "Post Build Size: $($preDeleteSize)Gb"
     }
 
-    # On Windows Build and run source generator as it is needed by the windows Build to create the exports.g.def file
+    # On Windows Build and run source generator as the generated exports.g.def is needed by the windows
+    # version of the DLL
     if ($IsWindows)
     {
         $extensionsRoot = Join-Path $buildInfo['SrcRootPath'] 'LibLLVM'
@@ -102,8 +81,15 @@ try
         Invoke-BindingsGenerator $buildInfo $generatorOptions
     }
 
-
-    # Build per target library
+    # Build the per target LIBLLVM library (Also per rid)
+    # NOTE: building a dynamic library exporting C++ is NOT an option. Despite the problems of
+    # C++ not providing a stable binary ABI (even for the same vendor compiler across multiple versions)
+    # there is the problem in generating the DLL on Windows (see: https://github.com/llvm/llvm-project/issues/109483)
+    # Thus, this ONLY deals with the stable C ABI exported by the LLVM-C API AND an extended API sepcific
+    # to this repo. If the LLVM issue of building the DLL on Windows is ever resolved, this decision
+    # is worth reconsidering. (There's still the lack of binary ABI but tool vendors go through a LOT not
+    # to break things from version to version so isn't as big a deal as long as the same vendor is used.)
+    #
     # For now the DLL ONLY builds for Windows using MSBUILD (VCXPROJ);
     # TODO: Convert C++ code to CMAKE, this means leveraging CSmeVer build task as a standalone tool so
     # that the version Information is available to the scripts to provide to the build. (See docs generation
@@ -119,19 +105,14 @@ try
         $libLLVMVcxProj = Join-Path 'src' 'LibLLVM' 'LibLLVM.vcxproj'
         Invoke-External nuget restore $libLLVMVcxProj
 
-        # LibLlvm ONLY has a release configuration, the interop lib only ever references that.
-        # The libraries are just too big to produce a Debug build with symbols etc...
-        # Force a release build no matter what the "configuration" parameter is.
-        $libLLvmBuildProps = @{ Configuration = 'Release'
+        $libLLvmBuildProps = @{ Configuration = $Configuration
                                 LlvmVersion = Get-LlvmVersionString $buildInfo
-                                LibLLVMNativeTarget = (Get-NativeTarget)
-                                LibLLVMAdditionalTarget = $AdditionalTarget
                                 RuntimeIdentifier = $currentRid
                               }
         $libLlvmBuildPropList = ConvertTo-PropertyList $libLLvmBuildProps
 
         Write-Information "Building LibLLVM"
-        $libLLVMBinLogPath = Join-Path $buildInfo['BinLogsPath'] "LibLLVM-Build-$currentRid-$AdditionalTarget.binlog"
+        $libLLVMBinLogPath = Join-Path $buildInfo['BinLogsPath'] "LibLLVM-Build-$currentRid.binlog"
         Invoke-external MSBuild '-t:Build' "-p:$libLlvmBuildPropList" "-bl:$libLLVMBinLogPath" '-v:m' $libLLVMVcxProj
     }
 

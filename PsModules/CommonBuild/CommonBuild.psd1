@@ -66,6 +66,7 @@ FunctionsToExport = @(
     'Assert-CMakeList',
     'Assert-OfficialGitRemote',
     'Get-BuildVersionTag',
+    'Assert-IsCMakeConfig',
     'New-CMakeConfig',
     'Invoke-GenerateCMakeConfig',
     'Build-CmakeConfig',

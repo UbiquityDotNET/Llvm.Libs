@@ -45,7 +45,6 @@
         <IsPullRequestBuild Condition="'$(IsPullRequestBuild)'==''">false</IsPullRequestBuild>
         <IsReleaseBuild Condition="'$(IsReleaseBuild)'==''">false</IsReleaseBuild>
         <BuildTime Condition="'$(BuildTime)'=='' AND '$(APPVEYOR_REPO_COMMIT_TIMESTAMP)'!=''">$(APPVEYOR_REPO_COMMIT_TIMESTAMP)</BuildTime>
-        <!--<RuntimeIdentifiers>win-x64</RuntimeIdentifiers>-->
     </PropertyGroup>
     <Choose>
         <!-- Apply standard properties for all C# projects -->
@@ -64,9 +63,6 @@
                 <ImplicitUsings>disable</ImplicitUsings>
                 <!-- NOTE: Top-Level statements blocked as an error in .editorconfig and ImplicitUsings 'feature' VERIFIED in the targets file -->
             </PropertyGroup>
-            <!--<ItemGroup Condition="'$(NoCommonAnalyzers)'!='true'">
-                <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
-            </ItemGroup>-->
         </When>
         <When Condition="'$(MSBuildProjectExtension)'=='.vcxproj'">
             <!-- vcxproj uses a different pattern for output paths -->

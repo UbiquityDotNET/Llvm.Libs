@@ -73,6 +73,7 @@ function Initialize-BuildEnvironment
     }
 
     # Add repo specific values
+    $buildInfo['PackagesRoot'] = Join-Path $buildInfo['BuildOutputPath'] 'packages'
     $buildInfo['OfficialGitRemoteUrl'] = 'https://github.com/UbiquityDotNET/Llvm.Libs.git'
     $buildInfo['LlvmProject'] = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..' '..' '..' 'llvm-project'))
     $buildInfo['LlvmRoot'] = Join-Path $buildInfo['LlvmProject'] 'llvm'
@@ -81,10 +82,14 @@ function Initialize-BuildEnvironment
     $buildInfo['LlvmVersion'] = @{
         Major = 20
         Minor = 1
-        Patch = 1
+        Patch = 3
     }
 
     $buildInfo['LlvmTag'] = "llvmorg-$(Get-LlvmVersionString $buildInfo)"
+
+    New-Item -ItemType Directory -Path $buildInfo['BuildOutputPath'] -ErrorAction SilentlyContinue | Out-Null
+    New-Item -ItemType Directory -Path $buildInfo['PackagesRoot'] -ErrorAction SilentlyContinue | Out-Null
+    New-Item -ItemType Directory $buildInfo['NuGetOutputPath'] -ErrorAction SilentlyContinue | Out-Null
 
     if($FullInit)
     {
