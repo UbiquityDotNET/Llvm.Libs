@@ -42,7 +42,7 @@ jobs:
           name: win-x64-nuget
           path: .\BuildOutput\Nuget
 
-  build_hndle_package:
+  build_handle_package:
     runs-on: windows-latest
     steps:
       - name: Checkout Repo

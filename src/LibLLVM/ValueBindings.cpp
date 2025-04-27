@@ -106,4 +106,15 @@ extern "C"
         *Length = Str.size( );
         return Str.data( );
     }
+
+    LLVMBool LibLLVMHasDbgRecords(LLVMValueRef i)
+    {
+        auto pValue = unwrap(i);
+        if(isa<Instruction>(*pValue))
+        {
+            return static_cast<Instruction*>(pValue)->hasDbgRecords();
+        }
+        return 0;
+
+    }
 }

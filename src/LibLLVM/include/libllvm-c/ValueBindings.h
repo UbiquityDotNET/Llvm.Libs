@@ -78,6 +78,15 @@ extern "C" {
     // NOTE: The returned pointer does not guarantee a terminating '\0' the 'OUT'
     //       Length does contain the valid length of the data.
     const char* LibLLVMGetConstantDataSequentialRawData( LLVMValueRef C, size_t* Length );
+
+    // Determines if an instruction has debug records
+    // NOTE: if i is anything but an instruction this returns 0.
+    // THis is used to prevent access violations in calls to LLVMGetFirstDbgRecord()
+    // where it assumes the value is an instruction AND that the DebugMarker is NOT
+    // nullptr so it is dereferenceable. However, if no Debug records are attached,
+    // then LLVMGetFirstDbgRecord() will crash from a null pointer derference. So,
+    // this function is used to detect such a case before iterating the records.
+    LLVMBool LibLLVMHasDbgRecords(LLVMValueRef i);
 #ifdef __cplusplus
 }
 #endif
