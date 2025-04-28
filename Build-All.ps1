@@ -63,7 +63,7 @@ try
     # On an automated build these two steps can and do occur in parallel as there are no binary
     # dependecies between them.
     .\Build-LibLLVMAndPackage.ps1 $buildInfo -SkipLLvm:$SkipLLvm -Configuration $Configuration
-    .\Build-HandlesPackage.ps1 $buildInfo -SkipLLvm:$SkipLLvm
+    .\Build-HandlesPackage.ps1 $buildInfo
 }
 catch
 {

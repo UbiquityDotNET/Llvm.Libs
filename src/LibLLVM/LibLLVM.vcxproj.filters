@@ -125,5 +125,8 @@
     <ClInclude Include="include\libllvm-c\TargetRegistrationBindings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="enum_flags.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

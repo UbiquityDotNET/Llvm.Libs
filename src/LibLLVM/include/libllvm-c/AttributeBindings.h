@@ -21,20 +21,55 @@
 
 LLVM_C_EXTERN_C_BEGIN
 
-    typedef enum LibLLVMAttrKind {
-        // IR-Level Attributes
-        None,                  ///< No attributes have been set
-#define GET_ATTR_ENUM
-#include "llvm/IR/Attributes.inc"
-        EndAttrKinds,          ///< Sentinel value useful for loops
-        EmptyKey,              ///< Use as Empty key for DenseMap of AttrKind
-        TombstoneKey,          ///< Use as Tombstone key for DenseMap of AttrKind
-    } LibLLVMAttrKind;
+    enum LibLLVMAttributeArgKind
+    {
+        LibLLVMAttributeArgKind_None,
+        LibLLVMAttributeArgKind_Int,
+        LibLLVMAttributeArgKind_Type,
+        LibLLVMAttributeArgKind_ConstantRange,
+        LibLLVMAttributeArgKind_ConstantRangeList,
+        LibLLVMAttributeArgKind_String, // NOTE: if argkind is string then ID is 0
+                                        // String args MAY be BOOL 'true' 'false' but that is a constraint on the value as a string!
+    };
 
-    // caller must release the returned string via LLVMDisposeMessage
+    enum LibLLVMAttributeAllowedOn
+    {
+        LibLLVMAttributeAllowedOn_None,
+        LibLLVMAttributeAllowedOn_Return = 0x0001,
+        LibLLVMAttributeAllowedOn_Parameter = 0x0002,
+        LibLLVMAttributeAllowedOn_Function = 0x0004,
+        LibLLVMAttributeAllowedOn_CallSite = 0x0008,
+        LibLLVMAttributeAllowedOn_Global = 0x0010,
+    };
+
+    struct LibLLVMAttributeInfo
+    {
+        unsigned ID;
+        LibLLVMAttributeArgKind ArgKind;
+        LibLLVMAttributeAllowedOn AllowedOn;
+    };
+
+    // Gets the number of attributes known by this implementation/runtime
+    // The value this returns is used to allocate and array of `char const*`
+    // to use with the LibLLVMGetKnownAttributeNames() API.
+    size_t LibLLVMGetNumKnownAttribs();
+
+    // Fills in an array of const string pointers. No deallocation is needed for each as
+    // they are global static constants.
+    LLVMErrorRef LibLLVMGetKnownAttributeNames(size_t namesLen, /*(OUT, char*[namesLen])*/char const** names);
+
+    // Caller must dispose returned string with DisposeMessage() as it is created
+    // on the fly so it must be disposed of when no longer needed.
     char const* LibLLVMAttributeToString( LLVMAttributeRef attribute );
-    char const* LibLLVMGetAttributeKindName(LibLLVMAttrKind attrKind);
-    char const* LibLLVMGetEnumAttributeKindName(LLVMAttributeRef attribute);
 
+    // Sadly these two kinds of attributes were left out of the official LLVM-C API
+    LLVMBool LibLLVMIsConstantRangeAttribute(LLVMAttributeRef atrribute);
+    LLVMBool LibLLVMIsConstantRangeListAttribute(LLVMAttributeRef atrribute);
+
+    LLVMErrorRef LibLLVMGetAttributeInfo(char* attribName, size_t nameLen, /*[out, byref]*/ LibLLVMAttributeInfo* pInfo);
+
+    // NOTE: String attributes will have a name of "none" as the ID is 0
+    // NOTE: Out of range IDs will have an empty string (ret: nullptr, *len: 0)
+    char const* LibLLVMGetAttributeNameFromID(uint32_t id, /*[Out]*/ uint32_t* len);
 LLVM_C_EXTERN_C_END
 #endif
