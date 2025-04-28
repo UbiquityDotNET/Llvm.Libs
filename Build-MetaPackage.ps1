@@ -7,14 +7,9 @@ using module "PSModules/RepoBuild/RepoBuild.psd1"
 
 .PARAMETER buildInfo
     Optional hashtable of build information already created (Used by local loop Build-all script)
-
-.PARAMETER FullInit
-    Performs a full initialization. A full initialization includes forcing a re-capture of the time stamp for local builds
-    as well as writes details of the initialization to the information and verbose streams.
 #>
 Param(
-    [hashtable]$buildInfo,
-    [switch]$FullInit
+    [hashtable]$buildInfo
 )
 
 Push-location $PSScriptRoot
@@ -23,7 +18,7 @@ try
 {
     if(!$buildInfo)
     {
-        $buildInfo = Initialize-BuildEnvironment -FullInit:$FullInit
+        $buildInfo = Initialize-BuildEnvironment
     }
 
     # Build the meta package

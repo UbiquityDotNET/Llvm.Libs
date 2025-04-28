@@ -23,16 +23,7 @@ INPUT:
             <!-- Native libraries only, no TFM requirements -->
             <group>
                 <!-- List each RID dependency here... At the moment that's just win-x64 -->
-                <dependency id="LibLLVM-win-x64" version="$version$" exclude="Build,Analyzers" />
-            </group>
-
-            <!--
-                For the moment the handles are generated as a package so the meta package includes them
-                If the repos are joined, then this won't need to be here as the source is generated in place
-                and no package is needed.
-            -->
-            <group targetFramework="$tfmGroup$">
-                <dependency id="Ubiquity.NET.Llvm.Interop.Handles" version="$version$" exclude="Build,Analyzers" />
+                <dependency id="Ubiquity.NET.LibLLVM-win-x64" version="$version$" exclude="Build,Analyzers" />
             </group>
         </dependencies>
     </metadata>
