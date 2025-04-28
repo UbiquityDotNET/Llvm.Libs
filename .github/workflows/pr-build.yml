@@ -4,6 +4,7 @@ on:
     branches:
       - develop
       - llvm_20
+
     paths-ignore:
       - '**.md'
 
@@ -42,21 +43,36 @@ jobs:
           name: win-x64-nuget
           path: .\BuildOutput\Nuget
 
-  build_handle_package:
+  build_independent_packages:
     runs-on: windows-latest
     steps:
+      # repo check out needed to support build scripts
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
           persist-credentials: false
           fetch-depth: 0
 
+      # This needs to download the LLVM sources for the supported release
       - name: Build Handle Source package
         shell: pwsh
         run: .\Build-HandlesPackage.ps1 -FullInit
 
-      - name: Upload Handle Package
+      - name: Build Meta Package
+        shell: pwsh
+        run: .\Build-MetaPackage.ps1 -FullInit
+
+      - name: Upload Packages
         uses: actions/upload-artifact@v4
         with:
-          name: interop-handle-package
+          name: nuget-packages
           path: .\BuildOutput\Nuget
+  # link:
+  #   needs: [build_target, build_independent_packages]
+  #   permissions:
+  #           #contents: write # for commenting on your commit # !!!Also grants right to create a release!!! - Not gonna happen!
+  #           pull-requests: write # for commenting on your pr
+  #   steps:
+  #       - uses: beni69/artifact-link@v1
+  #       with:
+  #           token: ${{ github.token }}

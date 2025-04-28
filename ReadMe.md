@@ -3,48 +3,86 @@ This folder contains the low level LLVM native dynamic library support. It requi
 build ordering and processing, which is handled by the PowerShell scripts.
 
 
-## Latest Download
->[!TODO]
-> update this to include all generated packages...
-[![GitHub Releases (by Asset)](https://img.shields.io/github/downloads/UbiquityDotNet/Llvm.Libs/v6.0.1-msvc-15.8/llvm-libs-6.0.1-msvc-15.8.7z.svg)](https://github.com/UbiquityDotNET/Llvm.Libs/releases/download/v6.0.1-msvc-15.8/llvm-libs-6.0.1-msvc-15.8.7z)
+## Status
+### `develop` branch
+![GitHub branch check runs](https://img.shields.io/github/check-runs/UbiquityDotNET/Llvm.Libs/develop)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/UbiquityDotNET/Llvm.Libs/pr-build.yml)
+![GitHub commits since latest release (branch)](https://img.shields.io/github/commits-since/UbiquityDotNET/Llvm.Libs/latest/develop)
+
+### Latest Download
+#### Released Nuget Packages
+|Package Name | Badge |
+|-------------|-------|
+| Ubiquity.NET.Interop.Handles | ![Nuget Download](https://img.shields.io/nuget/dt/Ubiquity.NET.Interop.Handles) |
+| Ubiquity.NET.LibLLVM (Meta package)| ![Nuget Download](https://img.shields.io/nuget/dt/Ubiquity.NET.LibLLVM) |
+| Ubiquity.NET.LibLLVM-win-x64 | ![Nuget Download](https://img.shields.io/nuget/dt/Ubiquity.NET.LibLLVM-win-x64) |
+
+#### PR/CI build packages
+Packages for CI and PR builds are NOT published/released to NuGet.org (nor any other packaging
+service). Instead the are avaliable as artifacts from GitHub directly. The [Actions](https://github.com/UbiquityDotNET/Llvm.Libs/actions)
+tab contains a full list of all workflow runs and the artifacts from each are available from the
+links for each run. (NOTE: GitHub limits the lifetime or artifacts to a maximum of 90 days, though
+this repository may limit that to a lower number, downloading packages built is useful for testing.
+But, bear in mind this mechanism is NOT available for long term use so you should download shortly
+after the PR/CI build completes.)
+
+##### Why not a CI package?
+Simply - it's just too much of a PITA to setup and manage that it isn't worth the time. The
+overhead of setting up such a thing for these packages (and the ability to delete pre-released
+versions after a period of time) is too high or not even plausible. Maybe, the ROI on that will
+change at some point, but as of right now, it's just not worth the bother. Download the artifacts
+you are interested in to your own local file "share" location and use that.
 
 ## About
-LLVM is a large collection of libraries for building compiler back-ends that
-supports a great deal of customization and extensibility. Using LLVM either
-requires building the entire source tree or access to pre-built libraries.
-The source is available, but building a full set of libraries for multiple
-platforms and configurations (e.g. x86-Release, x64-Debug, etc...) can take
-significant time, which can be an issue for an automated build. Many Free for
-OSS project build services like [AppVeyor](http://AppVeyor.com) limit the total
-run time for any given build. Therefore, building the full source won't work there.
+This repo provides runtime dynamic libraries for use of an extended C API for LLVM "bindings" in
+other languages/runtimes (.NET would call these "projections").
 
-In addition to the compilation times, the full size of the output is very large, if
-packaged as a NuGet package it exceeds the size limits of all known public release
-NuGet galleries. Thus, this repository includes building the actual dynamic libraries
-for runtimes and targets supported. The build infrstructure for this is complex.
+LLVM is a large collection of libraries for building compiler back-ends that supports a great deal
+of customization and extensibility. Using LLVM either requires building the entire source tree or
+access to pre-built libraries. The source is available, but building a full set of libraries for
+multiple platforms and configurations (e.g. x86-Release, x64-Debug, etc...) can take significant
+time, and use a LOT of resources, which can be an issue for an automated build. Many Free for OSS
+project build services like [AppVeyor](http://AppVeyor.com) limit the total run time for any given
+build. Therefore, building the full source won't work there.
 
-The nature of MSBUILD projects system and the .NET SDK for the generator drives the need for the
-script, instead of more common solution/workspace dependencies or even MSBuild project to project
-references. Unfortunately, due to the way multi-targeting is done in the newer C# SDK projects
-ecen the project to project references don't work with C++. The VCXproj files don't have
-msbuild targets for all the required .NET targets. Making that all work seamlessly in VS is
-just plain hard work that has, thus far, not worked particularly well. Thus, the design here
-uses a simpler PowerShell script that takes care of building the correct
-platform+configuration+target framework combinations of each and finally builds the NuGet
-package from the resulting binaries.
+In addition to the compilation times, the full size of the debug binaries and symbols output is
+very large, if packaged as a NuGet package it exceeds the size limits of all known public release
+NuGet galleries. Thus, this repository includes building the actual dynamic libraries for runtimes
+and targets supported for RELEASE (No symbols) ONLY. If symbols are needed for local debugging,
+then those are built locally.
+
+>[!NOTE]
+> It is VERY rare to need to debug into the LLVM libraries themselves. So much so that this is
+> mostly a theoretical excercise. Building the extension DLL with debugging is fully supported,
+> and used heavily to debug new additions of the extension APIs.
 
 >[!IMPORTANT]
-> This library exposes a `C` ABI as that is the ONLY stable ABI for x-plat and x-language
-> use. C++ does NOT provide a stable ABI for exported use, even for other C++ consumption.
-> While *nix users will often question that claim because of common use of shared libraries.
-> They are only "getting away with it" because they are using the same compiler + linker +
-> runtime libraries in most cases. However, as soon as you have mismatches of any of those
-> elements things go south REAL fast and in surprising ways for anyone used to it all just
-> working. Thus, for maximum flexibility and compatibility, this exposes ONLY a stable `C`
-> ABI.
+> This library exposes a `C` ABI as that is the ONLY stable ABI for x-plat and x-language use. C++
+> does NOT provide a stable ABI for exported use, even for other C++ consumption. While *nix users
+> will often question, or outright "flame", that claim because of common use of shared libraries.
+> The reality is they are only "getting away with it" because they are using the same compiler +
+> linker +  runtime libraries in most cases. However, as soon as you have mismatches of any of
+> those elements things go south REAL fast and in surprising ways for anyone used to it all just
+> working. ( See this [reddit](https://www.reddit.com/r/cpp/comments/1336m2s/does_c_have_a_stable_abi_or_not/?rdt=46229)
+> discussion for more details.) Thus, for maximum flexibility and compatibility, this exposes ONLY
+> a stable `C` ABI.
 
-## Why A Distinct source generator
-### Roslyn Source Generators - 'There be dragons there!'
+## Projects
+### LlvmBindingsGenerator
+This is the handle for the interop code in Ubiquity.NET.Llvm.Interop. (And the exprots.def
+file for DLL(s) on Windows) It uses CppSharp to parse the C or C++ headers and generates the
+native library exports.g.def (For a Windows DLL) along with the source to C# interop "handle"
+types. The configuration file also helps in detection of missing or removed handle types
+when moving to a newer version of LLVM.
+
+This tool is generally only required once per Major LLVM release. (Though a Minor release
+that adds new APIs would also warrant a new run) However, to ensure the code generation tool
+itself isn't altered with a breaking change, the PowerShell script takes care of building and
+running the generator when needed, even if nothing changes in the end. This is run on every
+automated build so that the output is usable in subsequent steps of the complete build. 
+
+#### Why A Distinct source generator
+##### Roslyn Source Generators - 'There be dragons there!'
 Roslyn allows source generators directly in the compiler making for a feature similar to C++
 template code generation AT compile time. However, there's a copule of BIG issue with that
 for this particular code base. (And these distinctions are hard to get your head around for
@@ -88,7 +126,7 @@ that the interop source generator knows how to generate the correct code.
 > [See also: [Using the CRTP and C++20 Concepts to Enforce Contracts for Static Polymorphism](https://medium.com/@rogerbooth/using-the-crtp-and-c-20-concepts-to-enforce-contracts-for-static-polymorphism-a27d93111a75) ]  
 > [See also: [Rules for Roslyn source generators](https://github.com/dotnet/roslyn/blob/main/docs/features/incremental-generators.cookbook.md)]
 
-#### Alternate solutions considered and rejected
+###### Alternate solutions considered and rejected
 1) Running the source generator directly in the project
     1) This is where the problem of non-deterministic ordering and visibility of the
        generated code was discovered. Obviously (now anyway!) this won't work.
@@ -106,7 +144,7 @@ that the interop source generator knows how to generate the correct code.
        significant factor. This also complicates all parts of the build to where it isn't
        worth the effort.
 
-### The final choice
+##### The final choice
 Keep using this LlvmBindingsGenerator as a generator for the export file on Windows and the
 handle types for all runtimes. This used to work, and still does. The problem of expressing
 managed code things in a custom language (YAML) is solved by simply not doing that! Instead,
@@ -119,28 +157,13 @@ analyzer to perform additional checks and ensure the hand written code matches t
 native code... (Though this would involve more direct use of the roslyn parser/analyzer and
 may be best to generate an input to a proper anaylzer)
 
-## Projects
-### LlvmBindingsGenerator
-This is the handle for the interop code in Ubiquity.NET.Llvm.Interop. (And the exprots.def
-file for DLL(s) on Windows) It uses CppSharp to parse the C or C++ headers and generates the
-native library exports.g.def (For a Windows DLL) along with the source to C# interop "handle"
-types. The configuration file also helps in detection of missing or removed handle types
-when moving to a newer version of LLVM.
-
-This tool is generally only required once per Major LLVM release. (Though a Minor release
-that adds new APIs would also warrant a new run) However, to ensure the code generation tool
-itself isn't altered with a breaking change, the PowerShell script takes care of building and
-running the generator when needed, even if nothing changes in the end. This is run on every
-automated build so that the output is usable in subsequent steps of the complete build. 
-
 ### LibLLVM
-This is the native project that creates the extended LLVM-C API as an actual synamic library.
+This is the native project that creates the extended LLVM-C API as an actual dynamic library.
 At present only Windows x64 is supported, though other configurations are plausible with
-additional build steps in the PowerShell script to build for other platforms.
-The extensions are configured to build with high C++ conformance mode, so they should
-readily build without much modification for other platforms given the appropriate build
-infrastructure is set up. (See additional comments on the [automated build](#automated_build)
-below)
+additional build steps in the PowerShell script to build for other platforms. The extensions are
+configured to build with high C++ conformance mode, so they should readily build without much
+modification for other platforms given the appropriate build infrastructure is set up. (See
+additional comments on the [automated build](#automated_build) below)
 
 ## Building the packages in this repo
 ### General requirements
@@ -155,6 +178,16 @@ package and a couple of different ways to go about completing them.
        functions declared in the headers are exported so that the linker generates an
        error for any missing implementation(s).
         1. This step is run once for each RID+target combination.
+        2. There is an [effort](https://github.com/llvm/llvm-project/issues/109483) ongoing in
+           LLVM to support the declaration of APIs as exported (via the `LLVM_C_ABI` macro) but
+           that is not yet complete.
+            1. As of this release that's only applied on the target specific registration/initializer
+               methods.
+            2. Even when complete this only eliminates the need to generate the DEF file as ideally
+               every exported API would include the `LLVM_C_ABI` marker.
+                1. It might even need some form of global disable to prevent `LLVM_ABI` C++ types or
+                   methods from default exporting and ONLY allow `LLVM_C_ABI' exports. It isn't clear
+                   what the story is going to be there.
  3. Build the LLVM libraries for all supported runtimes (OS+arch) plus one target
     architecture. This helps to ensure an automated build is usable by limiting the
     resources needed for a given step.
@@ -166,53 +199,83 @@ package and a couple of different ways to go about completing them.
  4. Build LibLLVM as a dynamic library for all supported runtimes plus target architecture
 
 ### Automated build
-The interop libraries are built using the Build-NativeAndOneTarget.ps1 PowerShell script.
-This script is required to correctly build the projects in an automated build as it isn't
-possible to accomplish all the required steps in a standard project/solution. (OK,
-impossible is a bit strong as creating custom targets and tasks could probably cover it but
-at the expense of greater complexity). The script is pretty simple though understanding why
-it is needed is a more complex matter this document is aimed towards.
+The extended C dynamic libraries are built using the PowerShell `Build-LibLLVMAndPackage.ps1` script.
+This script is required to correctly build the projects in an automated build as it isn't possible
+to accomplish all the required steps in a standard project/solution. (OK, impossible is a bit strong
+as creating custom targets and tasks could probably cover it but at the expense of greater
+complexity). The script is pretty simple to use and understand.
 
 >[!IMPORTANT]
 > The ease of building multiple platforms is a relative concept and turns out to be MUCH
 > more complicated than one might hope. In particular, is the build of all the required LLVM
-> libraries needed to make a final LibLLVM. The full set will generally exceed both the time
-> and storage space limits of any OSS project automated build system like GitHub Actions,
-> APPVEYOR, etc... Thus, the native libraries are curently limited to ONLY the native target
-> and one additional x-plat target.  
-> Each of these targest requires a build, though they can be done in parallel/matrixed if
-> available. Then the results of those builds are combined into the final interop library
-> with appropriate settings to generate the NUGET pacakge with the various runtime+target
-> dependencies. The Interop library has a custom resolver that will detect the need to load
-> the library and computes the runtime + target specific library name and loads it. Thus,
-> the rest of the code is completely ignorant of the runtime + target or the import library
-> naming.
+> libraries needed to make a final LibLLVM. The full set (For a debug build with symbols) will
+> generally exceed both the time and storage space limits of any OSS project automated build system
+> like GitHub Actions, APPVEYOR, etc... Thus, the native libraries are curently limited to ONLY the
+> release form without symbols. (If symbols are needed or desired then a LOCAL build is required
+> to get them).  
+> Each runtime is (or rather will be) built as a single dynamic library exporting the extended
+> C ABI. Each runtime is bundled as a single NUGET package. A single UBer package is also created
+> simply references the individual runtime packages. Thus a consumer of this library only needs to
+> reference the one "meta" pacakge to get all available runtimes. (and potential future ones added
+> in later releases)
 
 >[!NOTE]
 > As of this writing Windows x64 is still the only supported platform, but the general idea
 > of how to handle cross platform support is coming in to place. So hopefully adding others
-> will be a LOT simpler going forward.
+> will now be a LOT simpler going forward.
 
 #### Build Diagram
+The following diagram illustrates the basic idea on how this works:
 ``` mermaid
 flowchart TD
-    start --> runtimeFork@{shape: fork}
-    runtimeForkComment@{shape: braces, label: "Fork for each runtime supported; Each fork does not do work, only the targets build code"} --> runtimeFork
-    runtimeFork --> rid1["RID win-x64"]
-    runtimeFork --> rid2["RID ..."]
-    rid1 --> targetFork@{shape: fork}
-    rid2 --> targetFork
-    targetFork --> ridAndTarget1["Target ARM"] --> targetJoin
-    targetFork --> ridAndTarget2["Target X86"] --> targetJoin
-    targetFork --> ridAndTarget3["Target ..."] --> targetJoin
-    targetForkComment@{shape: comment, label: "Fork to Generate LLVM libraries AND LibLLVM for each Runtime + target combination"} --> targetFork
-    targetJoin@{shape: join} --> runtimeJoin@{shape: join} --> IB["Build Nuget Package with all native code libraries and generated handle source"]
-    targetJoinComment@{shape: braces, label: "JOIN for all LLVM Targets for a given runtime"} --> targetJoin
-    runtimeJoinComment@{shape: braces, label: "JOIN for all runtimes supported"} --> runtimeJoin
+    start --> runtimeFork
+    start --> pckg1["Handles source package"] --> pckg2["Meta package"] --> finish
+    runtimeFork@{shape: fork}
+    runtimeForkComment@{shape: braces, label: "Fork for each runtime supported; Each runtime builds in parallel on different environments "} --> runtimeFork
+    runtimeFork --> rid1["win-x64"] --> runtimeJoin
+    runtimeFork --> rid2["win-Arm64"] --> runtimeJoin
+    runtimeFork --> rid3["Linux ..."] --> runtimeJoin
+    runtimeFork --> rid4["MacOS ..."] --> runtimeJoin
+    runtimeJoinComment@{shape: braces, label: "Building RID packages complete"} --> runtimeJoin
+    runtimeJoin@{shape: join} --> finish
+    finish["All Build jobs complete"]
 ```
+##### handles source package
+The generation of the handle types from the source exposes complexity and dependency of this effort
+and that of the larger Ubiquity.NET.Llvm effort that depends on this library. Originallly the idea
+was to reduce the build of the LLVM libraries themselves (they were published as a zip file and
+included symbols AND the header files) But, that approach has proven difficult to maintain and a
+MAJOR hinderance to x-plat. Thus, a rework was done to build the runtime dynamic library in this
+repo. Though that still leaves the header generation and the bindings generator in a weird place.
+Since the Nuget plackage now only includes the final library for a runtime the bindings generator
+isn't usable and thus the "handle" generation must occur where the LLVM headers are available. But,
+the generated source has dependencies on other base types/helpers in the interop library... Thus,
+the usefulness of this project as a distinct repo is coming into question. [Currently the bindings
+generator just builds a NUGET package with the source assuming use ONLY in the interop library,
+but unifying the repositories, could eliminate that and make a number of inner loop development
+scenarios simpler. Though, automated build times would dramatically increase as they would need
+to re-build ALL of the LLVM source code for every such build...]
 
->[!NOTE]
-> The only truly parallel part is the RID+target build. The generation of the the matrix of
-> values for RID and target does not require a new image etc.. in the automated build.
-> Ideally it occurs on the primary machine that waits for all of the RID+target generation
-> to complete.
+#### Open issues for a truly x-plat build
+1) The Library itself builds with VCXPROJ and msbuild
+    1. While the LLVM libraries are built with CMAKE + Ninja, the final library is currently built
+       via a VCXPROJ. This will need to change to support a proper CMAKE build for the final
+       library so it is used all up.
+2) The build scripts themselves have numerous assumptions of the runtime.
+    1. Currently such assumptions should be explicit in a test and throw an error if additional
+       platform work is needed.
+        1. ***No guarantees*** as none if it is tested on anything other than a Windows machine.
+3) The build scripts are in powershell and MAY include aliases that are not the same (or even exist)
+   on other platforms.
+    1. The scripting has undergone a number of changes and most of these aliases should NOT exist.
+       But no formal scrub to ensure they are all removed has occured.
+4) Nuget package generation currently assumes a windows RID
+    1. This is hopefully the simpllest to overcome as dotnet and MSBUILD of C#/Nuget projects is
+       properly x-plat already. This the targets need to leverage the avaiable information about
+       the runtime it is operating on to create the proper package.
+        1. The projects are all created to use an MSBUILD property for the RID, so it is, hopefully,
+           just a matter of dynamically updating/setting that property.
+            1. This could be done using the scripts and a property param passed to the build or
+               within the build as a property function or custom task. Whichever ends up simpler
+               and easier to maintain.
+

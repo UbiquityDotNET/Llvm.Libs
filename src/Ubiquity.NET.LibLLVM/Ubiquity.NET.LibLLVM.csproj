@@ -1,0 +1,58 @@
+﻿<!--
+Project to build the NUGET Meta package
+-->
+<Project Sdk="Microsoft.Build.NoTargets">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+
+    <!--
+    To support a meta pacakge where the referenced packages may not exist at build time this must use a NUSPEC file directly.
+    The CSPROJ system for MSBUILD will try to restore referenced packages etc... and basically requires the ability to find
+    the listed dependencies. (They won't exist yet for this build/repo)
+    -->
+    <NuSpecFile>Ubiquity.NET.LibLlvm.nuspec</NuSpecFile>
+
+    <!-- Disable default inclusion of all items. This project doesn't use them -->
+    <EnableDefaultItems>false</EnableDefaultItems>
+
+    <!-- Disable default inclusion of analyzers. This project doesn't use them -->
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NoCommonAnalyzers>true</NoCommonAnalyzers>
+
+    <Authors>LLVM.org,Ubiquity.NET</Authors>
+    <Description>Meta Package of Extended C APIs dynamic libraries for Ubiquity.NET.Llvm.Interop [$(LlvmVersion)]. Direct use of this package **STRONGLY** discouraged (You are on your own!), instead you should use the Ubiquity.NET.Llvm package, which provides a full C# object model projection of the LLVM APIs on top of this library.</Description>
+    <PackageTags>LLVM</PackageTags>
+    <PackageProjectUrl>https://github.com/UbiquityDotNET/Llvm.NET</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/UbiquityDotNET/Llvm.NET.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>Apache-2.0 WITH LLVM-exception</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Ubiquity.NET.LibLlvm.nuspec" />
+  </ItemGroup>
+
+  <!-- Sanity/safety ensure NO referenced packages [Even if injected by Directory.Build.packages etc...] -->
+  <ItemGroup>
+    <PackageReference Remove="@(PackageReference)" />
+  </ItemGroup>
+
+  <!--
+  Provide the standard properties for this project to the package generation so that the NUSPEC
+  file will complete the pack.
+  -->
+  <Target Name="SetNuspecProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>configuration=$(Configuration)</NuspecProperties>
+      <NuspecProperties>$(NuspecProperties);packageID=$(PackageID)</NuspecProperties>
+      <NuspecProperties>$(NuspecProperties);version=$(PackageVersion)</NuspecProperties>
+      <NuspecProperties>$(NuspecProperties);authors=$(Authors)</NuspecProperties>
+      <NuspecProperties>$(NuspecProperties);projectUrl=$(PackageProjectUrl)</NuspecProperties>
+      <NuspecProperties>$(NuspecProperties);description=$(Description)</NuspecProperties>
+      <NuspecProperties>$(NuspecProperties);tags=$(PackageTags)</NuspecProperties>
+      <NuspecProperties>$(NuSpecProperties);licExpression=$(PackageLicenseExpression)</NuspecProperties>
+      <NuSpecProperties>$(NuSpecProperties);tfmGroup=$(TargetFramework)</NuSpecProperties>
+    </PropertyGroup>
+  </Target>
+</Project>
