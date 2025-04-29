@@ -66,6 +66,12 @@ extern "C"
 
     static_assert(std::is_trivially_copyable_v<LibLLVMAttributeInfo>, "LibLLVMAttributeInfo must be blittable for stable ABI binding");
 
+// VS IDE will see an error E0289 on the definition of AllKnownAttributeNames that is NOT anything
+// that can be suppressed. It's JUST the IDE in editor experience for this declaration. (Hover, over
+// the `AllKnownAttributeNames` in `LibLLVMGetNumKnownAttribs` below and it sees ALL the values.
+// So it's just a problem with the in editor parsing not handling the #include for this limited
+// case. Hopefully this is fixed with:
+// https://developercommunity.visualstudio.com/t/CC-IntelliSense-reports-E0289-no-ins/10618237
 
     constexpr std::array AllKnownAttributeNames = {
 #define GET_ATTR_NAMES
@@ -73,11 +79,6 @@ extern "C"
 #include "llvm/IR/Attributes.inc"
 #undef ATTRIBUTE_ALL
 #undef GET_ATTR_NAMES
-    // This is really never used or reported, but keeps compiler and IDE happy
-    // Without it, some IDEs, like Visual Studio will complain with E0289 that
-    // it can't know what the type is. But other parts of the IDE can see the
-    // type AND the values... Go Figure...
-    "LastName:Undefined",
     };
 
     size_t LibLLVMGetNumKnownAttribs()
