@@ -40,7 +40,6 @@ The generated code has the following requirements of the consumer:
     <PackageLicenseExpression>Apache-2.0 WITH LLVM-exception</PackageLicenseExpression>
   </PropertyGroup>
 
-
   <ItemGroup>
     <None Include="Ubiquity.NET.Llvm.Interop.Handles.nuspec" />
   </ItemGroup>

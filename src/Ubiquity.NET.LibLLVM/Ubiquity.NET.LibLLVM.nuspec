@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+INPUT:
+    $packageID$ - ID of the package
+    $version$ - Version of this package
+    $authors$ - Authors of the pacakge
+    $description$ - Description of the pacakge
+    $tags$ - Tags to mark this package (Helps searching)
+    $licExpression$ - License expression
+    $projectUrl$ - URL for the project
+    $tfmGroup$ - minimum Target Framework needed for the source files
+-->
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+    <metadata minClientVersion="4.9.0">
+        <id>$packageID$</id>
+        <version>$version$</version>
+        <authors>$authors$</authors>
+        <description>$description$</description>
+        <tags>$tags$</tags>
+        <license type="expression">$licExpression$</license>
+        <projectUrl>$projectUrl$</projectUrl>
+        <dependencies>
+            <!-- Native libraries only, no TFM requirements -->
+            <group>
+                <!-- List each RID dependency here... At the moment that's just win-x64 -->
+                <dependency id="Ubiquity.NET.LibLLVM-win-x64" version="$version$" exclude="Build,Analyzers" />
+            </group>
+        </dependencies>
+    </metadata>
+    <!--NOTE: This tag is bizarrely required to prevent the CSPROJ file itself from inclusion in the package... Go Figure!-->
+    <files />
+</package>
