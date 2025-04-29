@@ -87,9 +87,15 @@ function Initialize-BuildEnvironment
 
     $buildInfo['LlvmTag'] = "llvmorg-$(Get-LlvmVersionString $buildInfo)"
 
+    # make sure directories required (but not created by build tools) exist
     New-Item -ItemType Directory -Path $buildInfo['BuildOutputPath'] -ErrorAction SilentlyContinue | Out-Null
     New-Item -ItemType Directory -Path $buildInfo['PackagesRoot'] -ErrorAction SilentlyContinue | Out-Null
     New-Item -ItemType Directory $buildInfo['NuGetOutputPath'] -ErrorAction SilentlyContinue | Out-Null
+
+    # Disable the default "terminal logger" support as it's a breaking change that should NEVER
+    # have been anything but OPT-IN. It's a terrible experience that ends up hiding/overwriting
+    # information and generally makes it HARDER to see what's going on, not easier as it claims.
+    $env:MSBUILDTERMINALLOGGER='off'
 
     if($FullInit)
     {
