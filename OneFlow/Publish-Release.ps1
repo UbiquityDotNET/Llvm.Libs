@@ -1,3 +1,6 @@
+using module '../PSModules/CommonBuild/CommonBuild.psd1'
+using module '../PsModules/RepoBuild/RepoBuild.psd1'
+
 <#
 .SYNOPSIS
     Publishes the current release as a new branch to the upstream repository
@@ -18,12 +21,7 @@
 #>
 
 Param([switch]$TagOnly)
-$repoRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, ".."))
-. (join-path $repoRoot repo-buildutils.ps1)
 $buildInfo = Initialize-BuildEnvironment
-
-# create script scoped alias for git that throws a PowerShell exception if the command fails
-Set-Alias git Invoke-git -scope Script -option Private
 
 # merging the tag to develop branch on the official repository triggers the official build and release of the Nuget Packages
 $tagName = Get-BuildVersionTag $buildInfo
@@ -31,9 +29,9 @@ $releaseBranch = "release/$tagName"
 $mergeBackBranchName = "merge-back-$tagName"
 
 # check out and tag the release branch
-git checkout $releasebranch
-git tag $tagname -m "Official release: $tagname"
-git push --tags
+Invoke-External git checkout $releasebranch
+Invoke-External git tag $tagname -m "Official release: $tagname"
+Invoke-External git push --tags
 
 # create a "merge-back" child branch to handle any updates/conflict resolutions
 # the tag from the parent will flow through to the final commit of the PR For
@@ -41,8 +39,8 @@ git push --tags
 # and any conflict resolution commits are "AFTER" the tag (and thus, not included
 # in the tagged commit)
 # This PR **MUST** be merged to origin with the --no-ff strategy
-git checkout -b $mergeBackBranchName $releasebranch
-git push $mergeBackBranchName
+Invoke-External git checkout -b $mergeBackBranchName $releasebranch
+Invoke-External git push $mergeBackBranchName
 
 Write-Output "Created and published $mergeBackBranchName to your forked repository, you must create a PR for this change to the Official repository"
 Write-Output "Additionally, these changes **MUST** be merged back without squashing"
