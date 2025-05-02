@@ -41,7 +41,7 @@ Invoke-External git push --tags
 # in the tagged commit)
 # This PR **MUST** be merged to origin with the --no-ff strategy
 Invoke-External git checkout -b $mergeBackBranchName $releasebranch
-Invoke-External git push upstream $mergeBackBranchName
+Invoke-External git push origin $mergeBackBranchName
 
 Write-Output "Created and published $mergeBackBranchName to your forked repository, you must create a PR for this change to the Official repository"
 Write-Output "Additionally, these changes **MUST** be merged back without squashing"
