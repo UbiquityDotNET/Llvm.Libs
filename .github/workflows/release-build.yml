@@ -1,12 +1,19 @@
-# TODO: Clean this up and make the build part match the PR structure and OneFlow...
 name: Release-Build
+defaults:
+    run:
+        shell: pwsh
 on:
   push:
     tags:
         - 'v*'
 
+env:
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+    DOTNET_CLI_TELEMETRY_OPTOUT: 1
+    DOTNET_NOLOGO: true
+
 jobs:
-  release-build:
+  build_target:
     runs-on: windows-latest
     steps:
       - name: Checkout Repo
@@ -16,49 +23,60 @@ jobs:
           fetch-depth: 0
 
       - name: Build Source
-        run: .\Build-All.ps1
+        run: .\Build-LibLLVMAndPackage.ps1 -FullInit
 
-      - name: Publish Artifacts
+      - name: Upload NuGet Package Artifacts
         uses: actions/upload-artifact@v1
         with:
-          name: Nuget Packages
+          name: win-x64-nuget
           path: .\BuildOutput\Nuget
 
-      - name: Run Tests
-        run: .\Invoke-UnitTests.ps1
-
-      - name: Publish test logs
-        if: always()
-        uses: actions/upload-artifact@v1
+  build_independent_packages:
+    runs-on: windows-latest
+    steps:
+      # repo check out needed to support build scripts
+      - name: Checkout Repo
+        uses: actions/checkout@v4
         with:
-            name: Test Logs
-            path: .\BuildOutput\Test-Results
+          persist-credentials: false
+          fetch-depth: 0
+
+      # This needs to download the LLVM sources for the supported release
+      - name: Build Handle Source package
+        run: .\Build-HandlesPackage.ps1 -FullInit
+
+      - name: Build Meta Package
+        run: .\Build-MetaPackage.ps1 -FullInit
+
+      - name: Upload Packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: .\BuildOutput\Nuget
+
+  create_release:
+    needs: [build_target, build_independent_packages]
+    runs-on: windows-latest
+    steps:
+      - name: Download assets for publication
+        uses: actions/download-artifact@v4
+        with:
+          path: BuildOutput/NuGet/
+          merge-multiple: true
+
+      - name: Show asset names
+        run: dir BuildOutput/Nuget
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: true
+          name: Release ${{ github.ref }}
+          draft: false
           prerelease: false
-
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./BuildOutput/Nuget.Packages.zip
-          asset_name: Nuget.Packages.zip
-          asset_content_type: application/zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: BuildOutput/NuGet/*.nupkg
 
       - name: Publish packages to NuGet.org
-        env:
-          NUGET_AUTH_TOKEN: ${{ secrets.nugetpush_access_token }}
-          DOTNET_CLI_TELEMETRY_OPTOUT: 1
-        run: |
-            dir .\BuildOutput\NuGet\*.nupkg | %{dotnet nuget push $_ -k $env:NUGET_AUTH_TOKEN -s 'https://api.nuget.org/v3/index.json' -n true}
+        run: dir ./BuildOutput/NuGet/*.nupkg | %{dotnet nuget push $_ --api-key "${{ secrets.nugetpush_access_token }}" -s 'https://api.nuget.org/v3/index.json' -n true --skip-duplicate}
