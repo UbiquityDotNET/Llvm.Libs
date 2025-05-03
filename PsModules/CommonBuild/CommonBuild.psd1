@@ -75,7 +75,10 @@ FunctionsToExport = @(
     'Expand-ArchiveStream',
     'Expand-StreamFromUri',
     'Find-OnPath',
+    'Get-BuildVersionTag',
     'Get-CurrentBuildKind',
+    'Get-GitRemotes',
+    'Get-GitRemoteName',
     'Get-GitHubReleases',
     'Get-GitHubTaggedRelease',
     'Initialize-CommonBuildEnvironment',
@@ -83,8 +86,7 @@ FunctionsToExport = @(
     'Invoke-TimedBlock',
     'New-CmakeSettings',
     'Show-FullBuildInfo'
-)
-# Cmdlets to export from this module
+)# Cmdlets to export from this module
 CmdletsToExport = '*'
 
 # Variables to export from this module

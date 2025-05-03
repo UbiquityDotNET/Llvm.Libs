@@ -28,12 +28,22 @@ $tagName = Get-BuildVersionTag $buildInfo
 $releaseBranch = "release/$tagName"
 $mergeBackBranchName = "merge-back-$tagName"
 
-# check out and tag the release branch
-Invoke-External git checkout $releasebranch
+$officialRemoteName = Get-GitRemoteName $buildInfo official
+$forkRemoteName = Get-GitRemoteName $buildInfo fork
+
+Write-Information 'Fetching from official repository'
+Invoke-External git fetch $officialRemoteName
+
+Write-Information 'Switching to release branch (from official repo)'
+Invoke-External git switch -c $releasebranch "$officialRemoteName/$releasebranch"
+
 Write-Information 'Creating tag of this branch as the release'
 Invoke-External git tag $tagname -m "Official release: $tagname"
-Invoke-External git push --tags
 
+Write-Information 'Pushing tag to official remote [Starts automated build release process]'
+Invoke-External git push $officialRemoteName --tags
+
+Write-Information 'Creating local merge-back branch to merge changes associated with the release'
 # create a "merge-back" child branch to handle any updates/conflict resolutions.
 # The tag from the parent will flow through to the final commit of the PR For
 # the merge. Otherwise, the tag is locked to the commit on the release branch
@@ -41,7 +51,8 @@ Invoke-External git push --tags
 # in the tagged commit)
 # This PR **MUST** be merged to origin with the --no-ff strategy
 Invoke-External git checkout -b $mergeBackBranchName $releasebranch
-Invoke-External git push origin $mergeBackBranchName
+Write-Information 'pushing merge-back branch to fork'
+Invoke-External git push $forkRemoteName $mergeBackBranchName
 
 Write-Output "Created and published $mergeBackBranchName to your forked repository, you must create a PR for this change to the Official repository"
 Write-Output "Additionally, these changes **MUST** be merged back without squashing"
