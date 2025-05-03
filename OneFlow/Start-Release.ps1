@@ -16,6 +16,9 @@ using module '../PsModules/RepoBuild/RepoBuild.psd1'
 Param([string]$commit = "")
 $buildInfo = Initialize-BuildEnvironment
 
+$officialRemoteName = Get-GitRemoteName $buildInfo official
+$forkRemoteName = Get-GitRemoteName $buildInfo fork
+
 # create new local branch for the release
 $branchName = "release/$(Get-BuildVersionTag $buildInfo)"
 Write-Information "Creating release branch in local repo"
@@ -29,10 +32,10 @@ else
 }
 
 # push to fork so that changes go through normal PR process
-Write-Information "Pushing branch to origin"
-Invoke-External git push origin -u $branchName
+Write-Information "Pushing branch to fork"
+Invoke-External git push $forkRemoteName -u $branchName
 
 # Push to product repo so it is clear to all a release
 # is in process.
-Write-Information "Pushing branch to upstream"
-Invoke-External git push upstream $branchName
+Write-Information "Pushing branch to official repository (Push/Write permission required)"
+Invoke-External git push $officialRemoteName $branchName
