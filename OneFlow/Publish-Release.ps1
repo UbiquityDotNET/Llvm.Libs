@@ -32,22 +32,21 @@ $releaseBranch = "release/$tagName"
 $officialReleaseBranch = "$officialRemoteName/$releaseBranch"
 $mergeBackBranchName = "merge-back-$tagName"
 
-
 Write-Information 'Fetching from official repository'
 Invoke-External git fetch $officialRemoteName
 
 Write-Information "Switching to release branch [$officialReleaseBranch]"
-Invoke-External git switch -c $releasebranch $officialReleaseBranch
+Invoke-External git switch '-c' $releasebranch $officialReleaseBranch
 
 Write-Information 'Creating tag of this branch as the release'
-Invoke-External git tag $tagname -m "Official release: $tagname"
+Invoke-External git tag $tagname '-m' "Official release: $tagname"
 
 Write-Information 'Pushing tag to official remote [Starts automated build release process]'
-Invoke-External git push $officialRemoteName --tags
+Invoke-External git push $officialRemoteName '--tags'
 
 Write-Information 'Creating local merge-back branch to merge changes associated with the release'
 # create a "merge-back" child branch to handle any updates/conflict resolutions when applying
 # the changes made in the release branch back to the develop branch.
-Invoke-External git checkout -b $mergeBackBranchName $releasebranch
+Invoke-External git checkout '-b' $mergeBackBranchName $releasebranch
 Write-Information 'pushing merge-back branch to fork'
 Invoke-External git push $forkRemoteName $mergeBackBranchName
