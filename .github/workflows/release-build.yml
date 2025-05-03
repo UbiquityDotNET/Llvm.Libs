@@ -2,6 +2,8 @@ name: Release-Build
 defaults:
     run:
         shell: pwsh
+
+# only comes into play on a PUSH of a tag to the repository
 on:
   push:
     tags:

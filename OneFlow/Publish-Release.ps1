@@ -44,15 +44,8 @@ Write-Information 'Pushing tag to official remote [Starts automated build releas
 Invoke-External git push $officialRemoteName --tags
 
 Write-Information 'Creating local merge-back branch to merge changes associated with the release'
-# create a "merge-back" child branch to handle any updates/conflict resolutions.
-# The tag from the parent will flow through to the final commit of the PR For
-# the merge. Otherwise, the tag is locked to the commit on the release branch
-# and any conflict resolution commits are "AFTER" the tag (and thus, not included
-# in the tagged commit)
-# This PR **MUST** be merged to origin with the --no-ff strategy
+# create a "merge-back" child branch to handle any updates/conflict resolutions when applying
+# the changes made in the release branch back to the develop branch.
 Invoke-External git checkout -b $mergeBackBranchName $releasebranch
 Write-Information 'pushing merge-back branch to fork'
 Invoke-External git push $forkRemoteName $mergeBackBranchName
-
-Write-Output "Created and published $mergeBackBranchName to your forked repository, you must create a PR for this change to the Official repository"
-Write-Output "Additionally, these changes **MUST** be merged back without squashing"
