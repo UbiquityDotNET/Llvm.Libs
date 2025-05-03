@@ -25,17 +25,19 @@ $buildInfo = Initialize-BuildEnvironment
 
 # merging the tag to develop branch on the official repository triggers the official build and release of the Nuget Packages
 $tagName = Get-BuildVersionTag $buildInfo
-$releaseBranch = "release/$tagName"
-$mergeBackBranchName = "merge-back-$tagName"
-
 $officialRemoteName = Get-GitRemoteName $buildInfo official
 $forkRemoteName = Get-GitRemoteName $buildInfo fork
+
+$releaseBranch = "release/$tagName"
+$officialReleaseBranch = "$officialRemoteName/$releaseBranch"
+$mergeBackBranchName = "merge-back-$tagName"
+
 
 Write-Information 'Fetching from official repository'
 Invoke-External git fetch $officialRemoteName
 
-Write-Information 'Switching to release branch (from official repo)'
-Invoke-External git switch -c $releasebranch "$officialRemoteName/$releasebranch"
+Write-Information "Switching to release branch [$officialReleaseBranch]"
+Invoke-External git switch -c $releasebranch $officialReleaseBranch
 
 Write-Information 'Creating tag of this branch as the release'
 Invoke-External git tag $tagname -m "Official release: $tagname"
