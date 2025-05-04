@@ -17,6 +17,8 @@ on:
 
     paths-ignore:
       - '**.md'
+      - .github/workflows/release-build.yml
+      - OneFlow/*.*
 
 jobs:
   build_target:
