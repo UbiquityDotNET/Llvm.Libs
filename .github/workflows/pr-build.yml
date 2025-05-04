@@ -7,8 +7,8 @@ on:
 
     paths-ignore:
       - '**.md'
-      - .github/workflows/release-build.yml
-      - OneFlow/*.*
+      - '.github/workflows/release-build.yml'
+      - 'OneFlow/*.*'
 
   pull_request:
     branches:
@@ -17,8 +17,8 @@ on:
 
     paths-ignore:
       - '**.md'
-      - .github/workflows/release-build.yml
-      - OneFlow/*.*
+      - '.github/workflows/release-build.yml'
+      - 'OneFlow/*.*'
 
 jobs:
   build_target:
