@@ -56,7 +56,7 @@ LLVM_C_EXTERN_C_BEGIN
 
     // Fills in an array of const string pointers. No deallocation is needed for each as
     // they are global static constants.
-    LLVMErrorRef LibLLVMGetKnownAttributeNames(size_t namesLen, /*(OUT, char*[namesLen])*/char const** names);
+    LLVMErrorRef LibLLVMGetKnownAttributeNames(/*(OUT, char*[namesLen])*/char const** names, size_t namesLen);
 
     // Caller must dispose returned string with DisposeMessage() as it is created
     // on the fly so it must be disposed of when no longer needed.

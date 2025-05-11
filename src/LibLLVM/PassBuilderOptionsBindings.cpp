@@ -68,7 +68,7 @@ LLVMBool LibLLVMPassBuilderOptionsGetDebugLogging(LLVMPassBuilderOptionsRef Opti
 
 char const* LibLLVMPassBuilderOptionsGetAAPipeline(LLVMPassBuilderOptionsRef Options)
 {
-    return LLVMCreateMessage(unwrap(Options)->AAPipeline);
+    return unwrap(Options)->AAPipeline;
 }
 
 LLVMBool LibLLVMPassBuilderOptionsGetLoopInterleaving(LLVMPassBuilderOptionsRef Options)

@@ -150,10 +150,12 @@ extern "C"
         pModule->getComdatSymbolTable( ).clear( );
     }
 
-    char const* LibLLVMComdatGetName( LLVMComdatRef comdatRef )
+    char const* LibLLVMComdatGetName( LLVMComdatRef comdatRef, size_t* len )
     {
         Comdat const& comdat = *unwrap( comdatRef );
-        return LLVMCreateMessage( comdat.getName( ).str( ).c_str( ) );
+        auto sr = comdat.getName( );
+        *len = sr.size();
+        return sr.data();
     }
 
     LLVMValueRef LibLLVMModuleGetFirstGlobalAlias( LLVMModuleRef M )

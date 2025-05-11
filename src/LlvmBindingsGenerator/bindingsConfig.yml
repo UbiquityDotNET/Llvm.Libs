@@ -29,11 +29,15 @@ HandleMap:
   - !GlobalHandle {HandleName: LLVMSectionIteratorRef, Disposer: LLVMDisposeSectionIterator}
   - !GlobalHandle {HandleName: LLVMSymbolIteratorRef, Disposer: LLVMDisposeSymbolIterator}
   - !GlobalHandle {HandleName: LLVMRelocationIteratorRef, Disposer: LLVMDisposeRelocationIterator}
-  # NOTE: This isn't really a reference to a single entry, it's an array. But this is the name that
-  # LLVM uses and changing that for the interop layer causes all sorts of problems for renaming return
-  # types and parameters etc...
+
+  # NOTE: These aren't really a reference to a single entry, they are an array of pointers to entries where
+  # the layout of each entry is opaque. LLVM has no name of the array, it just uses a pointer to the opaque
+  # entries as the allocated array. The allocation of the entire array is released via the dispose method.
+  # This is confusing but allows the generation of a handle for the entire array with dispose. So that things
+  # are consistent.
   - !GlobalHandle {HandleName: LLVMValueMetadataEntry, Disposer: LLVMDisposeValueMetadataEntries}
   - !GlobalHandle {HandleName: LLVMModuleFlagEntry, Disposer: LLVMDisposeModuleFlagsMetadata}
+
   - !GlobalHandle {HandleName: LLVMDisasmContextRef, Disposer: LLVMDisasmDispose}
   - !GlobalHandle {HandleName: LLVMTargetMachineRef, Disposer: LLVMDisposeTargetMachine, Alias: True}
   - !GlobalHandle {HandleName: LLVMOrcSymbolStringPoolEntryRef, Disposer: LLVMOrcReleaseSymbolStringPoolEntry, Alias: True}

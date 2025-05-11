@@ -114,7 +114,7 @@ extern "C"
         {
             return static_cast<Instruction*>(pValue)->hasDbgRecords();
         }
-        return 0;
 
+        return 0;
     }
 }
