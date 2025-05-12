@@ -306,8 +306,11 @@ extern "C" {
     void LibLLVMTripleGetEnvironmentVersion( LibLLVMTripleRef triple, unsigned* major, unsigned* minor, unsigned* build );
     LibLLVMTripleObjectFormatType LibLLVMTripleGetObjectFormatType( LibLLVMTripleRef triple );
 
-    // Use LLVMDisposeMessage on return for all of these
+    // Use LLVMDisposeMessage on return for this one as normalize param
+    // may place string result on stack so a pointer to it as a return is bogus.
     char const* LibLLVMTripleAsString( LibLLVMTripleRef triple, LLVMBool normalize );
+
+    // Raw static pointer used for return of each of these
     char const* LibLLVMTripleGetArchTypeName( LibLLVMTripleArchType type );
     char const* LibLLVMTripleGetVendorTypeName( LibLLVMTripleVendorType vendor );
     char const* LibLLVMTripleGetOsTypeName( LibLLVMTripleOSType osType );

@@ -27,8 +27,9 @@ extern "C" {
     void LibLLVMModuleComdatRemove( LLVMModuleRef module, LLVMComdatRef comdatRef );
     void LibLLVMModuleComdatClear( LLVMModuleRef module );
 
-    // caller must free returned string via LLVMDisposeMessage()
-    char const* LibLLVMComdatGetName( LLVMComdatRef comdatRef );
+    // Result MAYBE NULL, caller does not free the result, but should
+    // copy it as it can change or otherwise be freed.
+    char const* LibLLVMComdatGetName(LLVMComdatRef comdatRef, size_t* len);
 
     // Alias enumeration
     LLVMValueRef LibLLVMModuleGetFirstGlobalAlias( LLVMModuleRef M );

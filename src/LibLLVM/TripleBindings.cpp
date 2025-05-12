@@ -29,7 +29,7 @@ extern "C"
     {
         Triple& llvmTriple = *unwrap( triple );
         auto str = normalize ? llvmTriple.normalize( ) : llvmTriple.getTriple( );
-        return LLVMCreateMessage( str.c_str( ) );
+        return LLVMCreateMessage(str.c_str( ));
     }
 
     LLVMBool LibLLVMTripleOpEqual( LibLLVMTripleRef lhs, LibLLVMTripleRef rhs )
@@ -88,7 +88,7 @@ extern "C"
             llvmArchType = Triple::ArchType::UnknownArch;
         }
 
-        return LLVMCreateMessage( Triple::getArchTypeName( llvmArchType ).data( ) );
+        return Triple::getArchTypeName( llvmArchType ).data( );
     }
 
     char const* LibLLVMTripleGetVendorTypeName( LibLLVMTripleVendorType vendor )
@@ -99,7 +99,7 @@ extern "C"
             llvmVendorType = Triple::VendorType::UnknownVendor;
         }
 
-        return LLVMCreateMessage( Triple::getVendorTypeName( llvmVendorType ).data( ) );
+        return Triple::getVendorTypeName( llvmVendorType ).data( );
     }
 
     char const* LibLLVMTripleGetOsTypeName( LibLLVMTripleOSType osType )
@@ -110,7 +110,7 @@ extern "C"
             llvmOsType = Triple::OSType::UnknownOS;
         }
 
-        return LLVMCreateMessage( Triple::getOSTypeName( llvmOsType ).data( ) );
+        return Triple::getOSTypeName( llvmOsType ).data( );
     }
 
     char const* LibLLVMTripleGetEnvironmentTypeName( LibLLVMTripleEnvironmentType environmentType )
@@ -121,6 +121,6 @@ extern "C"
             llvmEnvironmentType = Triple::EnvironmentType::UnknownEnvironment;
         }
 
-        return LLVMCreateMessage( Triple::getEnvironmentTypeName( llvmEnvironmentType ).data( ) );
+        return Triple::getEnvironmentTypeName( llvmEnvironmentType ).data( );
     }
 }

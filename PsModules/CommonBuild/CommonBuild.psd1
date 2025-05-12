@@ -86,7 +86,8 @@ FunctionsToExport = @(
     'Invoke-TimedBlock',
     'New-CmakeSettings',
     'Show-FullBuildInfo'
-)# Cmdlets to export from this module
+)
+# Cmdlets to export from this module
 CmdletsToExport = '*'
 
 # Variables to export from this module

@@ -86,7 +86,7 @@ extern "C"
         return AllKnownAttributeNames.size() - 1;
     }
 
-    LLVMErrorRef LibLLVMGetKnownAttributeNames( size_t namesLen, /*(OUT, char*[namesLen])*/char const** names)
+    LLVMErrorRef LibLLVMGetKnownAttributeNames( /*(OUT, char*[namesLen])*/char const** names, size_t namesLen)
     {
         auto actualSize = LibLLVMGetNumKnownAttribs();
         if( namesLen < actualSize)
