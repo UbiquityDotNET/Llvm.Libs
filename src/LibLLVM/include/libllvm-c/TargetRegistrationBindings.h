@@ -8,6 +8,17 @@
 
 LLVM_C_EXTERN_C_BEGIN
 
+typedef union
+{
+    struct {
+        uint16_t Major;
+        uint16_t Minor;
+        uint16_t Build;
+        uint16_t Revision;
+    } VerParts;
+    uint64_t FullVersion;
+} LibLLVMVersionInfo;
+
 // This needs to provide a single target neutral registration that handles the native target AND one additional CPU
 // in a target independent stable API.
 
@@ -56,6 +67,9 @@ enum LibLLVMTargetRegistrationKind
 LLVMErrorRef LibLLVMRegisterTarget(LibLLVMCodeGenTarget target, LibLLVMTargetRegistrationKind registrations);
 std::int32_t LibLLVMGetNumTargets();
 LLVMErrorRef LibLLVMGetRuntimeTargets(LibLLVMCodeGenTarget* targetArray, std::int32_t lengthOfArray);
+
+// Return is the version info for this library
+LibLLVMVersionInfo LibLLVMGetVersion();
 
 LLVM_C_EXTERN_C_END
 #endif

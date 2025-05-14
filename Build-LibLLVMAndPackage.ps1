@@ -13,10 +13,10 @@ using module "PSModules/RepoBuild/RepoBuild.psd1"
     as well as writes details of the initialization to the information and verbose streams.
 
 .DESCRIPTION
-    This builds the per RID Nuget library and NUGET package to indlcude it. The FullInit is important for local builds as
-    it alters the version number used in naming and generation. Thus if only building some parts it is usefull for local
-    builds not to set this. For an automated build it shoud always be set to force use of the commit of the repo as an ID
-    for the build. In such cases the timestamp of the HEAD of the commit for the branch/PR is used so a consistent version
+    This builds the per RID NuGet library and NUGET package to include it. The FullInit is important for local builds as
+    it alters the version number used in naming and generation. Thus if only building some parts it is useful for local
+    builds not to set this. For an automated build it should always be set to force use of the commit of the repo as an ID
+    for the build. In such cases the time-stamp of the HEAD of the commit for the branch/PR is used so a consistent version
     is used for ALL builds of the same source - even across multiple runners operating in parallel.
 #>
 Param(
@@ -52,15 +52,15 @@ try
         # waster if forgotten. So, test it here as early as possible.)
         Assert-LlvmSourceVersion $buildInfo
 
-        # Verify Cmake version info (Official minimum for LLVM as of 20.1.3)
+        # Verify CMake version info (Official minimum for LLVM as of 20.1.3)
         Assert-CmakeInfo ([Version]::new(3, 20, 0))
 
         $cmakeConfig = New-LlvmCMakeConfig -AllTargets -Name $currentRid -BuildConfig $Configuration -BuildInfo $buildInfo
         Generate-CMakeConfig $cmakeConfig
         Build-CmakeConfig $cmakeConfig @('lib/all')
 
-        # Notify size of build ouput directory as that's a BIG player in total space used in an
-        # automated build sceanrio. (OSS build systems often limit space so it's important to know)
+        # Notify size of build output directory as that's a BIG player in total space used in an
+        # automated build scenario. (OSS build systems often limit space so it's important to know)
         $postBuildSize = Get-ChildItem -Recurse $cmakeConfig['BuildRoot'] | Measure-Object -Property Length -sum | %{[math]::round($_.Sum /1Gb, 3)}
         Write-Information "Post Build Size: $($preDeleteSize)Gb"
     }
@@ -85,7 +85,7 @@ try
     # NOTE: building a dynamic library exporting C++ is NOT an option. Despite the problems of
     # C++ not providing a stable binary ABI (even for the same vendor compiler across multiple versions)
     # there is the problem in generating the DLL on Windows (see: https://github.com/llvm/llvm-project/issues/109483)
-    # Thus, this ONLY deals with the stable C ABI exported by the LLVM-C API AND an extended API sepcific
+    # Thus, this ONLY deals with the stable C ABI exported by the LLVM-C API AND an extended API specific
     # to this repo. If the LLVM issue of building the DLL on Windows is ever resolved, this decision
     # is worth reconsidering. (There's still the lack of binary ABI but tool vendors go through a LOT not
     # to break things from version to version so isn't as big a deal as long as the same vendor is used.)
@@ -103,7 +103,7 @@ try
         # and PackageReference isn't supported for native projects... [Sigh...]
         Write-Information "Restoring LibLLVM"
         $libLLVMVcxProj = Join-Path 'src' 'LibLLVM' 'LibLLVM.vcxproj'
-        Invoke-External nuget restore $libLLVMVcxProj
+        Invoke-External nuget restore $libLLVMVcxProj -PackagesDirectory $buildInfo['NuGetRepositoryPath']
 
         $libLLvmBuildProps = @{ Configuration = $Configuration
                                 LlvmVersion = Get-LlvmVersionString $buildInfo

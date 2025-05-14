@@ -6,7 +6,7 @@
 
 using namespace llvm;
 
-// Lifted from llvm's PassBuilderBindings.cpp as it is not in any headers.
+// Lifted from llvm/lib/Passes/PassBuilderBindings.cpp as it is not in any headers.
 // it is theoretically supposed to be an internal detail but they didn't
 // provide ANY getter functions for the properties of the class. Thus, this
 // set of extensions is to provide that. The shape of this **MUST** match
@@ -42,7 +42,7 @@ namespace llvm
 
 // sanity check to catch any changes in the official LLVM declaration of the class above.
 // Since it is NOT declared in a header this **MUST** be validated on any changes.
-#if LLVM_VERSION_MAJOR != 20 || LLVM_VERSION_MINOR != 1 || LLVM_VERSION_PATCH != 3
+#if LLVM_VERSION_MAJOR != 20 || LLVM_VERSION_MINOR != 1 || LLVM_VERSION_PATCH != 4
 #error "Re-evaluate and match declaration of LLVMPassBuilderOptions; update the version test values above when validated"
 #endif
 
