@@ -67,6 +67,9 @@
     <ClCompile Include="TargetRegistrationBindings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TargetMachineBindings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">
@@ -126,6 +129,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="enum_flags.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\libllvm-c\TargetMachineBindings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CSemVer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

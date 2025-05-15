@@ -82,7 +82,7 @@ function Initialize-BuildEnvironment
     $buildInfo['LlvmVersion'] = @{
         Major = 20
         Minor = 1
-        Patch = 3
+        Patch = 4
     }
 
     $buildInfo['LlvmTag'] = "llvmorg-$(Get-LlvmVersionString $buildInfo)"

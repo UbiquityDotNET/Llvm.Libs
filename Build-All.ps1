@@ -30,7 +30,7 @@ using module "PSModules/RepoBuild/RepoBuild.psd1"
     and for flexibility in selecting the actual back end. The back ends have changed a few times
     over the years and re-writing the entire build in terms of those back ends each time is a lot
     of wasted effort. Thus, the projects settled on PowerShell as the core automated build tooling
-    and backend specific support only needs to call out to the powershell scripts to perform work.
+    and backend specific support only needs to call out to the PowerShell scripts to perform work.
 #>
 [cmdletbinding()]
 Param(
@@ -54,14 +54,15 @@ try
     if((Test-Path -PathType Container $buildInfo['BuildOutputPath']) -and $ForceClean )
     {
         Write-Information "Cleaning output folder from previous builds"
-        remove-Item -Recurse -Force -Path $buildInfo['BuildOutputPath'] -ProgressAction SilentlyContinue
+        Remove-Item -Recurse -Force $buildInfo['BuildOutputPath'] -ProgressAction SilentlyContinue | Out-Null
     }
 
+    Write-Information "Building sources"
     # TODO: iterate over all supported runtimes. Current win-x64 is the only one supported
     #       Not really sure if that's even possible for local builds as it requires the RID
     #       of this session to match the intended build...
     # On an automated build these two steps can and do occur in parallel as there are no binary
-    # dependecies between them.
+    # dependencies between them.
     .\Build-LibLLVMAndPackage.ps1 $buildInfo -SkipLLvm:$SkipLLvm -Configuration $Configuration
     .\Build-HandlesPackage.ps1 $buildInfo
     .\Build-MetaPackage.ps1 $buildInfo

@@ -11,6 +11,8 @@ function Assert-LlvmSourceVersion([hashtable]$buildinfo)
        $llvmRepoVersion['MINOR'] -ne $llvmVersion.Minor -or
        $llvmRepoVersion['PATCH'] -ne $llvmVersion.Patch)
     {
-        throw "Unexpected LLVM source version."
+        Write-Error "Unexpected LLVM source version."
+        Write-Error "Expected Version: `n$($llvmVersion | Out-String)"
+        Write-Error "Actual Version: `n$($llvmRepoVersion | Out-String)"
     }
 }

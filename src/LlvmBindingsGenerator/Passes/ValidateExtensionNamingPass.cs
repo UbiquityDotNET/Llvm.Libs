@@ -46,7 +46,7 @@ namespace LlvmBindingsGenerator.Passes
 
         public override bool VisitTypedefDecl( TypedefDecl typedef )
         {
-            if( !typedef.Name.StartsWith( "LibLLVM", System.StringComparison.Ordinal ) )
+            if( !typedef.Ignore && !typedef.Name.StartsWith( "LibLLVM", System.StringComparison.Ordinal ) )
             {
                 Diagnostics.Error( "Extension typeDef {0} in {1}, does not use correct prefix", typedef.Name, typedef.TranslationUnit.FileName );
             }

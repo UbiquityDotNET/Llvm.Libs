@@ -54,8 +54,11 @@ enum LibLLVMTargetRegistrationKind
 
 // NOTE: registrations is not value checked. ONLY valid bits are tested and additional bits are ignored (NOP)
 LLVMErrorRef LibLLVMRegisterTarget(LibLLVMCodeGenTarget target, LibLLVMTargetRegistrationKind registrations);
-std::int32_t LibLLVMGetNumTargets();
-LLVMErrorRef LibLLVMGetRuntimeTargets(LibLLVMCodeGenTarget* targetArray, std::int32_t lengthOfArray);
+int32_t LibLLVMGetNumTargets();
+LLVMErrorRef LibLLVMGetRuntimeTargets(LibLLVMCodeGenTarget* targetArray, int32_t lengthOfArray);
+
+// Return is the version info for this library
+uint64_t LibLLVMGetVersion();
 
 LLVM_C_EXTERN_C_END
 #endif

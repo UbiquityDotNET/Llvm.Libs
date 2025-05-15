@@ -1,10 +1,13 @@
 #include <string_view>
+#include <limits>
 
 #include <llvm/Support/Error.h>
-#include <llvm-c/Target.h>
 #include <llvm/Config/llvm-config.h>
+#include <llvm-c/Target.h>
+#include <llvm-c/Core.h>
 
 #include "libllvm-c/TargetRegistrationBindings.h"
+#include "CSemVer.h"
 
 using namespace llvm;
 using namespace std::string_view_literals;
@@ -148,6 +151,9 @@ namespace
 #if INCLUDE_COMPILE_TIME_UT
     namespace compile_time_UT
     {
+        static_assert(sizeof(LibLLVMVersionInfo) == sizeof(uint64_t));
+        static_assert(alignof(LibLLVMVersionInfo) == alignof(uint64_t));
+
         static_assert(mk_target("None"sv) == CodeGenTarget_None);
         static_assert(mk_target("Native"sv) == CodeGenTarget_Native);
         static_assert(mk_target("AArch64"sv) == CodeGenTarget_AArch64);
@@ -1117,11 +1123,11 @@ extern "C"
             return validationResult;
         }
 
-        // NOTE: All but 2 of these will result in a NOP and won't actually be used.
+        // NOTE: Some of these may result in a NOP and won't actually be used.
         //       Since the target is passed by caller it isn't a compile time constant.
         //       It is checked above for a supported value so this will never call into
         //       the NOP stubs. This saves on LOTs of preprocessor conditionals. A good
-        //       optimizer can see that most of these are NOP and simplify this to ONLY
+        //       optimizer can see that any of these are NOP and simplify this to ONLY
         //       the supported targets.
         switch (target)
         {
@@ -1236,5 +1242,10 @@ extern "C"
 
         std::copy_n(std::begin(AvailableTargets), lengthOfArray, targetArray);
         return nullptr;
+    }
+
+    uint64_t LibLLVMGetVersion()
+    {
+        return LibLLVM::FileVersion64;
     }
 }

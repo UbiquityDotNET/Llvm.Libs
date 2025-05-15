@@ -9,5 +9,5 @@ build of a given release of LLVM but may increment pas that.
     BuildMajor = "20"
     BuildMinor = "1"
     BuildPatch = "4"
-    PreReleaseName = "alpha"
+    PreReleaseName = "beta"
 />

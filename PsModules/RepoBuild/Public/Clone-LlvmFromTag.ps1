@@ -5,6 +5,7 @@ function Invoke-CloneLlvmFromTag([hashtable]$buildInfo)
 {
     if(!(Test-Path -PathType Container -Path $buildInfo['LlvmProject']))
     {
+        Write-Information "Downloading source for LLVM Tag: $($buildInfo['LlvmTag'])"
         Invoke-External git clone --depth 1 -b $buildInfo['LlvmTag'] 'https://github.com/llvm/llvm-project.git' $buildInfo['LlvmProject']
         # remove the .git folder to help save space on automated builds as it isn't needed.
         Remove-Item (Join-Path $buildInfo['LlvmProject'] '.git') -Recurse -Force

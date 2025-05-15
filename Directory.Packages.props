@@ -6,7 +6,7 @@
     [read - never gonna happen])
     -->
     <ItemGroup>
-        <GlobalPackageReference Include="CSemVer.Build.Tasks" Version="2.0.5" />
+        <GlobalPackageReference Include="CSemVer.Build.Tasks" Version="2.0.5" Condition="'$(MSBuildProjectExtension)' != '.vcxproj'"/>
         <GlobalPackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" Condition="'$(NoCommonAnalyzers)' != 'true'" />
         <GlobalPackageReference Include="IDisposableAnalyzers" Version="4.0.8" Condition="'$(NoCommonAnalyzers)' != 'true'" />
         <GlobalPackageReference Include="MustUseRetVal" Condition="'$(NoCommonAnalyzers)' != 'true'" Version="0.0.2"/>
