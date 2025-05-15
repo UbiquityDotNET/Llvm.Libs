@@ -1,4 +1,5 @@
 #include <string_view>
+#include <limits>
 
 #include <llvm/Support/Error.h>
 #include <llvm/Config/llvm-config.h>
@@ -6,7 +7,7 @@
 #include <llvm-c/Core.h>
 
 #include "libllvm-c/TargetRegistrationBindings.h"
-#include "generatedversioninfo.h"
+#include "CSemVer.h"
 
 using namespace llvm;
 using namespace std::string_view_literals;
@@ -1243,8 +1244,8 @@ extern "C"
         return nullptr;
     }
 
-    LibLLVMVersionInfo LibLLVMGetVersion()
+    uint64_t LibLLVMGetVersion()
     {
-        return { PRODUCT_VERSION_MAJOR, PRODUCT_VERSION_MINOR, PRODUCT_VERSION_BUILD, PRODUCT_VERSION_REVISION };
+        return LibLLVM::FileVersion64;
     }
 }

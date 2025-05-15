@@ -3,7 +3,6 @@
   <PropertyGroup>
     <!-- Disable modern Managed code project NUGET resolution, this is a VCXPROJ file with manual restore -->
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
-
     <NoCommonAnalyzers>true</NoCommonAnalyzers>
     <!-- Directory.Build.props NOT yet imported so this MUST essentially replicate BuildOutputPackagesDir -->
     <PackagesRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../../BuildOutput/packages'))</PackagesRoot>
@@ -47,6 +46,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(IntermediateOutputPath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LIBLLVM_RELEASE_BUILD=$(IsReleaseBuild);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -80,6 +80,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CSemVer.h" />
     <ClInclude Include="enum_flags.h" />
     <ClInclude Include="include\libllvm-c\AnalysisBindings.h" />
     <ClInclude Include="include\libllvm-c\AttributeBindings.h" />
@@ -103,6 +104,10 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(MSBuildThisFileDirectory)..\..\llvm-libs.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <!--
+    Generate the headers as part of build; Default is to run before resource compile, but it is needed in the build for this project
+    -->
+    <CallTarget Targets="GenerateVesionInfoHeader"/>
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
