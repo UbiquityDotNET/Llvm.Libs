@@ -84,7 +84,6 @@
         <!--
         Detect if something has this horrible non-feature `ImplicitUsings` enabled. It is a blight on the build that
         should never have been added let alone used as the default for projects with no way to block/disable it all up...
-        [Only a subtle, default on, per project option is available]
 
         NOTE:
         .editorconfig in this repo includes `csharp_style_prefer_top_level_statements = false:error` to ensure that bad

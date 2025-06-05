@@ -12,7 +12,7 @@ using CppSharp.Passes;
 
 namespace LlvmBindingsGenerator.Passes
 {
-    /// <summary>Translation unit pass to validate names of all functions in the extension headers have correct prefix</summary>
+    /// <summary>Translation unit pass to validate that names of all functions in the extension headers have correct prefix</summary>
     /// <remarks>
     /// All extended C APIs should have the 'LibLLVM' prefix so that they are clearly marked as an extension and there isn't
     /// any conflict with the official LLVM-C API.

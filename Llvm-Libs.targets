@@ -1,7 +1,2 @@
-﻿<Project InitialTargets="VerifyLlvmVersion">
-    <Target Name="VerifyLlvmVersion">
-        <Error Condition="'$(LlvmVersionMajor)'!='20' OR $(LlvmVersionMinor)!='1' OR $(LlvmVersionPatch)!='3'"
-               Text="Llvm Version property MISMATCH (Now: $(LlvmVersionMajor).$(LlvmVersionMinor).$(LlvmVersionPatch)), this will likely cause broken builds or runtime failures"
-               />
-    </Target>
+﻿<Project>
 </Project>

@@ -6,12 +6,6 @@
     </PropertyGroup>
 
     <PropertyGroup Label="UserMacros">
-        <!-- These are not conditional as the version is bound directly to the version of LLVM built into the libraries -->
-        <LlvmVersionMajor>20</LlvmVersionMajor>
-        <llvmVersionMinor>1</llvmVersionMinor>
-        <LlvmVersionPatch>3</LlvmVersionPatch>
-        <LlvmVersion>$(LlvmVersionMajor).$(LlvmVersionMinor).$(LlvmVersionPatch)</LlvmVersion>
-
         <LlvmLibsMetaPackageRoot>$([MSBuild]::NormalizeDirectory('$(BuildRootDir)\llvm-project\llvm'))</LlvmLibsMetaPackageRoot>
         <LlvmBasePlatformConfig>$([MSBuild]::NormalizeDirectory('$(BaseBuildOutputPath)$(LlvmPlatformConfig)'))</LlvmBasePlatformConfig>
         <LlvmPlatformConfigLibRoot>$([MSBuild]::NormalizeDirectory('$(LlvmBasePlatformConfig)\lib'))</LlvmPlatformConfigLibRoot>
