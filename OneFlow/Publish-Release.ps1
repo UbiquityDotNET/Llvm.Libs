@@ -36,7 +36,7 @@ Write-Information 'Fetching from official repository'
 Invoke-External git fetch $officialRemoteName
 
 Write-Information "Switching to release branch [$officialReleaseBranch]"
-Invoke-External git switch '-c' $releasebranch $officialReleaseBranch
+Invoke-External git switch '-C' $releasebranch $officialReleaseBranch
 
 Write-Information 'Creating tag of this branch as the release'
 Invoke-External git tag $tagname '-m' "Official release: $tagname"
