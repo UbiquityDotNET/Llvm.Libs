@@ -71,7 +71,7 @@ jobs:
 
       - name: Publish packages to NuGet.org
         run: |
-          if( [string]::IsNullOrWhitesapce('${{ secrets.NUGETPUSH_ACCESS_TOKEN }}'))
+          if( [string]::IsNullOrWhiteSpace('${{ secrets.NUGETPUSH_ACCESS_TOKEN }}'))
           {
               throw "'NUGETPUSH_ACCESS_TOKEN' does not exist"
           }
