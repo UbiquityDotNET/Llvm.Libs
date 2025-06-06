@@ -63,6 +63,6 @@ namespace LlvmBindingsGenerator
             InnerDiagnostics.PushIndent( level );
         }
 
-        private readonly IDiagnostics InnerDiagnostics = new ConsoleDiagnostics();
+        private readonly ConsoleDiagnostics InnerDiagnostics = new();
     }
 }

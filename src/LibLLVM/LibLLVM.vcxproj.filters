@@ -23,6 +23,7 @@
     <None Include="EXPORTS.g.DEF">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="NuGet.config" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="InlinedExports.cpp">

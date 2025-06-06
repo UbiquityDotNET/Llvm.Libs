@@ -17,8 +17,6 @@ function Show-FullBuildInfo
     Write-Information 'Build Info:'
     Write-Information ($buildInfo | Format-Table | Out-String)
 
-    Write-Information (dir env:Is* | Format-Table -Property Name, value | Out-String)
-    Write-Information (dir env:GITHUB* | Format-Table -Property Name, value | Out-String)
     Write-Information "BuildKind: $($buildInfo['CurrentBuildKind'])"
     Write-Information "CiBuildName: $env:CiBuildName"
 

@@ -19,7 +19,7 @@ namespace LlvmBindingsGenerator.Configuration
         Mark Start { get; set; }
     }
 
-    // Wrapper for standard object deserializer that tests for IYamlConfigLocation to add location inforamtion
+    // Wrapper for standard object deserializer that tests for IYamlConfigLocation to add location information
     // to the deserialized nodes. This allows far better error reporting etc.. when performing a semantic pass
     // on the data. Unfortunately, the owner of YamlDotNet is presently unwilling to consider such a thing in
     // a general manner as part of the library (see: https://github.com/aaubry/YamlDotNet/issues/494).

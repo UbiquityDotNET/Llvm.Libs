@@ -7,6 +7,14 @@ indent_size = 4
 insert_final_newline = true
 tab_width = 4
 end_of_line = crlf
+# until [VSSpellChecker bug 277](https://github.com/EWSoftware/VSSpellChecker/issues/277)
+# is fixed, disable the analyzers. It's more of a PITA than a help
+# VSSPELL: Disable the analyzers until Bug 277 is fixed.
+vsspell_code_analyzers_enabled = false
+
+# VSSPELL: Spell checker settings for all files
+vsspell_section_id = 1c7003ec377c4bd9bb3c509d29770210
+vsspell_ignored_words_1c7003ec377c4bd9bb3c509d29770210 = File:.\IgnoredWords.dic|bar
 
 # match VS generated formatting for MSBuild project files
 [*.*proj,*.props,*.targets]
@@ -1566,16 +1574,16 @@ dotnet_naming_style.pascal_case.required_prefix =
 dotnet_naming_style.pascal_case.required_suffix = 
 dotnet_naming_style.pascal_case.word_separator = 
 dotnet_naming_style.pascal_case.capitalization = pascal_case
-dotnet_style_coalesce_expression = true:warning
-dotnet_style_null_propagation = true:warning
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_null_propagation = true:suggestion
 dotnet_style_prefer_is_null_check_over_reference_equality_method = true:error
 dotnet_style_prefer_auto_properties = true:error
 dotnet_style_object_initializer = true:suggestion
-dotnet_style_collection_initializer = true:warning
+dotnet_style_collection_initializer = true:suggestion
 dotnet_style_prefer_simplified_boolean_expressions = true:error
 dotnet_style_prefer_conditional_expression_over_assignment = true:warning
 dotnet_style_prefer_conditional_expression_over_return = true:warning
-dotnet_style_explicit_tuple_names = true:warning
+dotnet_style_explicit_tuple_names = true:suggestion
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
 dotnet_style_prefer_inferred_tuple_names = true:suggestion
 dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion

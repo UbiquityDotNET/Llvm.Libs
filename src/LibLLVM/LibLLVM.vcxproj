@@ -9,7 +9,7 @@
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)'==''">win-x64</RuntimeIdentifier>
     <!-- TODO: Support SourceLink [See: https://github.com/dotnet/sourcelink#using-source-link-in-c-projects]-->
   </PropertyGroup>
-  <Import Project="$(PackagesRoot)CSemVer.Build.Tasks.2.0.5\build\CSemVer.Build.Tasks.props" Condition="Exists('$(PackagesRoot)CSemVer.Build.Tasks.2.0.5\build\CSemVer.Build.Tasks.props')" />
+  <Import Project="$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.0-rc\build\Ubiquity.NET.Versioning.Build.Tasks.props" Condition="Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.0-rc\build\Ubiquity.NET.Versioning.Build.Tasks.props')" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release|x64">
@@ -31,7 +31,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(PackagesRoot)CSemVer.Build.Tasks.2.0.5\build\CSemVer.Build.Tasks.targets" Condition="Exists('$(PackagesRoot)CSemVer.Build.Tasks.2.0.5\build\CSemVer.Build.Tasks.targets')" />
+    <Import Project="$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.0-rc\build\Ubiquity.NET.Versioning.Build.Tasks.targets" Condition="Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.0-rc\build\Ubiquity.NET.Versioning.Build.Tasks.targets')" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -46,13 +46,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(IntermediateOutputPath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>LIBLLVM_RELEASE_BUILD=$(IsReleaseBuild);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
     <None Include="EXPORTS.g.DEF" />
     <None Include="include\ReadMe.md" />
+    <None Include="NuGet.config" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -104,15 +104,20 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(MSBuildThisFileDirectory)..\..\llvm-libs.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <!--
-    Generate the headers as part of build; Default is to run before resource compile, but it is needed in the build for this project
-    -->
-    <CallTarget Targets="GenerateVesionInfoHeader"/>
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Message Importance="High" Text="PlatformConfiguration: $(Platform)|$(Configuration)" />
-    <Error Condition="!Exists('$(PackagesRoot)CSemVer.Build.Tasks.2.0.5\build\CSemVer.Build.Tasks.props')" Text="$([System.String]::Format('$(ErrorText)', '$(PackagesRoot)CSemVer.Build.Tasks.2.0.5\build\CSemVer.Build.Tasks.props'))" />
-    <Error Condition="!Exists('$(PackagesRoot)CSemVer.Build.Tasks.2.0.5\build\CSemVer.Build.Tasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(PackagesRoot)CSemVer.Build.Tasks.2.0.5\build\CSemVer.Build.Tasks.targets'))" />
+    <Error Condition="!Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.0-rc\build\Ubiquity.NET.Versioning.Build.Tasks.props')"
+           Text="$([System.String]::Format('$(ErrorText)', '$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.0-rc\build\Ubiquity.NET.Versioning.Build.Tasks.props'))"
+           />
+    <Error Condition="!Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.0-rc\build\Ubiquity.NET.Versioning.Build.Tasks.targets')"
+           Text="$([System.String]::Format('$(ErrorText)', '$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.0-rc\build\Ubiquity.NET.Versioning.Build.Tasks.targets'))"
+           />
+  </Target>
+  <Target Name="AlwaysShowBuildParams" AfterTargets="ShowBuildParams">
+    <Message Importance="High" Text="FullBuildNumber: $(FullBuildNumber)" />
+    <Message Importance="High" Text=" PackageVersion: $(PackageVersion)" />
+    <Message Importance="High" Text="    FileVersion: $(FileVersion)" />
   </Target>
 </Project>

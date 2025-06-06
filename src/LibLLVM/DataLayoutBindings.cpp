@@ -19,4 +19,9 @@ extern "C"
         *outLen = StringRep.length();
         return StringRep.data();
     }
+
+    LLVMBool LibLLVMTargeDataRefOpEquals(LLVMTargetDataRef lhs, LLVMTargetDataRef rhs)
+    {
+        return *unwrap(lhs) == *unwrap(rhs) ? 1 : 0;
+    }
 }

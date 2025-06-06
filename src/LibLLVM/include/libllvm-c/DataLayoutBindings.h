@@ -9,6 +9,7 @@ LLVM_C_EXTERN_C_BEGIN
     // LLVMCreateTargetDataLayout() would just crash/abort the app...
     LLVMErrorRef LibLLVMParseDataLayout(char const* layoutString, size_t strLen, /*out*/ LLVMTargetDataRef* outRetVal);
     char const* LibLLVMGetDataLayoutString(LLVMTargetDataRef dataLayout, /*out*/ size_t* outLen);
+    LLVMBool LibLLVMTargeDataRefOpEquals(LLVMTargetDataRef lhs, LLVMTargetDataRef rhs);
 LLVM_C_EXTERN_C_END
 
 #endif

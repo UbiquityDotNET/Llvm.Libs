@@ -23,7 +23,7 @@ namespace llvm {
 
 // sanity check to catch any changes in the official LLVM declaration of the class above.
 // Since it is NOT declared in a public header this, sadly, **MUST** be re-validated on any changes.
-#if LLVM_VERSION_MAJOR != 20 || LLVM_VERSION_MINOR != 1 || LLVM_VERSION_PATCH != 4
+#if LLVM_VERSION_MAJOR != 20 || LLVM_VERSION_MINOR != 1 || LLVM_VERSION_PATCH != 6
 #error "Re-evaluate and match declaration of LLVMPassBuilderOptions; update the version test values above when validated"
 #endif
 
@@ -39,7 +39,7 @@ namespace
 
     LLVMGlobalISelAbortMode mk_c_enum(GlobalISelAbortMode m)
     {
-        // NOTE: Numeric values are ***NOT*** the same - A simple case won't do!
+        // NOTE: Numeric values are ***NOT*** the same - A simple cast won't do!
         // Also NOTE: when setting, the default is Enable for any invalid/unknown
         // values. So, that is used on conversion here as the default.
         switch (m)

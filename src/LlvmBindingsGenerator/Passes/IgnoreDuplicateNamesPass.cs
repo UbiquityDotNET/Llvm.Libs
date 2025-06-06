@@ -42,6 +42,6 @@ namespace LlvmBindingsGenerator.Passes
             return true;
         }
 
-        private readonly HashSet<string> VisitedNames = new HashSet<string>();
+        private readonly HashSet<string> VisitedNames = [];
     }
 }

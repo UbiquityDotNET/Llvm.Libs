@@ -69,16 +69,18 @@ jobs:
       - name: Show asset names
         run: dir BuildOutput/Nuget
 
+      - name: Publish packages to NuGet.org
+          run: dotnet nuget push .\BuildOutput\NuGet\*.nupkg -k ${{ secrets.NUGETPUSH_ACCESS_TOKEN }} -s 'https://api.nuget.org/v3/index.json' --skip-duplicate
+
       - name: Create Release
+        if: (!cancelled())
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref }}
           name: Release ${{ github.ref }}
-          draft: false
+          draft: true
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
           files: BuildOutput/NuGet/*.nupkg
 
-      - name: Publish packages to NuGet.org
-        run: dir ./BuildOutput/NuGet/*.nupkg | %{dotnet nuget push $_ --api-key "${{ secrets.nugetpush_access_token }}" -s 'https://api.nuget.org/v3/index.json' -n true --skip-duplicate}
