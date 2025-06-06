@@ -71,9 +71,9 @@ jobs:
 
       - name: Publish packages to NuGet.org
         run: |
-          if( [string]::IsNullOrWhitesapce())
+          if( [string]::IsNullOrWhitesapce('${{ secrets.NUGETPUSH_ACCESS_TOKEN }}'))
           {
-              throw "NUGETPUSH_ACCESS_TOKEN" does not exist"
+              throw "'NUGETPUSH_ACCESS_TOKEN' does not exist"
           }
           $response = Invoke-WebRequest -Uri "https://www.nuget.org/api/v2/package/" -Headers @{ Authorization = "Bearer ${{ secrets.NUGETPUSH_ACCESS_TOKEN }}" }
           if ($response.StatusCode -ne 200)
