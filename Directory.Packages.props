@@ -12,7 +12,7 @@
         for depending on frequently updated (Or in development packages) This must be updated ALL the time
         or a warning (NU1603) is generated.
         -->
-        <GlobalPackageReference Include="Ubiquity.NET.Versioning.Build.Tasks" Version="5.0.0-alpha.ci.608543957.BLD" Condition="'$(MSBuildProjectExtension)' != '.vcxproj'"/>
+        <GlobalPackageReference Include="Ubiquity.NET.Versioning.Build.Tasks" Version="5.0.0-rc" Condition="'$(MSBuildProjectExtension)' != '.vcxproj'"/>
         <GlobalPackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" Condition="'$(NoCommonAnalyzers)' != 'true'" />
         <GlobalPackageReference Include="IDisposableAnalyzers" Version="4.0.8" Condition="'$(NoCommonAnalyzers)' != 'true'" />
         <GlobalPackageReference Include="MustUseRetVal" Condition="'$(NoCommonAnalyzers)' != 'true'" Version="0.0.2"/>
