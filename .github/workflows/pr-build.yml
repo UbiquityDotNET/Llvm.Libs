@@ -1,4 +1,10 @@
 name: CI-Build
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: pwsh
+
 on:
   push:
     branches:
@@ -9,6 +15,7 @@ on:
       - '**.md'
       - '.github/workflows/release-build.yml'
       - 'OneFlow/*.*'
+      - '**.dic'
 
   pull_request:
     branches:
@@ -19,6 +26,7 @@ on:
       - '**.md'
       - '.github/workflows/release-build.yml'
       - 'OneFlow/*.*'
+      - '**.dic'
 
 jobs:
   build_target:
