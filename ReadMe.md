@@ -6,21 +6,21 @@ build ordering and processing, which is handled by the PowerShell scripts.
 ## Status
 ### `develop` branch
 ![GitHub branch check runs](https://img.shields.io/github/check-runs/UbiquityDotNET/Llvm.Libs/develop)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/UbiquityDotNET/Llvm.Libs/pr-build.yml)
+![GitHub Actions Work-flow Status](https://img.shields.io/github/actions/workflow/status/UbiquityDotNET/Llvm.Libs/pr-build.yml)
 ![GitHub commits since latest release (branch)](https://img.shields.io/github/commits-since/UbiquityDotNET/Llvm.Libs/latest/develop)
 
 ### Latest Download
-#### Released Nuget Packages
+#### Released NuGet Packages
 |Package Name | Badge |
 |-------------|-------|
-| Ubiquity.NET.Interop.Handles | ![Nuget Download](https://img.shields.io/nuget/dt/Ubiquity.NET.Interop.Handles) |
-| Ubiquity.NET.LibLLVM (Meta package)| ![Nuget Download](https://img.shields.io/nuget/dt/Ubiquity.NET.LibLLVM) |
-| Ubiquity.NET.LibLLVM-win-x64 | ![Nuget Download](https://img.shields.io/nuget/dt/Ubiquity.NET.LibLLVM-win-x64) |
+| Ubiquity.NET.Interop.Handles | ![NuGet Download](https://img.shields.io/nuget/dt/Ubiquity.NET.Llvm.Interop.Handles) |
+| Ubiquity.NET.LibLLVM (Meta package)| ![NuGet Download](https://img.shields.io/nuget/dt/Ubiquity.NET.LibLLVM) |
+| Ubiquity.NET.LibLLVM-win-x64 | ![NuGet Download](https://img.shields.io/nuget/dt/Ubiquity.NET.LibLLVM-win-x64) |
 
 #### PR/CI build packages
 Packages for CI and PR builds are NOT published/released to NuGet.org (nor any other packaging
-service). Instead the are avaliable as artifacts from GitHub directly. The [Actions](https://github.com/UbiquityDotNET/Llvm.Libs/actions)
-tab contains a full list of all workflow runs and the artifacts from each are available from the
+service). Instead the are available as artifacts from GitHub directly. The [Actions](https://github.com/UbiquityDotNET/Llvm.Libs/actions)
+tab contains a full list of all work-flow runs and the artifacts from each are available from the
 links for each run. (NOTE: GitHub limits the lifetime or artifacts to a maximum of 90 days, though
 this repository may limit that to a lower number, downloading packages built is useful for testing.
 But, bear in mind this mechanism is NOT available for long term use so you should download shortly
@@ -35,7 +35,7 @@ artifacts you are interested in to your own local file "share" location and use 
 
 ## About
 This repo provides runtime dynamic libraries for use of an extended C API for LLVM "bindings" in
-other languages/runtimes (.NET, and Windows in general, would call these "projections").
+other languages/run-times (.NET, and Windows in general, would call these "projections").
 
 LLVM is a large collection of libraries for building compiler back-ends that support a great deal
 of customization and extensibility. Using LLVM either requires building the entire source tree or
@@ -47,13 +47,13 @@ build. Therefore, building the full source won't work there. In addition to the 
 the full size of the debug binaries and symbols output is very large, if packaged as a NuGet package
 it exceeds the size limits of all known public release NuGet galleries.
 
-Thus, this repository includes building the actual dynamic libraries for runtimes and targets
+Thus, this repository includes building the actual dynamic libraries for run-times and targets
 supported for RELEASE (No symbols) ONLY. If symbols are needed for local debugging, then those are
 built locally.
 
 >[!NOTE]
 > It is VERY rare to need to debug into the LLVM libraries themselves. So much so that this is
-> mostly a theoretical excercise.  
+> mostly a theoretical exercise.  
 > Building the extension DLL with debugging is fully supported, and used heavily to debug new
 > additions of the extension APIs.
 
@@ -89,7 +89,7 @@ C# now has source generators built-in couldn't those server the purpose here?
 Roslyn allows source generators directly in the compiler making for a feature similar to, but not the
 same as C++ template code generation AT compile time. However, there's a couple of BIG issues with
 that for this particular code base. (And these distinctions are hard to get your head around for those
-famliar with C++ templates)
+familiar with C++ templates)
 1) Non-deterministic ordering of generators
     - More specifically for this project there is no way to declare the dependency on
       outputs of one generator as the input for another. (They ***all*** see the same original
@@ -107,7 +107,7 @@ the current Roslyn Source generator design - ALL generators see the same input t
 [See: [Discussion on ordering and what a generator "sees"](https://github.com/dotnet/roslyn/discussions/57912#discussioncomment-1682779)]  
 [See also: [Roslyn issue #57239](https://github.com/dotnet/roslyn/issues/57239)]
 
-The interop code uses the the LibraryImportAttribute for AOT support of ALL of the interop APIs
+The interop code uses the LibraryImportAttribute for AOT support of ALL of the interop APIs
 declared. Thus, at compile time the interop source generator **MUST** be able to see the types used,
 specifically, it must have access to the `NativeMarshalling` attribute for all the handle types.
 Otherwise, it doesn't know how to marshal the type and bails out. It is possible to "overcome" this
@@ -115,7 +115,7 @@ with an explicit `MarshalUsingAttribute` on every parameter or return type but t
 typing is what source generators and templates are supposed to remove. Thus, this library will
 generate the handle sources **BEFORE** they are compiled in the project. (Not to mention it also
 generates the exports.g.def used by the native code. Thus, the generated source files will contain the
-marshalling attributes so that the interop source generator knows how to generate the correct code.
+marshaling attributes so that the interop source generator knows how to generate the correct code.
 
 >To be crystal clear - The problem is **NOT** one of generator run ordering, but on the ***dependency
 > of outputs***. By design, Roslyn source generators can only see the original source input, never the
@@ -131,14 +131,14 @@ marshalling attributes so that the interop source generator knows how to generat
 1) Running the source generator directly in the project
     1) This is where the problem of non-deterministic ordering and visibility of the
        generated code was discovered. Obviously (now anyway!) this won't work.
-2) Use a source generator in a seperate assembly
+2) Use a source generator in a separate assembly
     1) This solves the generator output dependency problem but introduces a new problem of
-       how the build infrastructore for these types manage nuget versions.
+       how the build infrastructure for these types manage NuGet versions.
     2) Additionally, this adds complexity of a second native dependency on the library
        exporting the native functionality. (Should there be two copies? How does code in
        each refer to the one instance?...)
 3) Call the source generator from within this app to control the ordering
-    1) This at least could get around the ordering/dpendency problem as it would guarantee
+    1) This at least could get around the ordering/dependency problem as it would guarantee
        the custom generator runs before the built-in one.
     2) However, this runs afoul of the binary dependency problem... Not 100% insurmountable
        but the number of caveats on the Roslyn Source Generator side of things grows to a
@@ -147,16 +147,16 @@ marshalling attributes so that the interop source generator knows how to generat
 
 ##### The final choice
 Keep using this LlvmBindingsGenerator as a generator for the export file on Windows and the
-handle types for all runtimes. This used to work, and still does. The problem of expressing
+handle types for all run-times. This used to work, and still does. The problem of expressing
 managed code things in a custom language (YAML) is solved by simply not doing that! Instead,
-ALL of the P/Invoke methods are expressed direcly in C# code. For the handles it is a rather
+ALL of the P/Invoke methods are expressed directly in C# code. For the handles it is a rather
 simplistic expression in YAML. And arguably less complicated then all the subtleties of
 using a Roslyn Source generator for this sort of one off specialized code generation.
 
 This also keeps the door open to use the native AST from within the source generator or an
 analyzer to perform additional checks and ensure the hand written code matches the actual
-native code... (Though this would involve more direct use of the roslyn parser/analyzer and
-may be best to generate an input to a proper anaylzer)
+native code... (Though this would involve more direct use of the Roslyn parser/analyzer and
+may be best to generate an input to a proper analyzer)
 
 ### LibLLVM
 This is the native project that creates the extended LLVM-C API as an actual dynamic library.
@@ -167,7 +167,7 @@ modification for other platforms given the appropriate build infrastructure is s
 additional comments on the [automated build](#automated_build) below)
 
 ## Building the packages in this repo
-The build relieas on powershell scripts to handle most of the operations of building the libraries
+The build relies on PowerShell scripts to handle most of the operations of building the libraries
 
 ### General requirements
 There are some general steps that are required to successfully build the interop NuGet
@@ -191,9 +191,9 @@ package and a couple of different ways to go about completing them.
                 1. It might even need some form of global disable to prevent `LLVM_ABI` C++ types or
                    methods from default exporting and ONLY allow `LLVM_C_ABI' exports. It isn't clear
                    what the story is going to be there.
- 3. Build the LLVM libraries for all supported runtimes (OS+arch) in release form. This helps to ensure
+ 3. Build the LLVM libraries for all supported run-times (OS+arch) in release form. This helps to ensure
     an automated build is usable by limiting the resources needed for a given step.
- 4. Build LibLLVM as a dynamic library from the libs for all supported runtimes
+ 4. Build LibLLVM as a dynamic library from the libs for all supported run-times
 
 ### Automated build
 The extended C dynamic libraries are built using the PowerShell `Build-LibLLVMAndPackage.ps1` script.
@@ -209,13 +209,13 @@ means that the MSBUILD and VCXproj would go away in favor of CMAKE+Ninja for the
 > more complicated than one might hope. In particular, is the build of all the required LLVM
 > libraries needed to make a final LibLLVM. The full set (For a debug build with symbols) will
 > generally exceed both the time and storage space limits of any OSS project automated build system
-> like GitHub Actions, APPVEYOR, etc... Thus, the native libraries are curently limited to ONLY the
+> like GitHub Actions, APPVEYOR, etc... Thus, the native libraries are currently limited to ONLY the
 > release form without symbols. (If symbols are needed or desired then a LOCAL build is required
 > to get them).  
 > Each runtime is built as a single dynamic library exporting the extended C ABI. Each runtime is
 > bundled as a single NUGET package. A single meta package is also created that simply references
 > the individual runtime packages. Thus, a consumer of this library only needs to reference the one
-> "meta" pacakge `Ubiquity.NET.LibLLVM` to get all available runtimes. (and potential future ones
+> "meta" package `Ubiquity.NET.LibLLVM` to get all available run-times. (and potential future ones
 > added in later releases)
 
 >[!NOTE]
@@ -240,26 +240,26 @@ flowchart TD
     finish["All Build jobs complete"]
 ```
 ##### handles source package
-The generation of the handle types from the source exposes complexity and dependency of this effort
-and that of the larger Ubiquity.NET.Llvm effort, whicht depends on this library. Originallly the idea
-was to reduce the build of the LLVM libraries themselves (they were published as a zip file and
-included symbols AND the header files) But, that approach has proven difficult to maintain and a
-MAJOR hinderance to x-plat. Thus, a rework was done to build the runtime dynamic library in this
-repo. Though that still leaves the header generation and the bindings generator in a weird place.
-Since the Nuget plackage now only includes the final library for a runtime the bindings generator
-isn't usable anywhere else and thus the "handle" generation must occur where the LLVM headers are
-available. But, the generated source has dependencies on other base types/helpers in the interop
-library... 
+The generation of the handle types from the source exposes complexity and dependency of this
+effort and that of the larger Ubiquity.NET.Llvm effort, which depends on this library. Originally,
+the idea was to reduce the build of the LLVM libraries themselves (they were published as a zip
+file and included symbols AND the header files) But, that approach has proven difficult to
+maintain and a MAJOR hindrance to x-plat. Thus, a rework was done to build the runtime dynamic
+library in this repo. Though that still leaves the header generation and the bindings generator
+in a weird place. Since the NuGet package now only includes the final library for a runtime the
+bindings generator isn't usable anywhere else and thus the "handle" generation must occur where
+the LLVM headers are available. But, the generated source has dependencies on other base
+types/helpers in the interop library... 
 
 Thus, the usefulness of this project as a distinct repo is coming into question. [Currently the
-bindings generator just builds a NUGET package with the source assuming use ONLY in the interop
+bindings generator just builds a NuGet package with the source assuming use ONLY in the interop
 library, but unifying the repositories, could eliminate that and make a number of inner loop
 development scenarios simpler. Though, automated build times would dramatically increase as they
 would need to re-build ALL of the LLVM source code for every such build...] (Ah the wonders of
-tradeoffs in engineering never cease... :nerd_face:)
+trade-offs in engineering never cease... :nerd_face:)
 
 #### Open issues for a truly x-plat build
-1) The Library itself builds with VCXPROJ and msbuild
+1) The Library itself builds with VCXPROJ and MSBuild
     1. While the LLVM libraries are built with CMAKE + Ninja, the final library is currently built
        via a VCXPROJ. This will need to change to support a proper CMAKE build for the final
        library so it is used all up.
@@ -278,16 +278,16 @@ tradeoffs in engineering never cease... :nerd_face:)
        throw an error if additional platform work is needed.
         1. ***No guarantees*** as none if it is tested on anything other than a Windows machine but
            best effort was applied so the issues on that are hopefully small.
-3) The build scripts are in powershell and MAY include aliases that are not the same (or even exist)
+3) The build scripts are in PowerShell and MAY include aliases that are not the same (or even exist)
    on other platforms.
     1. The scripting has undergone a number of changes and most of these aliases should NOT exist
-       but no formal scrub to ensure they are all removed has occured.
-4) Nuget package generation currently assumes a windows RID
-    1. This is hopefully the simpllest to overcome as dotnet and MSBUILD of C#/Nuget projects is
-       properly x-plat already. Thus, the targets need to leverage the avaiable information about
-       the runtime it is operating on to create the proper package.
-        1. The projects are all created to use an MSBUILD property for the RID, so it is, hopefully,
-           just a matter of dynamically updating/setting that property.
+       but no formal scrub to ensure they are all removed has occurred.
+4) NuGet package generation currently assumes a windows RID
+    1. This is hopefully the simplest to overcome as dotnet.exe and MSBUILD of C#/NuGet projects
+       is properly x-plat already. Thus, the targets need to leverage the available information
+       about the runtime it is operating on to create the proper package.
+        1. The projects are all created to use an MSBUILD property for the RID, so it is,
+           hopefully, just a matter of dynamically updating/setting that property.
             1. This could be done using the scripts and a property param passed to the build or
                within the build as a property function or custom task. Whichever ends up simpler
                and easier to maintain.

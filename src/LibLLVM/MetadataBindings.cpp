@@ -43,11 +43,6 @@ extern "C"
         return static_cast< LibLLVMDwarfAttributeEncoding >( unwrap<DIBasicType>( basicType )->getEncoding( ) );
     }
 
-    void LibLLVMDIBuilderFinalizeSubProgram( LLVMDIBuilderRef dref, LLVMMetadataRef /*DISubProgram*/ subProgram )
-    {
-        unwrap( dref )->finalizeSubprogram( unwrap<DISubprogram>( subProgram ) );
-    }
-
     LLVMMetadataRef /*DILocalScope*/ LibLLVMDILocationGetInlinedAtScope( LLVMMetadataRef /*DILocation*/ location )
     {
         DILocation* loc = unwrap<DILocation>( location );
