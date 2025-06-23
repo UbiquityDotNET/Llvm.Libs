@@ -14,14 +14,9 @@ namespace LibLLVM
     {
         using namespace std::string_view_literals;
 
-        if (val == "true" || val == "True"sv || val == "TRUE"sv)
+        if (val == "true"sv || val == "True"sv || val == "TRUE"sv)
         {
             return true;
-        }
-
-        if (val == "false" || val == "False"sv || val == "FALSE"sv)
-        {
-            return false;
         }
 
         return false;
@@ -45,7 +40,7 @@ namespace LibLLVM
         + (ProductVersionBuild << 16)
         + ProductVersionRevision;
 
-    // CI Builds use an ODD numbered file version, but the ordered version number ignores CI and meta data information for ordering
+    // CI Builds use an EVEN numbered file version, but the ordered version number ignores CI and meta data information for ordering
     constexpr uint64_t OrderedVersion = FileVersion64 >> 1;
 }
 
