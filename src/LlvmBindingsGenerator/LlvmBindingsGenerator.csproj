@@ -16,6 +16,7 @@
         the most recent build of the LLVM libs matches the output
         -->
         <LLvmTargets Condition="'$(LLvmTargets)'==''">X86;ARM</LLvmTargets>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

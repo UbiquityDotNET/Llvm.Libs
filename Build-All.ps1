@@ -14,13 +14,13 @@ using module "PSModules/RepoBuild/RepoBuild.psd1"
 
 .PARAMETER SkipLLVM
     Skips generate and build of LLVM libraries (Assumes already done once). This can dramatically
-    inmprove the local loop for developer work. Most of the time is spent on the actual dynamic
+    improve the local loop for developer work. Most of the time is spent on the actual dynamic
     library or extensions. Once a LLVM build exists for a given version it is rarely needed again
     for local use.
 
 .DESCRIPTION
     This script is NOT used by the automated build to perform the actual build. Instead this
-    is used to automate local builds and validate stages before commiting changes to the repo.
+    is used to automate local builds and validate stages before committing changes to the repo.
     It will serialize the build for the current RID and handles. (The automated build can run
     various stages in parallel, including each RID)
 
@@ -30,7 +30,7 @@ using module "PSModules/RepoBuild/RepoBuild.psd1"
     and for flexibility in selecting the actual back end. The back ends have changed a few times
     over the years and re-writing the entire build in terms of those back ends each time is a lot
     of wasted effort. Thus, the projects settled on PowerShell as the core automated build tooling
-    and backend specific support only needs to call out to the PowerShell scripts to perform work.
+    and back-end specific support only needs to call out to the PowerShell scripts to perform work.
 #>
 [cmdletbinding()]
 Param(
