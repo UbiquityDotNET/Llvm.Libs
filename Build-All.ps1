@@ -51,6 +51,11 @@ try
         throw "build scripts BUSTED; Got null buildinfo hashtable..."
     }
 
+    if ($ForceClean -and $SkipLLvm)
+    {
+        throw "ForceClean and SkipLLvm are mutually exclusive, you cannot set both!"
+    }
+
     if((Test-Path -PathType Container $buildInfo['BuildOutputPath']) -and $ForceClean )
     {
         Write-Information "Cleaning output folder from previous builds"
