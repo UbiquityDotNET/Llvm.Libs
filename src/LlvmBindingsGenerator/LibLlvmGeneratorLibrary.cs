@@ -25,15 +25,13 @@ namespace LlvmBindingsGenerator
     {
         /// <summary>Initializes a new instance of the <see cref="LibLlvmGeneratorLibrary"/> class.</summary>
         /// <param name="options">Command line options to use</param>
-        /// <remarks>
-        /// The <paramref name="llvmRoot"/> only needs to have the files required to parse the LLVM-C API
-        /// </remarks>
         public LibLlvmGeneratorLibrary( Options options )
         {
             CmdLineOptions = options;
             Configuration = new ReadOnlyConfig( YamlConfiguration.ParseFrom( options.ConfigFile ) );
 
             CommonInclude = Path.Combine( options.LlvmRoot, "include" );
+
             // NOTE: The target specific LLVMInitializeXXX APIs are included in CMAKE generated headers
             // This is OK as they should NOT appear in the set of APIs exported from the library anyway
             // Instead LibLLVM handles all target registration in an extended abstract API LibLLVMRegisterTarget(...)
@@ -56,6 +54,14 @@ namespace LlvmBindingsGenerator
             // For non-Windows platforms it won't matter anyway as the exports.def isn't used and the
             // generated handle code is platform independent.
             driver.ParserOptions.SetupMSVC();
+
+            // Workaround: https://github.com/mono/CppSharp/issues/1940
+            // This isn't generating native code so the compiler differences for STL
+            // aren't important. This define has no impact on non-MSVC libraries.
+            // If such a conflict is ever determined, this is either hopefully fixed
+            // in the dependent library OR this code needs to set this conditionally.
+            driver.ParserOptions.AddDefines("_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH");
+
             driver.ParserOptions.AddIncludeDirs( CommonInclude );
             driver.ParserOptions.AddIncludeDirs( ExtensionsInclude );
 

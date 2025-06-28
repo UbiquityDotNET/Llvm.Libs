@@ -40,7 +40,7 @@ namespace LibLLVM
         + (ProductVersionBuild << 16)
         + ProductVersionRevision;
 
-    // CI Builds use an EVEN numbered file version, but the ordered version number ignores CI and meta data information for ordering
+    // CI Builds use an ODD numbered file version, but the ordered version number ignores CI and meta data information for ordering
     constexpr uint64_t OrderedVersion = FileVersion64 >> 1;
 }
 

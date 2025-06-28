@@ -6,24 +6,22 @@
     [read - never gonna happen])
     -->
     <ItemGroup>
-        <!--
-        Allow pre-release, but make a real release before this package goes to a full release...
-        NOTE: Central package versioning does NOT support version ranges so there's no support
-        for depending on frequently updated (Or in development packages) This must be updated ALL the time
-        or a warning (NU1603) is generated.
-        -->
-        <GlobalPackageReference Include="Ubiquity.NET.Versioning.Build.Tasks" Version="5.0.0-rc" Condition="'$(MSBuildProjectExtension)' != '.vcxproj'"/>
+        <GlobalPackageReference Include="Ubiquity.NET.Versioning.Build.Tasks" Version="5.0.3" Condition="'$(MSBuildProjectExtension)' != '.vcxproj'"/>
         <GlobalPackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" Condition="'$(NoCommonAnalyzers)' != 'true'" />
         <GlobalPackageReference Include="IDisposableAnalyzers" Version="4.0.8" Condition="'$(NoCommonAnalyzers)' != 'true'" />
         <GlobalPackageReference Include="MustUseRetVal" Condition="'$(NoCommonAnalyzers)' != 'true'" Version="0.0.2"/>
         <!--
-        While some aspects of this analyzer are helpful, it hasn't been without issues. Worse, the last non-preview release
-        was Apr of 2019, That's a LONG time ago. Even the most recent preview (beta) was back in Dec. of 2023. So not much
-        sign of life/activity nor hope of updates to bug fixes. It's sad to see this go as relying on a developer/reviewers
-        to follow the rules is a recipe for failures. Automation is how that works. (With occasional overrides that should
-        get the attention of a reviewer).
+        NOTE: This analyzer is sadly, perpetually in "pre-release mode". There have been many issues/discussion on the point
+        and it has all fallen on deaf ears. So policies regarding "NO-Prerelease" components need to be overruled on this one.
+
+        This has NO use on C/C++ builds, and in fact NuGet is screwed up if it is included such that it WON'T resolve entries
+        in packages.config (It seems to think it's a PackageReferences project even though it most definitely is NOT!)
+
+        BUSTED: See - https://github.com/DotNetAnalyzers/StyleCopAnalyzers/issues/3916#issuecomment-2953557715
+        for now disabling it all up, future PR will figure out how to disable for automated builds as local with
+        latest VS+SDK is fine.
         -->
-        <!--<GlobalPackageReference Include="StyleCop.Analyzers" Version="1.1.118" Condition="'$(NoCommonAnalyzers)' != 'true'" />-->
+        <!--<GlobalPackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" Condition="'$(UseStyleCop)' != 'false' AND '$(MSBuildProjectExtension)'!='.vcxproj'" />-->
     </ItemGroup>
 
     <!--

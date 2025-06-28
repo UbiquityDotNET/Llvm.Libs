@@ -178,7 +178,7 @@ namespace LlvmBindingsGenerator
 
         public void Dispose()
         {
-            Context?.TargetInfo.Dispose();
+            Context?.TargetInfo?.Dispose();
 
             ParserOptions.Dispose();
             CppSharp.AST.Type.TypePrinterDelegate = null;

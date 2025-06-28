@@ -42,7 +42,7 @@ namespace llvm
 
 // sanity check to catch any changes in the official LLVM declaration of the class above.
 // Since it is NOT declared in a header this **MUST** be validated on any changes.
-#if LLVM_VERSION_MAJOR != 20 || LLVM_VERSION_MINOR != 1 || LLVM_VERSION_PATCH != 6
+#if LLVM_VERSION_MAJOR != 20 || LLVM_VERSION_MINOR != 1 || LLVM_VERSION_PATCH != 7
 #error "Re-evaluate and match declaration of LLVMPassBuilderOptions; update the version test values above when validated"
 #endif
 
