@@ -8,12 +8,8 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/Support/CBindingWrapping.h>
 
-#include "ValueCache.h"
-
 
 using namespace llvm;
-
-DEFINE_SIMPLE_CONVERSION_FUNCTIONS( ValueCache, LibLLVMValueCacheRef );
 
 extern "C"
 {
@@ -67,27 +63,6 @@ extern "C"
     LLVMValueRef LibLLVMValueAsMetadataGetValue( LLVMMetadataRef vmd )
     {
         return wrap( unwrap<ValueAsMetadata>( vmd )->getValue( ) );
-    }
-
-    LibLLVMValueCacheRef LibLLVMCreateValueCache( void* ctx, LibLLVMValueCacheItemDeletedCallback /*MaybeNull*/ deletedCallback, LibLLVMValueCacheItemReplacedCallback replacedCallback )
-    {
-        return wrap( new ValueCache(ctx, deletedCallback, replacedCallback ) );
-    }
-
-    void LibLLVMDisposeValueCache( LibLLVMValueCacheRef cacheRef )
-    {
-        delete unwrap( cacheRef );
-    }
-
-    void LibLLVMValueCacheAdd( LibLLVMValueCacheRef cacheRef, LLVMValueRef valueRef, intptr_t handle )
-    {
-        auto& cache = *unwrap( cacheRef );
-        cache[unwrap( valueRef )] = handle;
-    }
-
-    intptr_t LibLLVMValueCacheLookup( LibLLVMValueCacheRef cacheRef, LLVMValueRef valueRef )
-    {
-        return unwrap( cacheRef )->lookup( unwrap( valueRef ) );
     }
 
     LLVMBool LibLLVMIsConstantCString( LLVMValueRef C )

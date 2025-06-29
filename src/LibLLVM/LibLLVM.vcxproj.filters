@@ -78,9 +78,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\ValueCache.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\libllvm-c\AnalysisBindings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
