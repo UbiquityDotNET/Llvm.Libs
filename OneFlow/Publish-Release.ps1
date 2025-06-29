@@ -23,23 +23,34 @@ using module '../PsModules/RepoBuild/RepoBuild.psd1'
 Param()
 $buildInfo = Initialize-BuildEnvironment
 
-# merging the tag to develop branch on the official repository triggers the official build and release of the Nuget Packages
+# merging the tag to develop branch on the official repository triggers the official build and release of the NuGet Packages
 $tagName = Get-BuildVersionTag $buildInfo
 $officialRemoteName = Get-GitRemoteName $buildInfo official
 $forkRemoteName = Get-GitRemoteName $buildInfo fork
 
 $releaseBranch = "release/$tagName"
 $officialReleaseBranch = "$officialRemoteName/$releaseBranch"
+
+$mainBranchName = "master"
+$officialMainBranch = "$officialRemoteName/$mainBranchName"
+
 $mergeBackBranchName = "merge-back-$tagName"
 
 Write-Information 'Fetching from official repository'
 Invoke-External git fetch $officialRemoteName
 
 Write-Information "Switching to release branch [$officialReleaseBranch]"
-Invoke-External git switch '-c' $releasebranch $officialReleaseBranch
+Invoke-External git switch '-C' $releasebranch $officialReleaseBranch
+
+$confirmation = Read-Host "Are you Sure You Want To Proceed:"
+if ($confirmation -ne 'y')
+{
+    Write-Host "User canceled operation"
+    return
+}
 
 Write-Information 'Creating tag of this branch as the release'
-Invoke-External git tag $tagname '-m' "Official release: $tagname"
+Invoke-External git tag $tagName '-m' "Official release: $tagName"
 
 Write-Information 'Pushing tag to official remote [Starts automated build release process]'
 Invoke-External git push $officialRemoteName '--tags'
@@ -50,3 +61,8 @@ Write-Information 'Creating local merge-back branch to merge changes associated 
 Invoke-External git checkout '-b' $mergeBackBranchName $releasebranch
 Write-Information 'pushing merge-back branch to fork'
 Invoke-External git push $forkRemoteName $mergeBackBranchName
+
+Write-Information 'Fast-forwarding main to tagged release'
+Invoke-External git switch '-C' $mainBranchName $officialMainBranch
+Invoke-External git merge --ff-only $tagName
+Invoke-External git push $officialRemoteName $mainBranchName
