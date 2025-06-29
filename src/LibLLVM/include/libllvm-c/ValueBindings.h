@@ -63,11 +63,6 @@ extern "C" {
     typedef void ( *LibLLVMValueCacheItemDeletedCallback )(void* ctx, LLVMValueRef ref, intptr_t handle );
     typedef intptr_t ( *LibLLVMValueCacheItemReplacedCallback )(void* ctx, LLVMValueRef oldValue, intptr_t handle, LLVMValueRef newValue );
 
-    LibLLVMValueCacheRef LibLLVMCreateValueCache(/*MaybeNull*/ void* ctx, LibLLVMValueCacheItemDeletedCallback /*MaybeNull*/ deletedCallback, LibLLVMValueCacheItemReplacedCallback replacedCallback );
-    void LibLLVMDisposeValueCache( LibLLVMValueCacheRef cacheRef );
-    void LibLLVMValueCacheAdd( LibLLVMValueCacheRef cacheRef, LLVMValueRef value, intptr_t handle );
-    intptr_t LibLLVMValueCacheLookup( LibLLVMValueCacheRef cacheRef, LLVMValueRef valueRef );
-
     // Detect if a ConstantDataSequential is a C string (i8 sequence terminated with \0 and no embedded \0)
     LLVMBool LibLLVMIsConstantCString(LLVMValueRef C);
 
@@ -81,10 +76,10 @@ extern "C" {
 
     // Determines if an instruction has debug records
     // NOTE: if i is anything but an instruction this returns 0.
-    // THis is used to prevent access violations in calls to LLVMGetFirstDbgRecord()
+    // This is used to prevent access violations in calls to LLVMGetFirstDbgRecord()
     // where it assumes the value is an instruction AND that the DebugMarker is NOT
-    // nullptr so it is dereferenceable. However, if no Debug records are attached,
-    // then LLVMGetFirstDbgRecord() will crash from a null pointer derference. So,
+    // nullptr so it is dereference-able. However, if no Debug records are attached,
+    // then LLVMGetFirstDbgRecord() will crash from a null pointer dereference. So,
     // this function is used to detect such a case before iterating the records.
     LLVMBool LibLLVMHasDbgRecords(LLVMValueRef i);
 #ifdef __cplusplus

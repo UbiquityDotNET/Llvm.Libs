@@ -8,7 +8,6 @@
     <PackagesRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../../BuildOutput/packages'))</PackagesRoot>
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)'==''">win-x64</RuntimeIdentifier>
     <!-- TODO: Support SourceLink [See: https://github.com/dotnet/sourcelink#using-source-link-in-c-projects]-->
-
   </PropertyGroup>
   <Import Project="$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.4\build\Ubiquity.NET.Versioning.Build.Tasks.props" Condition="Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.4\build\Ubiquity.NET.Versioning.Build.Tasks.props')" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -97,7 +96,6 @@
     <ClInclude Include="include\libllvm-c\TargetRegistrationBindings.h" />
     <ClInclude Include="include\libllvm-c\TripleBindings.h" />
     <ClInclude Include="include\libllvm-c\ValueBindings.h" />
-    <ClInclude Include="include\ValueCache.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -109,12 +107,8 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Message Importance="High" Text="PlatformConfiguration: $(Platform)|$(Configuration)" />
-    <Error Condition="!Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.4\build\Ubiquity.NET.Versioning.Build.Tasks.props')"
-           Text="$([System.String]::Format('$(ErrorText)', '$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.4\build\Ubiquity.NET.Versioning.Build.Tasks.props'))"
-           />
-    <Error Condition="!Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.4\build\Ubiquity.NET.Versioning.Build.Tasks.targets')"
-           Text="$([System.String]::Format('$(ErrorText)', '$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.4\build\Ubiquity.NET.Versioning.Build.Tasks.targets'))"
-           />
+    <Error Condition="!Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.4\build\Ubiquity.NET.Versioning.Build.Tasks.props')" Text="$([System.String]::Format('$(ErrorText)', '$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.4\build\Ubiquity.NET.Versioning.Build.Tasks.props'))" />
+    <Error Condition="!Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.4\build\Ubiquity.NET.Versioning.Build.Tasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.4\build\Ubiquity.NET.Versioning.Build.Tasks.targets'))" />
   </Target>
   <Target Name="AlwaysShowBuildParams" AfterTargets="ShowBuildParams">
     <Message Importance="High" Text="FullBuildNumber: $(FullBuildNumber)" />
