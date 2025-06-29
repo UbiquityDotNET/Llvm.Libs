@@ -102,6 +102,12 @@
         For an explanation of the benefits of the language feature
         see: https://www.hanselman.com/blog/implicit-usings-in-net-6
         -->
-        <Error Condition="'$(ImplicitUsings)'!='disable'" Text="$(MSBuildProjectFile) - Projects in this repository MUST NOT have ImplicitUsings enabled!"/>
+        <Error Code="DBT001" Condition="'$(ImplicitUsings)'!='disable'" Text="$(MSBuildProjectFile) - Projects in this repository MUST NOT have ImplicitUsings enabled!"/>
+
+        <!--
+        Until issue https://github.com/DotNetAnalyzers/StyleCopAnalyzers/issues/3902 is resolved directly test for missing file
+        as this has impacted this repo once already...
+        -->
+        <Error Code="DBT002" Condition="!Exists('$(MSBuildThisFileDirectory)stylecop.json')" Text="Missing StyleCop.Json file!"/>
     </Target>
 </Project>

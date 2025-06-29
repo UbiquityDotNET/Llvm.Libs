@@ -16,12 +16,8 @@
 
         This has NO use on C/C++ builds, and in fact NuGet is screwed up if it is included such that it WON'T resolve entries
         in packages.config (It seems to think it's a PackageReferences project even though it most definitely is NOT!)
-
-        BUSTED: See - https://github.com/DotNetAnalyzers/StyleCopAnalyzers/issues/3916#issuecomment-2953557715
-        for now disabling it all up, future PR will figure out how to disable for automated builds as local with
-        latest VS+SDK is fine.
         -->
-        <!--<GlobalPackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" Condition="'$(UseStyleCop)' != 'false' AND '$(MSBuildProjectExtension)'!='.vcxproj'" />-->
+        <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" Condition="'$(UseStyleCop)' != 'false' AND '$(MSBuildProjectExtension)'!='.vcxproj'" />
     </ItemGroup>
 
     <!--

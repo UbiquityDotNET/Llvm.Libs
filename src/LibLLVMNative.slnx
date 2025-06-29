@@ -22,6 +22,7 @@
     <File Path="../Llvm-Libs.targets" />
     <File Path="../NuGet.Config" />
     <File Path="../ReadMe.md" />
+    <File Path="../stylecop.json" />
     <File Path="LibLLVM/LlvmApplication.props" />
   </Folder>
   <Folder Name="/Solution Items/GitHub/" Id="f12d85e1-a53b-41ab-8cf6-be97599bd6d1" />
