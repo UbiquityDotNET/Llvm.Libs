@@ -9,7 +9,6 @@ on:
   push:
     branches:
       - develop
-      - llvm_20
 
     paths-ignore:
       - '**.md'
@@ -20,7 +19,6 @@ on:
   pull_request:
     branches:
       - develop
-      - llvm_20
 
     paths-ignore:
       - '**.md'
