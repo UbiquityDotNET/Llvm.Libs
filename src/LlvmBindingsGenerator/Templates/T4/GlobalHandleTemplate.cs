@@ -184,7 +184,7 @@ if(NeedsAlias){
             this.Write(@"( handle );
             return true;
 
-            // Native ABI declaration without ANY marshalling, AOT compatible
+            // Native ABI declaration without ANY marshaling, AOT compatible
             [DllImport( NativeMethods.LibraryName )]
             [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
             static unsafe extern void ");

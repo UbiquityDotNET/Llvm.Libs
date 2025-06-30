@@ -62,6 +62,9 @@
                 -->
                 <ImplicitUsings>disable</ImplicitUsings>
                 <!-- NOTE: Top-Level statements blocked as an error in .editorconfig and ImplicitUsings 'feature' VERIFIED in the targets file -->
+
+                <!-- OPT-OUT of rude breaking change that alters the version numbering -->
+                <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
             </PropertyGroup>
             <ItemGroup Condition="'$(NoCommonAnalyzers)'!='true'">
                 <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
