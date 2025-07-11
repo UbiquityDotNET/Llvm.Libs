@@ -57,8 +57,9 @@ LLVMErrorRef LibLLVMRegisterTarget(LibLLVMCodeGenTarget target, LibLLVMTargetReg
 int32_t LibLLVMGetNumTargets();
 LLVMErrorRef LibLLVMGetRuntimeTargets(LibLLVMCodeGenTarget* targetArray, int32_t lengthOfArray);
 
-// Return is the version info for this library
-uint64_t LibLLVMGetVersion();
+// Return is the version info for this library as a string (CSemVer/CSemVer-CI)
+// Version string is a constant so there is no need to release it for marshaling.
+char const* LibLLVMGetVersion(size_t* len);
 
 LLVM_C_EXTERN_C_END
 #endif

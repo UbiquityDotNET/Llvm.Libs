@@ -42,6 +42,8 @@ namespace LibLLVM
 
     // CI Builds use an ODD numbered file version, but the ordered version number ignores CI and meta data information for ordering
     constexpr uint64_t OrderedVersion = FileVersion64 >> 1;
+
+    constexpr std::string_view FullBuildNumber = FULL_BUILD_NUMBER_STRING;
 }
 
 #endif
