@@ -4,7 +4,6 @@
 #include "llvm-c/Transforms/PassBuilder.h"
 
 LLVM_C_EXTERN_C_BEGIN
-
     LLVMBool LibLLVMPassBuilderOptionsGetVerifyEach(LLVMPassBuilderOptionsRef Options);
     LLVMBool LibLLVMPassBuilderOptionsGetDebugLogging(LLVMPassBuilderOptionsRef Options);
     // result is a simple alias; DO NOT dispose of it in any way.
@@ -19,7 +18,6 @@ LLVM_C_EXTERN_C_BEGIN
     LLVMBool LibLLVMPassBuilderOptionsGetCallGraphProfile(LLVMPassBuilderOptionsRef Options);
     LLVMBool LibLLVMPassBuilderOptionsGetMergeFunctions(LLVMPassBuilderOptionsRef Options);
     int32_t LibLLVMPassBuilderOptionsGetInlinerThreshold(LLVMPassBuilderOptionsRef Options);
-
 LLVM_C_EXTERN_C_END
 
 #endif

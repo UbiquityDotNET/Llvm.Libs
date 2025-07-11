@@ -2,10 +2,7 @@
 #define LLVM_TRIPLE_BINDINGS_H
 #include <llvm-c\Types.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+LLVM_C_EXTERN_C_BEGIN
     enum LibLLVMTripleArchType
     {
         UnknownArch,
@@ -315,8 +312,6 @@ extern "C" {
     char const* LibLLVMTripleGetVendorTypeName( LibLLVMTripleVendorType vendor );
     char const* LibLLVMTripleGetOsTypeName( LibLLVMTripleOSType osType );
     char const* LibLLVMTripleGetEnvironmentTypeName( LibLLVMTripleEnvironmentType environmentType );
-#ifdef __cplusplus
-}
-#endif
+LLVM_C_EXTERN_C_END
 
 #endif

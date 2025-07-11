@@ -5,10 +5,7 @@
 #include "llvm-c/Core.h"
 #include "llvm-c/DebugInfo.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+LLVM_C_EXTERN_C_BEGIN
     typedef enum LibLLVMDwarfTag
     {
 #define HANDLE_DW_TAG(ID, NAME, VERSION, VENDOR, KIND) \
@@ -94,8 +91,6 @@ extern "C" {
     LLVMBool LibLLVMIsDistinct( LLVMMetadataRef M );
 
     int64_t LibLLVMDISubRangeGetLowerBounds( LLVMMetadataRef /*DISubRange*/ sr, int64_t defaultLowerBound );
-#ifdef __cplusplus
-} // extern "C"
-#endif
+LLVM_C_EXTERN_C_END
 
 #endif

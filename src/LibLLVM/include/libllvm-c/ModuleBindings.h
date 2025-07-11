@@ -4,9 +4,7 @@
 #include "llvm-c/Core.h"
 #include "llvm-c/Comdat.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+LLVM_C_EXTERN_C_BEGIN
     typedef struct LLVMOpaqueComdatIterator* LibLLVMComdatIteratorRef;
 
     uint32_t LibLLVMModuleGetNumComdats(LLVMModuleRef module);
@@ -34,8 +32,6 @@ extern "C" {
     // Alias enumeration
     LLVMValueRef LibLLVMModuleGetFirstGlobalAlias( LLVMModuleRef M );
     LLVMValueRef LibLLVMModuleGetNextGlobalAlias( LLVMValueRef /*GlobalAlias*/ valueRef );
-#ifdef __cplusplus
-}
-#endif
+LLVM_C_EXTERN_C_END
 
 #endif
