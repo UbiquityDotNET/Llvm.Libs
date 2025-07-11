@@ -1244,8 +1244,9 @@ extern "C"
         return nullptr;
     }
 
-    uint64_t LibLLVMGetVersion()
+    char const* LibLLVMGetVersion(size_t* len)
     {
-        return LibLLVM::FileVersion64;
+        *len = LibLLVM::FullBuildNumber.size();
+        return LibLLVM::FullBuildNumber.data();
     }
 }
