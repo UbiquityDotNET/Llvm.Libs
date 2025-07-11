@@ -20,7 +20,6 @@
 #include <stdint.h>
 
 LLVM_C_EXTERN_C_BEGIN
-
     enum LibLLVMAttributeArgKind
     {
         LibLLVMAttributeArgKind_None,

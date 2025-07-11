@@ -3,16 +3,10 @@
 
 #include "llvm-c/Object.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+LLVM_C_EXTERN_C_BEGIN
     LLVMSymbolIteratorRef LibLLVMSymbolIteratorClone( LLVMSymbolIteratorRef ref );
     LLVMSectionIteratorRef LibLLVMSectionIteratorClone( LLVMSectionIteratorRef ref );
     LLVMRelocationIteratorRef LibLLVMRelocationIteratorClone( LLVMRelocationIteratorRef ref );
-
-#ifdef __cplusplus
-}
-#endif
+LLVM_C_EXTERN_C_END
 
 #endif

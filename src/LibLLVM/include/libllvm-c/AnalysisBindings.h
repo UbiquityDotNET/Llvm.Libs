@@ -4,16 +4,11 @@
 #include <llvm-c/Core.h>
 #include <llvm-c/Analysis.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+LLVM_C_EXTERN_C_BEGIN
     LLVMBool LibLLVMVerifyFunctionEx( LLVMValueRef Fn
                                       , LLVMVerifierFailureAction Action
                                       , char** OutMessages
     );
-#ifdef __cplusplus
-}
-#endif
+LLVM_C_EXTERN_C_END
 
 #endif

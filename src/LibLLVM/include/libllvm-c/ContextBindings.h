@@ -3,15 +3,9 @@
 
 #include "llvm-c/Core.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+LLVM_C_EXTERN_C_BEGIN
     LLVMBool LibLLVMContextGetIsODRUniquingDebugTypes( LLVMContextRef context );
     void LibLLVMContextSetIsODRUniquingDebugTypes( LLVMContextRef context, LLVMBool state );
-
-#ifdef __cplusplus
-}
-#endif
+LLVM_C_EXTERN_C_END
 
 #endif

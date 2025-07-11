@@ -17,20 +17,8 @@
 #include <llvm-c/Core.h>
 #include <llvm-c/ExecutionEngine.h>
 
-#ifdef __cplusplus
-#include <llvm/IR/Metadata.h>
-#include <llvm/Support/CBindingWrapping.h>
-#endif
-
-#include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+LLVM_C_EXTERN_C_BEGIN
     LLVMBool LibLLVMHasUnwindDest( LLVMValueRef Invoke );
-#ifdef __cplusplus
-}
-#endif
+LLVM_C_EXTERN_C_END
 
 #endif

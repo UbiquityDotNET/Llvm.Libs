@@ -6,4 +6,5 @@
 LLVM_C_EXTERN_C_BEGIN
     LLVMErrorRef LibLLVMExecutionSessionRemoveDyLib(LLVMOrcExecutionSessionRef session, LLVMOrcJITDylibRef lib);
 LLVM_C_EXTERN_C_END
+
 #endif

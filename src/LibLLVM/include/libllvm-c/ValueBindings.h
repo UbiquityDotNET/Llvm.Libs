@@ -4,10 +4,7 @@
 #include "llvm-c/Core.h"
 #include "ModuleBindings.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+LLVM_C_EXTERN_C_BEGIN
     // ordering matters, all distinct values are generated first, then any derived values (e.g. foo = bar + 1), to ensure the
     // values match expectations of underlying C++ code and don't alter the sequencing as C++ numbers enum values without an
     // initializer as automatic +1 of the previous value, thus sticking the derived values in at arbitrary locations in the
@@ -82,8 +79,6 @@ extern "C" {
     // then LLVMGetFirstDbgRecord() will crash from a null pointer dereference. So,
     // this function is used to detect such a case before iterating the records.
     LLVMBool LibLLVMHasDbgRecords(LLVMValueRef i);
-#ifdef __cplusplus
-}
-#endif
+LLVM_C_EXTERN_C_END
 
 #endif
