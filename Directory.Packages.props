@@ -6,7 +6,7 @@
     [read - never gonna happen])
     -->
   <ItemGroup>
-    <GlobalPackageReference Include="Ubiquity.NET.Versioning.Build.Tasks" Version="5.0.6-alpha" Condition="'$(MSBuildProjectExtension)' != '.vcxproj'" />
+    <GlobalPackageReference Include="Ubiquity.NET.Versioning.Build.Tasks" Version="5.0.6" Condition="'$(MSBuildProjectExtension)' != '.vcxproj'" />
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" Condition="'$(NoCommonAnalyzers)' != 'true'" />
     <GlobalPackageReference Include="IDisposableAnalyzers" Version="4.0.8" Condition="'$(NoCommonAnalyzers)' != 'true'" />
     <GlobalPackageReference Include="MustUseRetVal" Condition="'$(NoCommonAnalyzers)' != 'true'" Version="0.0.2" />
