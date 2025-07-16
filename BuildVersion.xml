@@ -15,6 +15,6 @@ Attributes:
 <BuildVersionData
     BuildMajor = "20"
     BuildMinor = "1"
-    BuildPatch = "6"
-    PreReleaseName = "beta"
+    BuildPatch = "8"
+    PreReleaseName = "alpha"
 />
