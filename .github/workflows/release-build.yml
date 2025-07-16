@@ -4,6 +4,7 @@ permissions:
   pages: write
   packages: write
   actions: read
+
 defaults:
   run:
     shell: pwsh
@@ -76,16 +77,11 @@ jobs:
 
       - name: Publish packages to NuGet.org
         run: |
-          if( [string]::IsNullOrWhitesapce('${{ secrets.NUGETPUSH_ACCESS_TOKEN }}'))
+          if( [string]::IsNullOrWhiteSpace('${{secrets.NUGETPUSH_ACCESS_TOKEN}}'))
           {
-              throw "'NUGETPUSH_ACCESS_TOKEN' does not exist"
+              throw "'NUGETPUSH_ACCESS_TOKEN' does not exist, is empty or all whitespace!"
           }
-          $response = Invoke-WebRequest -Uri "https://www.nuget.org/api/v2/package/" -Headers @{ Authorization = "Bearer ${{ secrets.NUGETPUSH_ACCESS_TOKEN }}" }
-          if ($response.StatusCode -ne 200)
-          {
-              throw "Invalid or expired API key"
-          }
-          dotnet nuget push .\BuildOutput\NuGet\*.nupkg -k ${{ secrets.NUGETPUSH_ACCESS_TOKEN }} -s 'https://api.nuget.org/v3/index.json' --skip-duplicate
+          dotnet nuget push .\BuildOutput\NuGet\*.nupkg --api-key '${{secrets.NUGETPUSH_ACCESS_TOKEN}}' --source 'https://api.nuget.org/v3/index.json' --skip-duplicate
 
       - name: Create Release
         if: (!cancelled())
