@@ -3,8 +3,8 @@
 INPUT:
     $packageID$ - ID of the package
     $version$ - Version of this package
-    $authors$ - Authors of the pacakge
-    $description$ - Description of the pacakge
+    $authors$ - Authors of the package
+    $description$ - Description of the package
     $tags$ - Tags to mark this package (Helps searching)
     $licExpression$ - License expression
     $projectUrl$ - URL for the project
