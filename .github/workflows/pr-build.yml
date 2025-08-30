@@ -2,8 +2,8 @@ name: CI-Build
 permissions:
   contents: read
 defaults:
-    run:
-        shell: pwsh
+  run:
+    shell: pwsh
 
 on:
   push:
@@ -12,10 +12,9 @@ on:
 
     paths-ignore:
       - '**.md'
+      - '.github/workflows/release-build.yml'
+      - 'OneFlow/*.*'
       - '**.dic'
-      - 'BuildVersion.xml'
-      - 'GitHub/workflows/release-build.yml'
-      - 'OneFlow/**.ps1'
 
   pull_request:
     branches:
@@ -23,10 +22,9 @@ on:
 
     paths-ignore:
       - '**.md'
+      - '.github/workflows/release-build.yml'
+      - 'OneFlow/*.*'
       - '**.dic'
-      - 'BuildVersion.xml'
-      - 'GitHub/workflows/release-build.yml'
-      - 'OneFlow/**.ps1'
 
 jobs:
   build_target:
@@ -35,11 +33,11 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
-           persist-credentials: false
-           fetch-depth: 0
+          persist-credentials: false
+          fetch-depth: 0
 
       - name: Build Source
-        run: ./Build-All.ps1 -ForceClean
+        run: .\Build-LibLLVMAndPackage.ps1 -FullInit
 
       - name: Upload build logs
         if: always() && github.event_name == 'pull_request'
