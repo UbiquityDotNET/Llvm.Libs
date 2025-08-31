@@ -14,10 +14,10 @@ The generated code has the following requirements of the consumer:
 -->
 <Project Sdk="Microsoft.Build.NoTargets">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
 
     <!--
-    To support source code pacakge, this must use a NUSPEC file directly. The CSPROJ system
+    To support source code package, this must use a NUSPEC file directly. The CSPROJ system
     for MSBUILD does NOT support setting the "buildaction" for files in a package. It determines
     that on it's own based on the target location and provides no mechanism for overriding it.
     -->
@@ -32,7 +32,7 @@ The generated code has the following requirements of the consumer:
     <NoCommonAnalyzers>true</NoCommonAnalyzers>
 
     <Authors>LLVM.org,Ubiquity.NET</Authors>
-    <Description>Generated LLVM handle types for Ubiquity.NET.Llvm.Interop [$(LlvmVersion)]. Direct use of this package **STRONGLY** discouraged (You are on your own!), instead you should use the Ubiquity.NET.Llvm package, which provides a full C# object model projection of the LLVM APIs on top of this library.</Description>
+    <Description>Generated LLVM handle types for Ubiquity.NET.Llvm.Interop [$(LlvmVersion)]. Direct use of this package is **STRONGLY** discouraged (You are on your own!), instead you should use the Ubiquity.NET.Llvm package, which provides a full C# object model projection of the LLVM APIs on top of this library.</Description>
     <PackageTags>LLVM</PackageTags>
     <PackageProjectUrl>https://github.com/UbiquityDotNET/Llvm.NET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/UbiquityDotNET/Llvm.NET.git</RepositoryUrl>

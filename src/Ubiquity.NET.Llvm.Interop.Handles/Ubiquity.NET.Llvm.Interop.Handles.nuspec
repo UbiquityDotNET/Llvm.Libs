@@ -27,11 +27,11 @@ INPUT:
     <files>
         <!--
         NOTE: Default NUGET build action is "Compile"; For reasons unknown there is NO way to
-              set that in a CSPROJ file. In a CSPROJ file ALL content is set to a buildaction
-              of "content" unless the target path is for runtime. (Guessing as I can't find
-              docs on the point). Ultimately, there is NO means to place "content" into the
-              contentFiles subfolder AND set it to compile. Thus a NUSPEC file is REQUIRED to
-              include source... [Sigh...]
+              set that in a CSPROJ file. In a CSPROJ file ALL content is set to a NuGet
+              `buildaction` of "content" unless the target path is for runtime. (Guessing as
+              I can't find docs on the point). Ultimately, there is NO means to place "content"
+              into the contentFiles sub-folder AND set it to compile. Thus a NUSPEC file is
+              REQUIRED to include source... [Sigh...]
         -->
         <file src="$GeneratedSourceRoot$**.cs" target="contentFiles/cs/$tfmGroup$/$packageID$/" />
     </files>
