@@ -21,6 +21,15 @@ try
         $buildInfo = Initialize-BuildEnvironment
     }
 
+    # Download and unpack the LLVM source from the versioned release tag if not already present
+    Clone-LlvmFromTag $buildInfo
+
+    # Always double check the source version matches expectations, this catches a bump in the script version
+    # but no download as the previous version is still there. (Mostly a local build problem but a major time
+    # waster if forgotten. So, test it here as early as possible.)
+    Assert-LlvmSourceVersion $buildInfo
+
+
     # Build the meta package
     Invoke-external dotnet pack (Join-Path $buildInfo['SrcRootPath'] 'Ubiquity.NET.LibLLVM' 'Ubiquity.NET.LibLLVM.csproj')
 }
