@@ -21,7 +21,7 @@ using module "PSModules/RepoBuild/RepoBuild.psd1"
 .DESCRIPTION
     This script is NOT used by the automated build to perform the actual build. Instead this
     is used to automate local builds and validate stages before committing changes to the repo.
-    It will serialize the build for the current RID and handles. (The automated build can run
+    It will serialize the build for the current RID. (The automated build can run
     various stages in parallel, including each RID)
 
     The Ubiquity.NET family of projects all employ a PowerShell driven build that is generally
@@ -69,7 +69,6 @@ try
     # On an automated build these two steps can and do occur in parallel as there are no binary
     # dependencies between them.
     .\Build-LibLLVMAndPackage.ps1 $buildInfo -SkipLLvm:$SkipLLvm -Configuration $Configuration
-    .\Build-HandlesPackage.ps1 $buildInfo
     .\Build-MetaPackage.ps1 $buildInfo
 }
 catch

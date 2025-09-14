@@ -9,6 +9,9 @@ INPUT:
     $licExpression$ - License expression
     $projectUrl$ - URL for the project
     $tfmGroup$ - minimum Target Framework needed for the source files
+    $config$ - Configuration for the build (Debug/Release)
+    $llvmproject$ - path to root of the llvm-project location
+    $libllvmroot$ - path to root of the LibLLVM project to get the extended header files from
 -->
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
     <metadata minClientVersion="4.9.0">
@@ -19,6 +22,7 @@ INPUT:
         <tags>$tags$</tags>
         <license type="expression">$licExpression$</license>
         <projectUrl>$projectUrl$</projectUrl>
+        <readme>PackageReadMe.md</readme>
         <dependencies>
             <!-- Native libraries only, no TFM requirements -->
             <group>
@@ -27,6 +31,13 @@ INPUT:
             </group>
         </dependencies>
     </metadata>
-    <!--NOTE: This tag is bizarrely required to prevent the CSPROJ file itself from inclusion in the package... Go Figure!-->
-    <files />
+    <files>
+        <file src="PackageReadMe.md" target=".\"/>
+
+        <!-- official LLVM-C Header files -->
+        <file src="$llvmproject$\llvm\include\llvm-c\**" target="Content\native\include\llvm-c"/>
+
+        <!-- extension API header files -->
+        <file src="$libllvmroot$\include\libllvm-c\**" target="Content\native\include\libllvm-c\"/>
+    </files>
 </package>

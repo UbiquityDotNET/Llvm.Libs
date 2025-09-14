@@ -74,7 +74,6 @@ try
             LlvmRoot = $buildInfo['LlvmRoot']
             ExtensionsRoot = $extensionsRoot
             ExportsDefFilePath = Join-Path $extensionsRoot 'exports.g.def'
-            ConfigFile = Join-Path $buildInfo['SrcRootPath'] 'LlvmBindingsGenerator' 'bindingsConfig.yml'
         }
 
         # run the generator so the output is available to the DLL generation

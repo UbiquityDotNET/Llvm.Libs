@@ -6,9 +6,9 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
 
 using CommandLine;
+
 using CppSharp;
 
 namespace LlvmBindingsGenerator
@@ -53,13 +53,8 @@ namespace LlvmBindingsGenerator
             Diagnostics.Implementation = diagnostics;
             try
             {
-                // read in the binding configuration from the YAML file
                 var library = new LibLlvmGeneratorLibrary( options );
                 Driver.Run( library );
-            }
-            catch(YamlDotNet.Core.SyntaxErrorException yamlex)
-            {
-                Diagnostics.Error( ReformatErrorMessage(yamlex, options.ConfigFile ) );
             }
             catch(Exception ex)
             {
@@ -68,25 +63,5 @@ namespace LlvmBindingsGenerator
 
             return diagnostics.ErrorCount;
         }
-
-        private static string ReformatErrorMessage(YamlDotNet.Core.SyntaxErrorException yamlex, string configPath)
-        {
-            // Sadly, the yaml exception message includes the location info in a format that doesn't match any standard tooling
-            // for parsing error messages, so unpack it to get just the message of interest and re-format
-            var matcher = YamlErrorMessageRegex();
-            var result = matcher.Match( yamlex.Message );
-            if( result.Success )
-            {
-                return $"{configPath}({yamlex.Start.Line},{yamlex.Start.Column},{yamlex.End.Line},{yamlex.End.Column}): error CFG001: {result.Groups[ 1 ]}";
-            }
-            else
-            {
-                // message didn't match expectations, best effort at this point...
-                return yamlex.Message;
-            }
-        }
-
-        [GeneratedRegex( @"\(Line\: \d+, Col\: \d+, Idx\: \d+\) - \(Line\: \d+, Col\: \d+, Idx\: \d+\)\: (.*)\Z" )]
-        private static partial Regex YamlErrorMessageRegex();
     }
 }

@@ -42,24 +42,6 @@ LLVM_C_EXTERN_C_BEGIN
     void LibLLVMFunctionAppendBasicBlock( LLVMValueRef /*Function*/ function, LLVMBasicBlockRef block );
     LLVMValueRef LibLLVMValueAsMetadataGetValue( LLVMMetadataRef vmd );
 
-    /*
-    ValueCache maps Values to binding provided handles as an intptr_t
-    This is used to cache mappings between an LLVMValueRef and a binding
-    specific type that wraps the LLVMValueRef. The cache handles
-    invalidation with callbacks when Values destroyed or `Replace All Uses With` (RAUW).
-    */
-    typedef struct LibLLVMOpaqueValueCache* LibLLVMValueCacheRef;
-
-    // Callback function pointers to allow bindings to invalidate their handles
-    // This is optional but may be used by garbage collected runtimes to un-protect
-    // the object the handle represents so it is collectible or decrement a ref count
-    // for ref-counted types, etc...
-    // These call backs *MUST NOT* access the cache itself in any way. The actual
-    // update to the cache itself has not yet occurred so the cache won't reflect
-    // the end state of the update operation
-    typedef void ( *LibLLVMValueCacheItemDeletedCallback )(void* ctx, LLVMValueRef ref, intptr_t handle );
-    typedef intptr_t ( *LibLLVMValueCacheItemReplacedCallback )(void* ctx, LLVMValueRef oldValue, intptr_t handle, LLVMValueRef newValue );
-
     // Detect if a ConstantDataSequential is a C string (i8 sequence terminated with \0 and no embedded \0)
     LLVMBool LibLLVMIsConstantCString(LLVMValueRef C);
 

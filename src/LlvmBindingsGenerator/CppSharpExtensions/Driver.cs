@@ -97,7 +97,7 @@ namespace LlvmBindingsGenerator
 
                 foreach( string library in module.Libraries )
                 {
-                    if( !Context.Symbols.Libraries.Any( ( NativeLibrary l ) => l.FileName == library ) )
+                    if( !Context.Symbols.Libraries.Any( l => l.FileName == library ) )
                     {
                         linkerOptions.AddLibraries( library );
                     }

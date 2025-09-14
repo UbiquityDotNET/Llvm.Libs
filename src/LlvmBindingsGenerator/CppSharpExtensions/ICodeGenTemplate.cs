@@ -16,10 +16,4 @@ namespace LlvmBindingsGenerator.Templates
 
         string Generate( );
     }
-
-    internal interface IHandleCodeTemplate
-        : ICodeGenTemplate
-    {
-        string HandleName { get; }
-    }
 }

@@ -23,8 +23,6 @@ namespace LlvmBindingsGenerator
             string? llvmRoot,
             string? extensionsRoot,
             string? exportsDefFilePath,
-            string? handleOutputPath,
-            string? configFile,
             DiagnosticKind diagnostics
             )
         {
@@ -38,8 +36,7 @@ namespace LlvmBindingsGenerator
             LlvmRoot = llvmRoot is null ? string.Empty : Path.GetFullPath(llvmRoot);
             ExtensionsRoot = extensionsRoot is null ? string.Empty : Path.GetFullPath(extensionsRoot);
             ExportsDefFilePath = exportsDefFilePath is null ? string.Empty : Path.GetFullPath(exportsDefFilePath);
-            HandleOutputPath = handleOutputPath is null ? string.Empty : Path.GetFullPath(handleOutputPath);
-            ConfigFile = configFile is null ? Path.GetFullPath("bindingsConfig.yml") : Path.GetFullPath(configFile);
+
             Diagnostics = diagnostics;
         }
 
@@ -52,18 +49,10 @@ namespace LlvmBindingsGenerator
         [Option('d', HelpText = "Output path for the generated DEF file (For Windows LibLLVM.DLL). Not generated if this is not provided")]
         public string ExportsDefFilePath { get; } = string.Empty;
 
-        [Option( 'h', HelpText = "Output to place the generated code for handles. No handle source is generated if this is not provided" )]
-        public string HandleOutputPath { get; } = string.Empty;
-
-        [Option( 'c', "ConfigFile", HelpText = "Path to the input YAML bindings configuration file. Default is 'bindingsConfig.yml' in the current directory. Relative paths are relative to the current directory" )]
-        public string ConfigFile { get; } = Path.GetFullPath("bindingsConfig.yml");
-
         [Option( HelpText = "Diagnostics output level", Required = false, Default = DiagnosticKind.Message )]
         public DiagnosticKind Diagnostics { get; }
 
         public bool GenerateDefFile => !string.IsNullOrWhiteSpace(ExportsDefFilePath);
-
-        public bool GenerateHandles => !string.IsNullOrWhiteSpace(HandleOutputPath);
 
         public bool Validate(TextWriter helpWriter)
         {
@@ -94,12 +83,6 @@ namespace LlvmBindingsGenerator
                 retVal = false;
             }
 
-            if (!File.Exists(ConfigFile))
-            {
-                helpWriter.WriteLine($"Configuration file '{ConfigFile}' not found.");
-                retVal = false;
-            }
-
             if(GenerateDefFile)
             {
                 string? defFileDir = Path.GetDirectoryName(ExportsDefFilePath);
@@ -124,8 +107,6 @@ namespace LlvmBindingsGenerator
                 .AppendLine(CultureInfo.InvariantCulture, $"          LlvmRoot: {LlvmRoot}" )
                 .AppendLine(CultureInfo.InvariantCulture, $"    ExtensionsRoot: {ExtensionsRoot}")
                 .AppendLine(CultureInfo.InvariantCulture, $"ExportsDefFilePath: {ExportsDefFilePath}")
-                .AppendLine(CultureInfo.InvariantCulture, $"  HandleOutputPath: {HandleOutputPath}")
-                .AppendLine(CultureInfo.InvariantCulture, $"        ConfigFile: {ConfigFile}")
                 .AppendLine(CultureInfo.InvariantCulture, $"       Diagnostics: {Diagnostics}");
             return bldr.ToString();
         }

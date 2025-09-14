@@ -4,14 +4,11 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Immutable;
 
 using CppSharp;
 using CppSharp.AST;
 using CppSharp.Passes;
-
-using LlvmBindingsGenerator.Configuration;
 
 namespace LlvmBindingsGenerator.Passes
 {
@@ -23,10 +20,9 @@ namespace LlvmBindingsGenerator.Passes
     internal class IgnoreSystemHeadersPass
         : TranslationUnitPass
     {
-        public IgnoreSystemHeadersPass( IReadOnlyCollection<IncludeRef> ignoredHeaders )
+        public IgnoreSystemHeadersPass( ImmutableArray<string> ignoredHeaders )
         {
-            IgnoredHeaders = from entry in ignoredHeaders
-                             select entry.Path;
+            IgnoredHeaders = ignoredHeaders;
         }
 
         public override bool VisitTranslationUnit( TranslationUnit unit )
@@ -54,6 +50,6 @@ namespace LlvmBindingsGenerator.Passes
             return true;
         }
 
-        private readonly IEnumerable<string> IgnoredHeaders;
+        private readonly ImmutableArray<string> IgnoredHeaders;
     }
 }
