@@ -1,11 +1,7 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="GeneratorConfig.cs" company="Ubiquity.NET Contributors">
-// Copyright (c) Ubiquity.NET Contributors. All rights reserved.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) Ubiquity.NET Contributors. All rights reserved.
+// Licensed under the Apache-2.0 WITH LLVM-exception license. See the LICENSE.md file in the project root for full license information.
 
 using System.Collections.Immutable;
-using System.IO;
 
 namespace LlvmBindingsGenerator.Configuration
 {
@@ -14,14 +10,8 @@ namespace LlvmBindingsGenerator.Configuration
     {
         public ImmutableArray<string> IgnoredHeaders { get; }
             = [
-                NormalizePathSep("llvm-c/lto.h"),
-                NormalizePathSep("llvm-c/Remarks.h"),
+                "llvm-c/lto.h".NormalizePathSep(),
+                "llvm-c/Remarks.h".NormalizePathSep(),
             ];
-
-            // Runtime agnostic path separator normalization
-            internal static string NormalizePathSep( string path )
-            {
-                return path.Replace( Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar );
-            }
     }
 }

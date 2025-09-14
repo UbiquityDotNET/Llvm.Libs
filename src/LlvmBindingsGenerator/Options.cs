@@ -1,8 +1,5 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Options.cs" company="Ubiquity.NET Contributors">
-// Copyright (c) Ubiquity.NET Contributors. All rights reserved.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) Ubiquity.NET Contributors. All rights reserved.
+// Licensed under the Apache-2.0 WITH LLVM-exception license. See the LICENSE.md file in the project root for full license information.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -15,7 +12,7 @@ using CppSharp;
 
 namespace LlvmBindingsGenerator
 {
-    [SuppressMessage("Build", "CA1812", Justification = "Instantiated via reflection from Commandline parser" )]
+    [SuppressMessage("Build", "CA1812", Justification = "Instantiated via reflection from Command line parser" )]
     [SuppressMessage( "CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "It is necessary, tooling can't agree on the point. (removing it generates a warning)" )]
     internal class Options
     {

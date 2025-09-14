@@ -38,6 +38,10 @@ INPUT:
         <file src="$llvmproject$\llvm\include\llvm-c\**" target="Content\native\include\llvm-c"/>
 
         <!-- extension API header files -->
-        <file src="$libllvmroot$\include\libllvm-c\**" target="Content\native\include\libllvm-c\"/>
+        <file src="$libllvmroot$\include\libllvm-c\**" target="Content\native\include\libllvm-c"/>
+
+        <!-- Non-C API include files needed to parse the extension APIs -->
+        <file src="$llvmproject$\llvm\include\llvm\IR\Value.def" target="Content\native\include\llvm\IR"/>
+        <file src="$llvmproject$\llvm\include\llvm\IR\Instruction.def" target="Content\native\include\llvm\IR"/>
     </files>
 </package>
