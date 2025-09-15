@@ -11,7 +11,7 @@
         "namingRules":
         {
             "allowCommonHungarianPrefixes": false,
-            "allowedHungarianPrefixes": ["h", "di", "op", "os", "ir", "is", "do", "un", "on", "to", "if", "no", "v", "in", "p", "ci"]
+            "allowedHungarianPrefixes": ["h", "di", "op", "os", "ir", "is", "do", "un", "on", "to", "if", "no", "v", "in", "p", "pp", "by", "dy"]
         },
         "orderingRules":
         {
@@ -27,14 +27,21 @@
         "layoutRules":
         {
             "newlineAtEndOfFile": "require",
-            "allowConsecutiveUsings": true
+            "allowConsecutiveUsings": true,
+            "allowDoWhileOnClosingBrace": true
         },
         "documentationRules":
         {
-            "companyName": "Ubiquity.NET Contributors",
+            "companyName": "Ubiquity.NET",
             "headerDecoration": "-----------------------------------------------------------------------",
+            "copyrightText": "Copyright (c) {companyName} Contributors. All rights reserved.\nLicensed under the {licenseName} license. See the {licenseFile} file in the project root for full license information.",
+            "variables": {
+                "licenseName": "Apache-2.0 WITH LLVM-exception",
+                "licenseFile": "LICENSE.md"
+            },
+            "xmlHeader": false,
             "documentExposedElements": true,
-            "documentInterfaces": false,
+            "documentInterfaces": true,
             "documentInternalElements": false,
             "documentPrivateElements": false,
             "documentPrivateFields": false,

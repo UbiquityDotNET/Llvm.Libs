@@ -2,7 +2,7 @@ function Invoke-BindingsGenerator([hashtable]$buildInfo , [hashtable]$Options)
 {
     if (!$IsWindows)
     {
-        throw "Building/using the source generator is not supported and not needed for non-Windows platforms"
+        throw "Building/using the generator is not supported and not needed for non-Windows platforms"
     }
 
     if(!$Options.ContainsKey('LlvmRoot') -or $Options['LlvmRoot'] -isnot [string])
@@ -35,16 +35,6 @@ function Invoke-BindingsGenerator([hashtable]$buildInfo , [hashtable]$Options)
     if ($Options.ContainsKey('ExportsDefFilePath'))
     {
         $generatorArgs.AddRange(@('-d', $Options['ExportsDefFilePath']))
-    }
-
-    if ($Options.ContainsKey('HandleOutputPath'))
-    {
-        $generatorArgs.AddRange(@('-h', $Options['HandleOutputPath']))
-    }
-
-    if ($Options.ContainsKey('ConfigFile'))
-    {
-        $generatorArgs.AddRange(@('-c', $Options['ConfigFile']))
     }
 
     Write-Information "dotnet $($generatorArgs -join ' ')"

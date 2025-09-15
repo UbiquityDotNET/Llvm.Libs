@@ -1,17 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="IgnoreSystemHeaders.cs" company="Ubiquity.NET Contributors">
-// Copyright (c) Ubiquity.NET Contributors. All rights reserved.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) Ubiquity.NET Contributors. All rights reserved.
+// Licensed under the Apache-2.0 WITH LLVM-exception license. See the LICENSE.md file in the project root for full license information.
 
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Immutable;
 
 using CppSharp;
 using CppSharp.AST;
 using CppSharp.Passes;
-
-using LlvmBindingsGenerator.Configuration;
 
 namespace LlvmBindingsGenerator.Passes
 {
@@ -23,10 +17,9 @@ namespace LlvmBindingsGenerator.Passes
     internal class IgnoreSystemHeadersPass
         : TranslationUnitPass
     {
-        public IgnoreSystemHeadersPass( IReadOnlyCollection<IncludeRef> ignoredHeaders )
+        public IgnoreSystemHeadersPass( ImmutableArray<string> ignoredHeaders )
         {
-            IgnoredHeaders = from entry in ignoredHeaders
-                             select entry.Path;
+            IgnoredHeaders = ignoredHeaders;
         }
 
         public override bool VisitTranslationUnit( TranslationUnit unit )
@@ -54,6 +47,6 @@ namespace LlvmBindingsGenerator.Passes
             return true;
         }
 
-        private readonly IEnumerable<string> IgnoredHeaders;
+        private readonly ImmutableArray<string> IgnoredHeaders;
     }
 }

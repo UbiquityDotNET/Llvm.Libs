@@ -62,11 +62,6 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      # This needs to download the LLVM sources for the supported release
-      - name: Build Handle Source package
-        shell: pwsh
-        run: .\Build-HandlesPackage.ps1 -FullInit
-
       - name: Build Meta Package
         shell: pwsh
         run: .\Build-MetaPackage.ps1 -FullInit

@@ -49,10 +49,6 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      # This needs to download the LLVM sources for the supported release
-      - name: Build Handle Source package
-        run: .\Build-HandlesPackage.ps1 -FullInit
-
       - name: Build Meta Package
         run: .\Build-MetaPackage.ps1 -FullInit
 
@@ -89,4 +85,3 @@ jobs:
         with:
           draft: true
           files: BuildOutput/NuGet/*.nupkg
-

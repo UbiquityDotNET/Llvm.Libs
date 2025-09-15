@@ -1,7 +1,7 @@
 ﻿<!--
 One of the biggest problems with the native library is the MASSIVE size of the static libraries needed to build
 the final dynamic library with support for ALL targets. Currently, it is not known how to make this plausible
-on ANY OSS build infrastructure due to either time or storage space limitations (Or, usually, both).
+on ANY OSS build infrastructure due to either time or storage space limitations (usually, both).
 
 To simplify the problem of building on a public OSS system like GitHub Actions this assumes the DLLs are built to
 ONLY release builds with no symbols. Consumers will reference the meta package. That will then enable the selection
@@ -11,7 +11,7 @@ This project is used to create the RID specific NUGET package
 -->
 <Project Sdk="Microsoft.Build.NoTargets">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
 
     <!--
     TODO: This needs to account for the current RID; At present, defaults to Win-x64
@@ -22,23 +22,26 @@ This project is used to create the RID specific NUGET package
 
     <!-- RID specific location of the libraries for each LLVM target -->
     <RidNativeBinPath>$(BaseBuildOutputBinPath)LibLLVM\$(RuntimeIdentifier)</RidNativeBinPath>
+    <!--<RidNativeIncPath>$(BuildRootDir)llvm-project\llvm\out\build\x64-$(Configuration)\include\llvm\</RidNativeIncPath>-->
 
     <!-- Disable default inclusion of all items. This project doesn't use them -->
     <EnableDefaultItems>false</EnableDefaultItems>
 
     <!-- Disable default inclusion of analyzers. This project doesn't use them -->
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
-    <NoPackageAnalysis>true</NoPackageAnalysis>
     <NoCommonAnalyzers>true</NoCommonAnalyzers>
 
     <Authors>LLVM.org,Ubiquity.NET</Authors>
-    <Description>Native Extendend Bindings of LLVM source for Ubiquity.NET.Llvm [$(LlvmVersion)]. Direct use of this low level API is **STRONGLY** discouraged (You are on your own!), instead you should use the Ubiquity.NET.Llvm package, which provides a full C# object model projection of the LLVM APIs on top of this library.</Description>
+    <Description>Native Extended Bindings of LLVM source for Ubiquity.NET.Llvm [$(LlvmVersion)]. Direct use of this low level API is **STRONGLY** discouraged (You are on your own!), instead you should use the Ubiquity.NET.Llvm package, which provides a full C# object model projection of the LLVM APIs on top of this library.</Description>
     <PackageTags>LLVM</PackageTags>
     <PackageProjectUrl>https://github.com/UbiquityDotNET/Llvm.NET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/UbiquityDotNET/Llvm.NET.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>Apache-2.0 WITH LLVM-exception</PackageLicenseExpression>
     <PackageId>Ubiquity.NET.LibLLVM-$(RuntimeIdentifier)</PackageId>
+
+    <!-- Native package only; intentionally has no "lib" folder -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
   <!-- Sanity/safety ensure NO referenced packages [Even if injected by Directory.Build.props etc...] -->
@@ -52,6 +55,18 @@ This project is used to create the RID specific NUGET package
         <PackagePath>runtimes/$(RuntimeIdentifier)/native</PackagePath>
         <Link>runtimes/$(RuntimeIdentifier)/native/%(FileName)%(Extension)</Link>
     </Content>
+    <!--
+    For reasons unknown these paths are not available on the automated builds. They aren't needed
+    so instead of investigating root cause, just remove them until needed.
+    -->
+    <!--<Content Include="$(RidNativeIncPath)Config/**">
+        <PackagePath>Content/$(RuntimeIdentifier)/native/include/Config/</PackagePath>
+        <Link>Content/$(RuntimeIdentifier)/native/include/Config/%(FileName)%(Extension)</Link>
+    </Content>
+    <Content Include="$(RidNativeIncPath)Support/Extension.def">
+        <PackagePath>Content/$(RuntimeIdentifier)/native/include/Support/</PackagePath>
+        <Link>Content/$(RuntimeIdentifier)/native/include/Support/extension.def</Link>
+    </Content>-->
   </ItemGroup>
 
   <!-- Use LLvmTarget to check for supported binaries before Pack-->

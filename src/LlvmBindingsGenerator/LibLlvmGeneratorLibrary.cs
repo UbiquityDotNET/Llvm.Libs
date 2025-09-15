@@ -1,8 +1,5 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="LibLlvmGeneratorLibrary.cs" company="Ubiquity.NET Contributors">
-// Copyright (c) Ubiquity.NET Contributors. All rights reserved.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) Ubiquity.NET Contributors. All rights reserved.
+// Licensed under the Apache-2.0 WITH LLVM-exception license. See the LICENSE.md file in the project root for full license information.
 
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +7,6 @@ using System.IO;
 using CppSharp.AST;
 
 using LlvmBindingsGenerator.Configuration;
-using LlvmBindingsGenerator.Configuration.Yaml;
 using LlvmBindingsGenerator.Passes;
 
 namespace LlvmBindingsGenerator
@@ -28,7 +24,6 @@ namespace LlvmBindingsGenerator
         public LibLlvmGeneratorLibrary( Options options )
         {
             CmdLineOptions = options;
-            Configuration = new ReadOnlyConfig( YamlConfiguration.ParseFrom( options.ConfigFile ) );
 
             CommonInclude = Path.Combine( options.LlvmRoot, "include" );
 
@@ -110,7 +105,10 @@ namespace LlvmBindingsGenerator
 
         private IDriver? Driver;
         private readonly LibLLVMTypePrinter InternalTypePrinter;
-        private readonly ReadOnlyConfig Configuration;
+
+        // in this version of the generator, the configuration is hard coded and not read from a file
+        private readonly GeneratorConfig Configuration = new();
+
         private readonly string CommonInclude;
         private readonly string ExtensionsInclude;
         private readonly Options CmdLineOptions;

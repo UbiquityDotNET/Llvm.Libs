@@ -1,8 +1,5 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Driver.cs" company="Ubiquity.NET Contributors">
-// Copyright (c) Ubiquity.NET Contributors. All rights reserved.
-// </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) Ubiquity.NET Contributors. All rights reserved.
+// Licensed under the Apache-2.0 WITH LLVM-exception license. See the LICENSE.md file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
@@ -97,7 +94,7 @@ namespace LlvmBindingsGenerator
 
                 foreach( string library in module.Libraries )
                 {
-                    if( !Context.Symbols.Libraries.Any( ( NativeLibrary l ) => l.FileName == library ) )
+                    if( !Context.Symbols.Libraries.Any( l => l.FileName == library ) )
                     {
                         linkerOptions.AddLibraries( library );
                     }
