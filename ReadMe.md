@@ -5,15 +5,16 @@ build ordering and processing, which is handled by the PowerShell scripts.
 
 ## Status
 ### `develop` branch
-![GitHub branch check runs](https://img.shields.io/github/check-runs/UbiquityDotNET/Llvm.Libs/develop)
-![GitHub Actions Work-flow Status](https://img.shields.io/github/actions/workflow/status/UbiquityDotNET/Llvm.Libs/pr-build.yml)
-![GitHub commits since latest release (branch)](https://img.shields.io/github/commits-since/UbiquityDotNET/Llvm.Libs/latest/develop)
+| Status | Description |
+|:------:|:------------|
+| PR/CI Build | ![PR/CI Action Status](https://img.shields.io/github/actions/workflow/status/UbiquityDotNet/Llvm.Libs/pr-build.yml) |
+| Release Build | ![Release Build](https://img.shields.io/github/actions/workflow/status/UbiquityDotNET/Llvm.Libs/release-build.yml)
+| Commits since last release | ![GitHub commits since latest release (branch)](https://img.shields.io/github/commits-since/UbiquityDotNET/Llvm.Libs/latest/develop) |
 
 ### Latest Download
 #### Released NuGet Packages
 |Package Name | Badge |
 |-------------|-------|
-| Ubiquity.NET.Interop.Handles | ![NuGet Download](https://img.shields.io/nuget/dt/Ubiquity.NET.Llvm.Interop.Handles) |
 | Ubiquity.NET.LibLLVM (Meta package)| ![NuGet Download](https://img.shields.io/nuget/dt/Ubiquity.NET.LibLLVM) |
 | Ubiquity.NET.LibLLVM-win-x64 | ![NuGet Download](https://img.shields.io/nuget/dt/Ubiquity.NET.LibLLVM-win-x64) |
 
@@ -70,93 +71,15 @@ built locally.
 
 ## Projects
 ### LlvmBindingsGenerator
-This is the handle source generator for the interop code in Ubiquity.NET.Llvm.Interop (And the
-exprots.def file for DLL(s) on Windows). It uses CppSharp to parse the C or C++ headers and generates
-the native library exports.g.def (For a Windows DLL) along with the source to C# interop "handle"
-types. The configuration file also helps in detection of missing or removed handle types when moving
-to a newer version of LLVM.
+This is the source generator for the windows DLL `exports.def` based on the LbLLCM extended C API headers.
+interop code in Ubiquity.NET.Llvm.Interop. It uses CppSharp to parse the C or C++ headers and generates
+the native library exports.g.def (For a Windows DLL).
 
 This tool is generally only ***required*** once per Major LLVM release. (Though a Minor release
 that adds new APIs would also warrant a new run) However, to ensure the code generation tool
 itself isn't altered with a breaking change, the PowerShell script takes care of building and
 running the generator when needed, even if nothing changes in the end. This is run on every
 automated build so that the output is usable in subsequent steps of the complete build. 
-
-#### Why A Distinct source generator?
-C# now has source generators built-in couldn't those server the purpose here?
-
-##### Roslyn Source Generators - 'There be dragons there!'
-Roslyn allows source generators directly in the compiler making for a feature similar to, but not the
-same as C++ template code generation AT compile time. However, there's a couple of BIG issues with
-that for this particular code base. (And these distinctions are hard to get your head around for those
-familiar with C++ templates)
-1) Non-deterministic ordering of generators
-    - More specifically for this project there is no way to declare the dependency on
-      outputs of one generator as the input for another. (They ***all*** see the same original
-      source as input so they can run in parallel.)
-2) Dependencies for project references
-    - As the generators used for this code base are not general purpose they are not published
-      or produced as a NUGET package. They only would work as a project reference. But that creates
-      a TON of problems for the binary runtime dependencies of source generators, which don't flow
-      with them as project references...
-
-Specifically, in this code, the built-in AOT aware P/Invoke generator that otherwise knows
-nothing about the handle generation, needs to see and use the **OUTPUT** of the handle
-source generation to find the `NativeMarshalingAttribute`. (It's not just a run ordering problem as in
-the current Roslyn Source generator design - ALL generators see the same input text!)  
-[See: [Discussion on ordering and what a generator "sees"](https://github.com/dotnet/roslyn/discussions/57912#discussioncomment-1682779)]  
-[See also: [Roslyn issue #57239](https://github.com/dotnet/roslyn/issues/57239)]
-
-The interop code uses the LibraryImportAttribute for AOT support of ALL of the interop APIs
-declared. Thus, at compile time the interop source generator **MUST** be able to see the types used,
-specifically, it must have access to the `NativeMarshalling` attribute for all the handle types.
-Otherwise, it doesn't know how to marshal the type and bails out. It is possible to "overcome" this
-with an explicit `MarshalUsingAttribute` on every parameter or return type but that's tedious. Tedious
-typing is what source generators and templates are supposed to remove. Thus, this library will
-generate the handle sources **BEFORE** they are compiled in the project. (Not to mention it also
-generates the exports.g.def used by the native code. Thus, the generated source files will contain the
-marshaling attributes so that the interop source generator knows how to generate the correct code.
-
->To be crystal clear - The problem is **NOT** one of generator run ordering, but on the ***dependency
-> of outputs***. By design, Roslyn source generators can only see the original source input, never the
-> output of another generator. Most don't, and never will, care. The handle generation, in this case
-> does. Solving that generically in a performant fashion is a ***HARD*** problem indeed... Not
-> guaranteed impossible, but so far no-one has come up with a good answer to the problem. Even C++ has
-> this issue with templates+concepts+CRTP, and that language has had source generating templates as a
-> direct part of the language for several decades now.  
-> [See also: [Using the CRTP and C++20 Concepts to Enforce Contracts for Static Polymorphism](https://medium.com/@rogerbooth/using-the-crtp-and-c-20-concepts-to-enforce-contracts-for-static-polymorphism-a27d93111a75) ]  
-> [See also: [Rules for Roslyn source generators](https://github.com/dotnet/roslyn/blob/main/docs/features/incremental-generators.cookbook.md)]
-
-###### Alternate solutions considered and rejected
-1) Running the source generator directly in the project
-    1) This is where the problem of non-deterministic ordering and visibility of the
-       generated code was discovered. Obviously (now anyway!) this won't work.
-2) Use a source generator in a separate assembly
-    1) This solves the generator output dependency problem but introduces a new problem of
-       how the build infrastructure for these types manage NuGet versions.
-    2) Additionally, this adds complexity of a second native dependency on the library
-       exporting the native functionality. (Should there be two copies? How does code in
-       each refer to the one instance?...)
-3) Call the source generator from within this app to control the ordering
-    1) This at least could get around the ordering/dependency problem as it would guarantee
-       the custom generator runs before the built-in one.
-    2) However, this runs afoul of the binary dependency problem... Not 100% insurmountable
-       but the number of caveats on the Roslyn Source Generator side of things grows to a
-       significant factor. This also complicates all parts of the build to where it isn't
-       worth the effort.
-
-##### The final choice
-Keep using this LlvmBindingsGenerator as a generator for the export file on Windows and the
-handle types for all run-times. This used to work, and still does. The problem of expressing
-managed code things in a custom language (YAML) is solved by simply not doing that! Instead,
-ALL of the P/Invoke methods are expressed directly in C# code. For the handles it is a rather
-simplistic expression in YAML. And arguably less complicated then all the subtleties of
-using a Roslyn Source generator for this sort of one off specialized code generation.
-
-This also keeps the door open to use the native AST from within the source generator or an
-analyzer to perform additional checks and ensure the hand written code matches the actual
-native code... (Though this would involve more direct use of the Roslyn parser/analyzer and
-may be best to generate an input to a proper analyzer)
 
 ### LibLLVM
 This is the native project that creates the extended LLVM-C API as an actual dynamic library.
@@ -175,11 +98,10 @@ package and a couple of different ways to go about completing them.
  1. Build LlvmBindingsGenerator
  2. Run LlvmBindingsGenerator to parse the llvm headers and the extended headers from the
     native LibLLVM
-    1. This generates the C# Handle code AND the linker DEF file used by the Windows
-       variants of native library and therefore needs to run before the other projects are
-       built. Generating the exports file ensures that it is always accurate and any
-       functions declared in the headers are exported so that the linker generates an
-       error for any missing implementation(s).
+    1. This generates the linker DEF file used by the Windows variants of native library and therefore
+       needs to run before the other projects are built. Generating the exports file ensures that it is
+       always accurate and any functions declared in the headers are exported so that the linker generates
+       an error for any missing implementation(s).
         1. This step is run once for each RID+target combination.
         2. There is an [effort](https://github.com/llvm/llvm-project/issues/109483) ongoing in
            LLVM to support the declaration of APIs as exported (via the `LLVM_C_ABI` macro) but
