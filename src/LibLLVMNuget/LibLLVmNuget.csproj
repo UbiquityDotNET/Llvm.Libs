@@ -22,7 +22,7 @@ This project is used to create the RID specific NUGET package
 
     <!-- RID specific location of the libraries for each LLVM target -->
     <RidNativeBinPath>$(BaseBuildOutputBinPath)LibLLVM\$(RuntimeIdentifier)</RidNativeBinPath>
-    <RidNativeIncPath>$(BuildRootDir)llvm-project\llvm\out\build\x64-$(Configuration)\include\llvm\</RidNativeIncPath>
+    <!--<RidNativeIncPath>$(BuildRootDir)llvm-project\llvm\out\build\x64-$(Configuration)\include\llvm\</RidNativeIncPath>-->
 
     <!-- Disable default inclusion of all items. This project doesn't use them -->
     <EnableDefaultItems>false</EnableDefaultItems>
@@ -55,14 +55,18 @@ This project is used to create the RID specific NUGET package
         <PackagePath>runtimes/$(RuntimeIdentifier)/native</PackagePath>
         <Link>runtimes/$(RuntimeIdentifier)/native/%(FileName)%(Extension)</Link>
     </Content>
-    <Content Include="$(RidNativeIncPath)Config/**">
+    <!--
+    For reasons unknown these paths are not available on the automated builds. They aren't needed
+    so instead of investigating root cause, just remove them until needed.
+    -->
+    <!--<Content Include="$(RidNativeIncPath)Config/**">
         <PackagePath>Content/$(RuntimeIdentifier)/native/include/Config/</PackagePath>
         <Link>Content/$(RuntimeIdentifier)/native/include/Config/%(FileName)%(Extension)</Link>
     </Content>
     <Content Include="$(RidNativeIncPath)Support/Extension.def">
         <PackagePath>Content/$(RuntimeIdentifier)/native/include/Support/</PackagePath>
         <Link>Content/$(RuntimeIdentifier)/native/include/Support/extension.def</Link>
-    </Content>
+    </Content>-->
   </ItemGroup>
 
   <!-- Use LLvmTarget to check for supported binaries before Pack-->
