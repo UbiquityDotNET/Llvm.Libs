@@ -4,19 +4,16 @@ build ordering and processing, which is handled by the PowerShell scripts.
 
 
 ## Status
-### `develop` branch
-| Status | Description |
-|:------:|:------------|
-| PR/CI Build | ![PR/CI Action Status](https://img.shields.io/github/actions/workflow/status/UbiquityDotNet/Llvm.Libs/pr-build.yml) |
-| Release Build | ![Release Build](https://img.shields.io/github/actions/workflow/status/UbiquityDotNET/Llvm.Libs/release-build.yml)
-| Commits since last release | ![GitHub commits since latest release (branch)](https://img.shields.io/github/commits-since/UbiquityDotNET/Llvm.Libs/latest/develop) |
+[![CI-Build](https://github.com/UbiquityDotNET/Llvm.Libs/actions/workflows/pr-build.yml/badge.svg)](https://github.com/UbiquityDotNET/Llvm.Libs/actions/workflows/pr-build.yml)
+[![Release-Build](https://github.com/UbiquityDotNET/Llvm.Libs/workflows/Release-Build/badge.svg)](https://github.com/UbiquityDotNET/Llvm.Libs/actions/workflows/release-build.yml)
+[![GitHub commits since latest release (branch)](https://img.shields.io/github/commits-since/UbiquityDotNET/Llvm.Libs/latest/develop)]()
 
 ### Latest Download
 #### Released NuGet Packages
 |Package Name | Badge |
 |-------------|-------|
-| Ubiquity.NET.LibLLVM (Meta package)| ![NuGet Download](https://img.shields.io/nuget/dt/Ubiquity.NET.LibLLVM) |
-| Ubiquity.NET.LibLLVM-win-x64 | ![NuGet Download](https://img.shields.io/nuget/dt/Ubiquity.NET.LibLLVM-win-x64) |
+| Ubiquity.NET.LibLLVM (Meta package)| [![NuGet Download](https://img.shields.io/nuget/dt/Ubiquity.NET.LibLLVM)](https://www.nuget.org/packages/Ubiquity.NET.LibLLVM) |
+| Ubiquity.NET.LibLLVM-win-x64 | [![NuGet Download](https://img.shields.io/nuget/dt/Ubiquity.NET.LibLLVM-win-x64)](https://www.nuget.org/packages/Ubiquity.NET.LibLLVM-win-x64) |
 
 #### PR/CI build packages
 Packages for CI and PR builds are NOT published/released to NuGet.org (nor any other packaging
