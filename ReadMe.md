@@ -158,24 +158,6 @@ flowchart TD
     runtimeJoin@{shape: join} --> finish
     finish["All Build jobs complete"]
 ```
-##### handles source package
-The generation of the handle types from the source exposes complexity and dependency of this
-effort and that of the larger Ubiquity.NET.Llvm effort, which depends on this library. Originally,
-the idea was to reduce the build of the LLVM libraries themselves (they were published as a zip
-file and included symbols AND the header files) But, that approach has proven difficult to
-maintain and a MAJOR hindrance to x-plat. Thus, a rework was done to build the runtime dynamic
-library in this repo. Though that still leaves the header generation and the bindings generator
-in a weird place. Since the NuGet package now only includes the final library for a runtime the
-bindings generator isn't usable anywhere else and thus the "handle" generation must occur where
-the LLVM headers are available. But, the generated source has dependencies on other base
-types/helpers in the interop library... 
-
-Thus, the usefulness of this project as a distinct repo is coming into question. [Currently the
-bindings generator just builds a NuGet package with the source assuming use ONLY in the interop
-library, but unifying the repositories, could eliminate that and make a number of inner loop
-development scenarios simpler. Though, automated build times would dramatically increase as they
-would need to re-build ALL of the LLVM source code for every such build...] (Ah the wonders of
-trade-offs in engineering never cease... :nerd_face:)
 
 #### Open issues for a truly x-plat build
 1) The Library itself builds with VCXPROJ and MSBuild
