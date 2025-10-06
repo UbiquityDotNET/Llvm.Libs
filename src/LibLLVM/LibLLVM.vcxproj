@@ -9,9 +9,13 @@
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)'==''">win-x64</RuntimeIdentifier>
     <!-- TODO: Support SourceLink [See: https://github.com/dotnet/sourcelink#using-source-link-in-c-projects]-->
   </PropertyGroup>
-  <Import Project="$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.6\build\Ubiquity.NET.Versioning.Build.Tasks.props" Condition="Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.6\build\Ubiquity.NET.Versioning.Build.Tasks.props')" />
+  <Import Project="$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.7-alpha.0.1\build\Ubiquity.NET.Versioning.Build.Tasks.props" Condition="Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.7-alpha.0.1\build\Ubiquity.NET.Versioning.Build.Tasks.props')" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
@@ -31,19 +35,31 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.6\build\Ubiquity.NET.Versioning.Build.Tasks.targets" Condition="Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.6\build\Ubiquity.NET.Versioning.Build.Tasks.targets')" />
+    <Import Project="$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.7-alpha.0.1\build\Ubiquity.NET.Versioning.Build.Tasks.targets" Condition="Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.7-alpha.0.1\build\Ubiquity.NET.Versioning.Build.Tasks.targets')" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(MSBuildThisFileDirectory)..\..\llvm-libs.props" />
     <Import Project="LlvmApplication.props" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(MSBuildThisFileDirectory)..\..\llvm-libs.props" />
+    <Import Project="LlvmApplication.props" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LinkIncremental>false</LinkIncremental>
+    <TargetName>Ubiquity.NET.$(MSBuildProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>Ubiquity.NET.$(MSBuildProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(IntermediateOutputPath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(IntermediateOutputPath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -53,9 +69,7 @@
     <None Include="EXPORTS.g.DEF" />
     <None Include="include\ReadMe.md" />
     <None Include="NuGet.config" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnalysisBindings.cpp" />
@@ -96,9 +110,13 @@
     <ClInclude Include="include\libllvm-c\TargetRegistrationBindings.h" />
     <ClInclude Include="include\libllvm-c\TripleBindings.h" />
     <ClInclude Include="include\libllvm-c\ValueBindings.h" />
+    <ClInclude Include="OutputDebugStream.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)'=='Debug'">
+    <Natvis Include="..\..\llvm-project\llvm\utils\LLVMVisualizers\llvm.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(MSBuildThisFileDirectory)..\..\llvm-libs.targets" />
@@ -107,8 +125,10 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them. For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Message Importance="High" Text="PlatformConfiguration: $(Platform)|$(Configuration)" />
-    <Error Condition="!Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.6\build\Ubiquity.NET.Versioning.Build.Tasks.props')" Text="$([System.String]::Format('$(ErrorText)', '$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.6\build\Ubiquity.NET.Versioning.Build.Tasks.props'))" />
-    <Error Condition="!Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.6\build\Ubiquity.NET.Versioning.Build.Tasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.6\build\Ubiquity.NET.Versioning.Build.Tasks.targets'))" />
+    <Error Condition="!Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.7-alpha.0.1\build\Ubiquity.NET.Versioning.Build.Tasks.props')" Text="$([System.String]::Format('$(ErrorText)', '$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.7-alpha.0.1\build\Ubiquity.NET.Versioning.Build.Tasks.props'))" />
+    <Error Condition="!Exists('$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.7-alpha.0.1\build\Ubiquity.NET.Versioning.Build.Tasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(PackagesRoot)Ubiquity.NET.Versioning.Build.Tasks.5.0.7-alpha.0.1\build\Ubiquity.NET.Versioning.Build.Tasks.targets'))" />
+    <Error Condition="!Exists('..\..\BuildOutput\packages\Ubiquity.NET.Versioning.Build.Tasks.5.0.7-alpha.0.1\build\Ubiquity.NET.Versioning.Build.Tasks.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\BuildOutput\packages\Ubiquity.NET.Versioning.Build.Tasks.5.0.7-alpha.0.1\build\Ubiquity.NET.Versioning.Build.Tasks.props'))" />
+    <Error Condition="!Exists('..\..\BuildOutput\packages\Ubiquity.NET.Versioning.Build.Tasks.5.0.7-alpha.0.1\build\Ubiquity.NET.Versioning.Build.Tasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\BuildOutput\packages\Ubiquity.NET.Versioning.Build.Tasks.5.0.7-alpha.0.1\build\Ubiquity.NET.Versioning.Build.Tasks.targets'))" />
   </Target>
   <Target Name="AlwaysShowBuildParams" AfterTargets="ShowBuildParams">
     <Message Importance="High" Text="FullBuildNumber: $(FullBuildNumber)" />
@@ -122,7 +142,7 @@
   -->
   <Target Name="AppendVesionInfoHeader" AfterTargets="GenerateVesionInfoHeader">
     <ItemGroup>
-      <_FullVersionLine Include='#define FULL_BUILD_NUMBER_STRING "$(FullBuildNumber)"'/>
+      <_FullVersionLine Include="#define FULL_BUILD_NUMBER_STRING &quot;$(FullBuildNumber)&quot;" />
     </ItemGroup>
     <WriteLinesToFile File="$(IntermediateOutputPath)$(GeneratedVersionInfoHeader)" Lines="@(_FullVersionLine)" />
   </Target>

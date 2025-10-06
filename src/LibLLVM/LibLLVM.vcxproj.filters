@@ -15,7 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="cpp.hint" />
     <None Include="include\ReadMe.md">
       <Filter>Header Files</Filter>
@@ -24,6 +23,7 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="NuGet.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="InlinedExports.cpp">
@@ -135,5 +135,11 @@
     <ClInclude Include="CSemVer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="OutputDebugStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\llvm-project\llvm\utils\LLVMVisualizers\llvm.natvis" />
   </ItemGroup>
 </Project>

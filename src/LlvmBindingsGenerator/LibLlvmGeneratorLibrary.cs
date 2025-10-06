@@ -26,6 +26,7 @@ namespace LlvmBindingsGenerator
             CmdLineOptions = options;
 
             CommonInclude = Path.Combine( options.LlvmRoot, "include" );
+            CMakeConfigInclude = Path.Combine( options.ConfigPathRoot, "include");
 
             // NOTE: The target specific LLVMInitializeXXX APIs are included in CMAKE generated headers
             // This is OK as they should NOT appear in the set of APIs exported from the library anyway
@@ -59,6 +60,7 @@ namespace LlvmBindingsGenerator
 
             driver.ParserOptions.AddIncludeDirs( CommonInclude );
             driver.ParserOptions.AddIncludeDirs( ExtensionsInclude );
+            driver.ParserOptions.AddIncludeDirs( CMakeConfigInclude );
 
             var coreHeaders = Directory.EnumerateFiles( Path.Combine( CommonInclude, "llvm-c" ), "*.h", SearchOption.AllDirectories );
             var extHeaders = Directory.EnumerateFiles( Path.Combine( ExtensionsInclude, "libllvm-c" ), "*.h", SearchOption.AllDirectories );
@@ -110,6 +112,7 @@ namespace LlvmBindingsGenerator
         private readonly GeneratorConfig Configuration = new();
 
         private readonly string CommonInclude;
+        private readonly string CMakeConfigInclude;
         private readonly string ExtensionsInclude;
         private readonly Options CmdLineOptions;
     }

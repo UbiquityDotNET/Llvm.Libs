@@ -27,6 +27,8 @@ Param(
     [switch]$SkipLLvm
 )
 
+Set-StrictMode -Version 3.0
+
 Push-location $PSScriptRoot
 
 $oldPath = $env:Path
@@ -65,14 +67,20 @@ try
         Write-Information "Post Build Size: $($preDeleteSize)Gb"
     }
 
-    # On Windows Build and run source generator as the generated exports.g.def is needed by the windows
-    # version of the DLL
+    # On Windows Build, run source generator to get the generated exports.g.def
     if ($IsWindows)
     {
+        #TODO: generalize this for ALL windows architectures (ARM64...)
+        # SEE: Llvm-Libs.props in the root of this repo for how this is specified for
+        # the C++ build.
+        $llvmPlatformConfig = "win-x64"
+
+        $llvmPlatformConfigRoot = Join-Path $buildInfo['BuildOutputPath'] $llvmPlatformConfig
         $extensionsRoot = Join-Path $buildInfo['SrcRootPath'] 'LibLLVM'
         $generatorOptions = @{
             LlvmRoot = $buildInfo['LlvmRoot']
             ExtensionsRoot = $extensionsRoot
+            ConfigPathRoot = $llvmPlatformConfigRoot
             ExportsDefFilePath = Join-Path $extensionsRoot 'exports.g.def'
         }
 

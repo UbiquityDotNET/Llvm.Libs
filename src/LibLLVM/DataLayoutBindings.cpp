@@ -8,7 +8,7 @@ extern "C"
 {
     LLVMErrorRef LibLLVMParseDataLayout(char const* layoutString, size_t strLen, /*out*/ LLVMTargetDataRef* outRetVal)
     {
-        auto expectedResult = DataLayout::parse(StringRef(layoutString, strLen));
+        llvm::Expected<DataLayout> expectedResult = DataLayout::parse(StringRef(layoutString, strLen));
         *outRetVal = expectedResult ? wrap(new DataLayout(*expectedResult)) : nullptr;
         return expectedResult ? 0 : wrap(expectedResult.takeError());
     }

@@ -14,7 +14,7 @@ using namespace std::string_view_literals;
 
 // THESE targets are apparently "experimental";
 // They do NOT appear in targets.def, AsmPrinters.def, AsmParsers.def, or Disassemblers.def.
-// Therefore they do NOT get any LLVM-C declarations in Target.h; If desired, declarations
+// Therefore, they do NOT get any LLVM-C declarations in Target.h; If desired, declarations
 // (forward refs really) may be added here but any consumption of them in calling code should
 // get a clear "experimental" remark.
 //

@@ -20,6 +20,7 @@ namespace LlvmBindingsGenerator
             string? llvmRoot,
             string? extensionsRoot,
             string? exportsDefFilePath,
+            string? configPathRoot,
             DiagnosticKind diagnostics
             )
         {
@@ -32,16 +33,20 @@ namespace LlvmBindingsGenerator
             // by this constructor are buried/lost.
             LlvmRoot = llvmRoot is null ? string.Empty : Path.GetFullPath(llvmRoot);
             ExtensionsRoot = extensionsRoot is null ? string.Empty : Path.GetFullPath(extensionsRoot);
+            ConfigPathRoot = configPathRoot is null ? string.Empty : Path.GetFullPath(configPathRoot);
             ExportsDefFilePath = exportsDefFilePath is null ? string.Empty : Path.GetFullPath(exportsDefFilePath);
 
             Diagnostics = diagnostics;
         }
 
-        [Option('l', HelpText = "Root of source with the LLVM headers to parse (Assumes a subfolder 'include')", Required = true )]
+        [Option('l', HelpText = "Root of source with the LLVM headers to parse (Requires a sub-folder 'include')", Required = true )]
         public string LlvmRoot { get; } = string.Empty;
 
-        [Option('e', HelpText = "Root of source with the LibLLVM extension headers to parse", Required = true )]
+        [Option('e', HelpText = "Root of source with the LibLLVM extension headers to parse (Requires a sub-folder 'include')", Required = true )]
         public string ExtensionsRoot { get; } = string.Empty;
+
+        [Option('i', HelpText = "Root of source with the CMAKE generated LLVM config headers to parse (Requires a sub-folder 'include')", Required = true )]
+        public string ConfigPathRoot { get; } = string.Empty;
 
         [Option('d', HelpText = "Output path for the generated DEF file (For Windows LibLLVM.DLL). Not generated if this is not provided")]
         public string ExportsDefFilePath { get; } = string.Empty;
@@ -65,6 +70,18 @@ namespace LlvmBindingsGenerator
             if(!Directory.Exists(Path.Combine(LlvmRoot, "include")))
             {
                 helpWriter.WriteLine($"LlvmRoot path does not contain a sub folder named 'include'; LlvmRoot: '{LlvmRoot}'.");
+                retVal = false;
+            }
+
+            if(!Directory.Exists(ConfigPathRoot))
+            {
+                helpWriter.WriteLine($"CMake Config path does not exist '{ConfigPathRoot}'.");
+                retVal = false;
+            }
+
+            if(!Directory.Exists(Path.Combine(ConfigPathRoot, "include")))
+            {
+                helpWriter.WriteLine($"ConfigPathRoot does not contain a sub folder named 'include'; ConfigPathRoot: '{ConfigPathRoot}'.");
                 retVal = false;
             }
 
@@ -103,6 +120,7 @@ namespace LlvmBindingsGenerator
             bldr.AppendLine()
                 .AppendLine(CultureInfo.InvariantCulture, $"          LlvmRoot: {LlvmRoot}" )
                 .AppendLine(CultureInfo.InvariantCulture, $"    ExtensionsRoot: {ExtensionsRoot}")
+                .AppendLine(CultureInfo.InvariantCulture, $"    ConfigPathRoot: {ConfigPathRoot}")
                 .AppendLine(CultureInfo.InvariantCulture, $"ExportsDefFilePath: {ExportsDefFilePath}")
                 .AppendLine(CultureInfo.InvariantCulture, $"       Diagnostics: {Diagnostics}");
             return bldr.ToString();
