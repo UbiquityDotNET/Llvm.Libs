@@ -64,7 +64,7 @@ try
         # Notify size of build output directory as that's a BIG player in total space used in an
         # automated build scenario. (OSS build systems often limit space so it's important to know)
         $postBuildSize = Get-ChildItem -Recurse $cmakeConfig['BuildRoot'] | Measure-Object -Property Length -sum | %{[math]::round($_.Sum /1Gb, 3)}
-        Write-Information "Post Build Size: $($preDeleteSize)Gb"
+        Write-Information "Post Build Size: $($postBuildSize)Gb"
     }
 
     # On Windows Build, run source generator to get the generated exports.g.def
