@@ -67,6 +67,7 @@ Globalization
 Hashtable
 Identifier
 Impl
+initializer
 inline
 inlined
 Interop
@@ -95,10 +96,12 @@ paren
 perf
 pointee
 Pre
+preprocessor
 proj
 readonly
 refactor
 refcount
+referenceable
 repl
 repo
 RMW
@@ -107,6 +110,7 @@ RValue
 sizeof
 src
 Stateful
+stderr
 struct
 structs
 Subrange
@@ -127,6 +131,7 @@ uninstantiated
 uniqued
 uniqueing
 unmarshal
+untyped
 userdefinedop
 Users
 usings

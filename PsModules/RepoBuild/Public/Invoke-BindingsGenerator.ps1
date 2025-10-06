@@ -5,12 +5,18 @@ function Invoke-BindingsGenerator([hashtable]$buildInfo , [hashtable]$Options)
         throw "Building/using the generator is not supported and not needed for non-Windows platforms"
     }
 
-    if(!$Options.ContainsKey('LlvmRoot') -or $Options['LlvmRoot'] -isnot [string])
+    if(!$Options.ContainsKey('LlvmRoot') -or ($Options['LlvmRoot'] -isnot [string]))
     {
         throw "Options value for required LlvmRoot is missing or invalid"
     }
 
-    if(!$Options.ContainsKey('ExtensionsRoot') -or $Options['ExtensionsRoot'] -isnot [string])
+    if(!$Options.ContainsKey('ConfigPathRoot') -or ($Options['ConfigPathRoot'] -isnot [string]))
+    {
+        Write-Error ($Options | Format-List | Out-String)
+        throw "Options value for required ConfigPathRoot is missing or invalid"
+    }
+
+    if(!$Options.ContainsKey('ExtensionsRoot') -or ($Options['ExtensionsRoot'] -isnot [string]))
     {
         throw "Options value for required ExtensionsRoot is missing or invalid"
     }
@@ -30,6 +36,7 @@ function Invoke-BindingsGenerator([hashtable]$buildInfo , [hashtable]$Options)
         $bindingsGenerator,
         '-l', $Options['LlvmRoot'],
         '-e', $Options['ExtensionsRoot']
+        '-i', $Options['ConfigPathRoot']
     )
 
     if ($Options.ContainsKey('ExportsDefFilePath'))

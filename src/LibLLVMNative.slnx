@@ -45,7 +45,7 @@
     <Platform Project="AnyCPU" />
   </Project>
   <Project Path="LibLLVM/LibLLVM.vcxproj" Id="6c77a7de-d464-430f-96a9-a64768763b5f">
-    <BuildType Project="Release" />
+    <BuildType Solution="Debug|Any CPU" Project="Release" />
   </Project>
   <Project Path="LibLLVMNuget/LibLLVmNuget.csproj" />
   <Project Path="LlvmBindingsGenerator/LlvmBindingsGenerator.csproj" />
