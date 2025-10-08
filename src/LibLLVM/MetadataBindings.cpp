@@ -62,19 +62,19 @@ extern "C"
     }
 
     LLVMMetadataRef LibLLVMDIBuilderCreateTempFunctionFwdDecl( LLVMDIBuilderRef Builder
-                                                               , LLVMMetadataRef /*DIScope* */Scope
-                                                               , char const* Name
-                                                               , size_t NameLen
-                                                               , char const* LinkageName
-                                                               , size_t LinkageNameLen
-                                                               , LLVMMetadataRef /*DIFile* */ File
-                                                               , unsigned LineNo
-                                                               , LLVMMetadataRef /*DISubroutineType* */ Ty
-                                                               , LLVMBool isLocalToUnit
-                                                               , LLVMBool isDefinition
-                                                               , unsigned ScopeLine
-                                                               , LLVMDIFlags Flags /*= 0*/
-                                                               , LLVMBool isOptimized /*= false*/
+                                                             , LLVMMetadataRef /*DIScope* */Scope
+                                                             , char const* Name
+                                                             , size_t NameLen
+                                                             , char const* LinkageName
+                                                             , size_t LinkageNameLen
+                                                             , LLVMMetadataRef /*DIFile* */ File
+                                                             , unsigned LineNo
+                                                             , LLVMMetadataRef /*DISubroutineType* */ Ty
+                                                             , LLVMBool isLocalToUnit
+                                                             , LLVMBool isDefinition
+                                                             , unsigned ScopeLine
+                                                             , LLVMDIFlags Flags /*= 0*/
+                                                             , LLVMBool isOptimized /*= false*/
     )
     {
         return wrap( unwrap( Builder )->createTempFunctionFwdDecl(
