@@ -6,7 +6,7 @@
     [read - never gonna happen])
     -->
   <ItemGroup>
-    <GlobalPackageReference Include="Ubiquity.NET.Versioning.Build.Tasks" Version="5.0.6" Condition="'$(MSBuildProjectExtension)' != '.vcxproj'" />
+    <GlobalPackageReference Include="Ubiquity.NET.Versioning.Build.Tasks" Version="5.0.7-alpha.0.1" Condition="'$(MSBuildProjectExtension)' != '.vcxproj'" />
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" Condition="'$(NoCommonAnalyzers)' != 'true'" />
     <GlobalPackageReference Include="IDisposableAnalyzers" Version="4.0.8" Condition="'$(NoCommonAnalyzers)' != 'true'" />
     <GlobalPackageReference Include="MustUseRetVal" Condition="'$(NoCommonAnalyzers)' != 'true'" Version="0.0.2" />
@@ -17,7 +17,7 @@
         This has NO use on C/C++ builds, and in fact NuGet is screwed up if it is included such that it WON'T resolve entries
         in packages.config (It seems to think it's a PackageReferences project even though it most definitely is NOT!)
         -->
-    <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" Condition="'$(UseStyleCop)' != 'false' AND '$(MSBuildProjectExtension)'!='.vcxproj'" />
+    <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" Condition="'$(NoCommonAnalyzers)' != 'true' AND '$(UseStyleCop)' != 'false' AND '$(MSBuildProjectExtension)'!='.vcxproj'" />
   </ItemGroup>
   <!--
     Package versions made consistent across all packages referenced in this repository
