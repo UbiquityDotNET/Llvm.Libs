@@ -45,6 +45,9 @@
         <IsPullRequestBuild Condition="'$(IsPullRequestBuild)'==''">false</IsPullRequestBuild>
         <IsReleaseBuild Condition="'$(IsReleaseBuild)'==''">false</IsReleaseBuild>
         <BuildTime Condition="'$(BuildTime)'=='' AND '$(APPVEYOR_REPO_COMMIT_TIMESTAMP)'!=''">$(APPVEYOR_REPO_COMMIT_TIMESTAMP)</BuildTime>
+
+        <!-- For diagnostics of versioning, show version info during build -->
+        <!--<ShowVersioning>true</ShowVersioning>-->
     </PropertyGroup>
     <Choose>
         <!-- Apply standard properties for all C# projects -->

@@ -13,8 +13,8 @@ Instead it is now split into two uses:
     1) This version in the native repo deals only with the export generation and name
        validation for the extension APIs
 2) Generates the "safe handle" C# code from the LLVM + LIBLLVM headers
-    1) This functionality moved to the consuming repo where it is easier to maintain and
-       update as all the upward managed dependencies are there.
+    1) ***This functionality moved to the consuming repo where it is easier to maintain and
+       update as all the upward managed dependencies are there.***
 
 ## Usage
 `LlvmBindingsGenerator -l <llvmRoot> -e <ExtensionsRoot> -d <ExportsDefFilePath> -Diagnostics <Diagnostics>`
