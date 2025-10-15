@@ -108,6 +108,16 @@ try
 
         # Need to invoke NuGet directly for restore of vcxproj as /t:Restore target doesn't support packages.config
         # and PackageReference isn't supported for native projects... [Sigh...]
+        if($null -eq (Find-OnPath nuget))
+        {
+            winget install 'Microsoft.NuGet'
+        }
+
+        if($null -eq (Find-OnPath nuget))
+        {
+            throw "NuGet.exe not found, even after installation attempt..."
+        }
+
         Write-Information "Restoring LibLLVM"
         $libLLVMVcxProj = Join-Path 'src' 'LibLLVM' 'LibLLVM.vcxproj'
         Invoke-External nuget restore $libLLVMVcxProj -PackagesDirectory $buildInfo['NuGetRepositoryPath']
