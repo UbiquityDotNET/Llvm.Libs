@@ -5,18 +5,18 @@ is distinct. The Major number will match the LLVM major number, the Minor number
 will also match, but the "patch" is where things can diverge. It will match for an initial
 build of a given release of LLVM but may increment past that.
 Attributes:
-    BuildMajor - Major portion of the build number
-    BuildMinor - Minor portion of the build number
-    BuildPatch - Patch portion of the build number
-    PreReleaseName - PreRelease Name of the CSemVer
-    PreReleaseNumber - PreRelease Number of the CSemVer
-    PreReleaseFix - PreRelease Fix of the CSemVer
+    BuildMajor,
+    BuildMinor,
+    BuildPatch,
+    PreReleaseName,
+        Valid names are:
+        "alpha", "beta", "delta", "epsilon", "gamma", "kappa", "pre"|"prerelease", "rc"
+    PreReleaseNumber,
+    PreReleaseFix
 -->
 <BuildVersionData
     BuildMajor = "20"
     BuildMinor = "1"
     BuildPatch = "8"
-    PreReleaseName = "delta"
-    PreReleaseNumber ="0"
-    PreReleaseFix ="2"
+    PreReleaseName = "rc"
 />
