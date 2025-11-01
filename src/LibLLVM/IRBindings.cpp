@@ -10,11 +10,12 @@
 // This file defines additional C bindings for the ir component.
 //
 //===----------------------------------------------------------------------===//
-
+#include <llvm-c/Types.h>
 #include "libllvm-c/IRBindings.h"
-#include "llvm/IR/DebugLoc.h"
-#include "llvm/IR/Function.h"
-#include "llvm/IR/IRBuilder.h"
+
+#include <llvm/IR/Value.h>
+#include <llvm/IR/Instructions.h>
+#include <llvm/Support/Casting.h>
 
 using namespace llvm;
 

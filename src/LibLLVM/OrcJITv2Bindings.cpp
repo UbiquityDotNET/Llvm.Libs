@@ -1,10 +1,18 @@
-#include "libllvm-c/OrcJITv2Bindings.h"
-#include <llvm/Support/Error.h>
-#include <llvm/Support/CBindingWrapping.h>
+#include <string>
+#include <string.h>
+
 #include <llvm/ExecutionEngine/Orc/Core.h>
 #include <llvm/ExecutionEngine/Orc/SymbolStringPool.h>
+#include <llvm/Support/Error.h>
+#include <llvm/Support/CBindingWrapping.h>
+#include <llvm/Support/raw_ostream.h>
+
+#include <llvm-c/Orc.h>
+#include <llvm-c/Error.h>
+#include <llvm-c/Types.h>
 
 #include "OutputDebugStream.h"
+#include "libllvm-c/OrcJITv2Bindings.h"
 
 using namespace llvm;
 using namespace llvm::orc;
@@ -14,6 +22,7 @@ namespace
     DEFINE_SIMPLE_CONVERSION_FUNCTIONS(ExecutionSession, LLVMOrcExecutionSessionRef)
     DEFINE_SIMPLE_CONVERSION_FUNCTIONS(JITDylib, LLVMOrcJITDylibRef)
     DEFINE_SIMPLE_CONVERSION_FUNCTIONS(SymbolStringPool, LLVMOrcSymbolStringPoolRef)
+
     inline SymbolStringPoolEntryUnsafe unwrap(LLVMOrcSymbolStringPoolEntryRef E)
     {
         return reinterpret_cast<SymbolStringPoolEntryUnsafe::PoolEntry*>(E);

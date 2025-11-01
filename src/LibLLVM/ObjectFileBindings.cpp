@@ -1,6 +1,7 @@
-#include "libllvm-c/ObjectFileBindings.h"
+#include <llvm/Object/ObjectFile.h>
+#include <llvm-c/Object.h>
 
-#include "llvm/Object/ObjectFile.h"
+#include "libllvm-c/ObjectFileBindings.h"
 
 using namespace llvm;
 using namespace object;

@@ -1,7 +1,6 @@
 #ifndef _ENUM_FLAGS_H_
 #define _ENUM_FLAGS_H_
 
-
 #include <type_traits>
 #include <cstdint>
 

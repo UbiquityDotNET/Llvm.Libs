@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <climits>
 
-#include "llvm-c/Support.h"
 #include <llvm-c/Error.h>
+#include <llvm-c/ExternC.h>
 
 LLVM_C_EXTERN_C_BEGIN
     // This needs to provide a single target neutral registration that handles the native target AND one additional CPU

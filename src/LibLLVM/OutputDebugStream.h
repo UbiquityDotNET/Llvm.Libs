@@ -5,13 +5,14 @@
 #include <ios>
 #include <sstream>
 #include <ostream>
+#include <llvm/Support/raw_os_ostream.h>
+#else
+#include <llvm/Support/raw_ostream.h>
 #endif
 
-#if defined(_WIN32)
+#if defined(_WIN32) && (defined(DEBUG) || !defined(NDEBUG))
 #include <Windows.h>
 #endif
-
-#include <llvm/Support/raw_os_ostream.h>
 
 namespace LibLLVM
 {

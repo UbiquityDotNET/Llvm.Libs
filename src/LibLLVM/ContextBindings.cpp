@@ -1,4 +1,7 @@
+#include <llvm-c/Types.h>
+
 #include "libllvm-c/ContextBindings.h"
+
 #include <llvm/IR/LLVMContext.h>
 
 using namespace llvm;

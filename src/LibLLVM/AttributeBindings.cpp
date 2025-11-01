@@ -1,15 +1,17 @@
 #include <type_traits>
 #include <array>
-#include <string_view>
-
-#include "llvm/IR/Attributes.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Value.h"
-#include "llvm/IR/Function.h"
-#include "llvm/Support/CBindingWrapping.h"
-#include "llvm-c/Error.h"
-#include "libllvm-c/AttributeBindings.h"
+#include <malloc.h>
+#include <string.h>
+#include <cstdint>
 #include "enum_flags.h"
+
+#include <llvm-c/Error.h>
+#include <llvm-c/Types.h>
+
+#include "libllvm-c/AttributeBindings.h"
+
+#include <llvm/ADT/StringRef.h>
+#include <llvm/IR/Attributes.h>
 
 using namespace llvm;
 using namespace std::string_view_literals;
@@ -72,6 +74,7 @@ extern "C"
 // So it's just a problem with the in editor parsing not handling the #include for this limited
 // case. Hopefully this is fixed with:
 // https://developercommunity.visualstudio.com/t/CC-IntelliSense-reports-E0289-no-ins/10618237
+// Though it does not appear to be...
 
     constexpr std::array AllKnownAttributeNames = {
 #define GET_ATTR_NAMES
