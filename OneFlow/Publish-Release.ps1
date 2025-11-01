@@ -28,8 +28,26 @@ Write-Information ((Get-ParsedBuildVersionXML -BuildInfo $buildInfo).GetEnumerat
 
 # merging the tag to develop branch on the official repository triggers the official build and release of the NuGet Packages
 $tagName = Get-BuildVersionTag $buildInfo
+
+# This will get the name of the remote matching $buildInfo['OfficialGitRemoteUrl'])
 $officialRemoteName = Get-GitRemoteName $buildInfo official
+
+# This will get the first remote that is NOT the official repo remote URL
+# This assumes there is only one such named remote. (Usually 'origin')
 $forkRemoteName = Get-GitRemoteName $buildInfo fork
+
+if([string]::IsNullOrWhiteSpace($officialRemoteName))
+{
+    throw "Official (official) remote is not available"
+}
+
+if([string]::IsNullOrWhiteSpace($forkRemoteName))
+{
+    throw "Fork (origin) remote is not available"
+}
+
+Write-Information "Official Remote Name: $officialRemoteName"
+Write-Information "Fork Remote Name: $forkRemoteName"
 
 $releaseBranch = "release/$tagName"
 $officialReleaseBranch = "$officialRemoteName/$releaseBranch"
