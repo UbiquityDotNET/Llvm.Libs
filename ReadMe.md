@@ -141,7 +141,7 @@ The following diagram illustrates the basic idea on how this works:
 ``` mermaid
 flowchart TD
     start --> runtimeFork
-    start --> pckg1["Handles source package"] --> pckg2["Meta package"] --> finish
+    start --> pckg2["Meta package"] --> finish
     runtimeFork@{shape: fork}
     runtimeForkComment@{shape: braces, label: "Fork for each runtime supported; Each runtime builds in parallel on different environments "} --> runtimeFork
     runtimeFork --> rid1["win-x64"] --> runtimeJoin
