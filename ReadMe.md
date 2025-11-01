@@ -68,15 +68,9 @@ built locally.
 
 ## Projects
 ### LlvmBindingsGenerator
-This is the source generator for the windows DLL `exports.def` based on the LbLLCM extended C API headers.
+This is the source generator for the windows DLL `exports.def` based on the LbLLVM extended C API headers.
 interop code in Ubiquity.NET.Llvm.Interop. It uses CppSharp to parse the C or C++ headers and generates
 the native library exports.g.def (For a Windows DLL).
-
-This tool is generally only ***required*** once per Major LLVM release. (Though a Minor release
-that adds new APIs would also warrant a new run) However, to ensure the code generation tool
-itself isn't altered with a breaking change, the PowerShell script takes care of building and
-running the generator when needed, even if nothing changes in the end. This is run on every
-automated build so that the output is usable in subsequent steps of the complete build. 
 
 ### LibLLVM
 This is the native project that creates the extended LLVM-C API as an actual dynamic library.
