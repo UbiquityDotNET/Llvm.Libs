@@ -1,8 +1,10 @@
 #ifndef _VALUE_BINDINGS_H_
 #define _VALUE_BINDINGS_H_
 
-#include "llvm-c/Core.h"
-#include "ModuleBindings.h"
+#include <cstdint>
+
+#include <llvm-c/ExternC.h>
+#include <llvm-c/Types.h>
 
 LLVM_C_EXTERN_C_BEGIN
     // ordering matters, all distinct values are generated first, then any derived values (e.g. foo = bar + 1), to ensure the
@@ -20,6 +22,9 @@ LLVM_C_EXTERN_C_BEGIN
 #undef HANDLE_MEMORY_VALUE
 #undef HANDLE_INSTRUCTION
 
+// VS IDE will thinks that this is a type instead of a preprocessor token pasting
+// It will "suggest" "resolving" it with an include of `llvm\IR\Instruction.h` which
+// is an absurd thing to do. Just say NO!.
 #define HANDLE_INST(N, OPC, CLASS) OPC##Kind = Instruction##Kind + N,
 #define HANDLE_USER_INST(N, OPC, CLASS) OPC##Kind = Instruction##Kind + N,
 #include "llvm/IR/Instruction.def"

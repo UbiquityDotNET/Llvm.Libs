@@ -1,7 +1,9 @@
 #ifndef _LIBLLVM_TARGETMACHINE_BINDINGS_H
 #define _LIBLLVM_TARGETMACHINE_BINDINGS_H
 
+#include <llvm-c/ExternC.h>
 #include <llvm-c/TargetMachine.h>
+#include <llvm-c/Types.h>
 
 LLVM_C_EXTERN_C_BEGIN
     LLVMBool LibLLVMGetTargetMachineAsmVerbosity(LLVMTargetMachineRef tm);

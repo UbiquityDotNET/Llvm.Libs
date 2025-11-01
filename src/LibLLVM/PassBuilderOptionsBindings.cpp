@@ -1,8 +1,13 @@
-#include "llvm/Target/TargetMachine.h"
-#include "llvm/Passes/PassBuilder.h"
-#include "llvm-c/TargetMachine.h"
-#include "llvm-c/Transforms/PassBuilder.h"
-#include "llvm-c/Core.h"
+#include <cstdint>
+
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/Passes/PassBuilder.h>
+#include <llvm/Config/llvm-config.h>
+#include <llvm/Support/CBindingWrapping.h>
+
+#include <llvm-c/TargetMachine.h>
+#include <llvm-c/Transforms/PassBuilder.h>
+#include <llvm-c/Types.h>
 
 using namespace llvm;
 

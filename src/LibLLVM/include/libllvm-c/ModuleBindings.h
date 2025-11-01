@@ -1,8 +1,11 @@
 #ifndef _MODULE_BINDINGS_H_
 #define _MODULE_BINDINGS_H_
 
-#include "llvm-c/Core.h"
-#include "llvm-c/Comdat.h"
+#include <cstdint>
+
+#include <llvm-c/Comdat.h>
+#include <llvm-c/ExternC.h>
+#include <llvm-c/Types.h>
 
 LLVM_C_EXTERN_C_BEGIN
     typedef struct LLVMOpaqueComdatIterator* LibLLVMComdatIteratorRef;

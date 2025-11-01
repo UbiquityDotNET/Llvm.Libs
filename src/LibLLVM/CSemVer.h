@@ -10,6 +10,9 @@
 
 namespace LibLLVM
 {
+    // converts a string representation to a native `bool`
+    // normally the string is a const from a preprocessor
+    // so that this results in a constant for the value
     constexpr bool make_bool(std::string_view val)
     {
         using namespace std::string_view_literals;

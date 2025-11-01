@@ -1,7 +1,11 @@
-#include <llvm-c/Core.h>
+#include <llvm/Config/llvm-config.h>
 #include <llvm/TargetParser/Triple.h>
 #include <llvm/Support/CBindingWrapping.h>
-#include <llvm/TargetParser/ARMTargetParser.h>
+#include <llvm/Support/VersionTuple.h>
+
+#include <llvm-c/Core.h>
+#include <llvm-c/Types.h>
+
 #include "libllvm-c/TripleBindings.h"
 
 using namespace llvm;

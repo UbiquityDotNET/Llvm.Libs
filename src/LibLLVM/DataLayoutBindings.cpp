@@ -1,6 +1,14 @@
+#include <string>
+
+#include <llvm-c/Error.h>
+#include <llvm-c/Types.h>
+#include <llvm-c/Target.h>
+
 #include "libllvm-c/DataLayoutBindings.h"
+
 #include <llvm/IR/DataLayout.h>
 #include <llvm/Support/Error.h>
+#include <llvm/ADT/StringRef.h>
 
 using namespace llvm;
 

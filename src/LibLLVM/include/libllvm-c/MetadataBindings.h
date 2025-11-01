@@ -1,9 +1,11 @@
 #ifndef LLVM_BINDINGS_LLVM_METADATABINDINGS_H
 #define LLVM_BINDINGS_LLVM_METADATABINDINGS_H
 
-#include <stdint.h>
-#include "llvm-c/Core.h"
-#include "llvm-c/DebugInfo.h"
+#include <cstdint>
+
+#include <llvm-c/DebugInfo.h>
+#include <llvm-c/ExternC.h>
+#include <llvm-c/Types.h>
 
 LLVM_C_EXTERN_C_BEGIN
     typedef enum LibLLVMDwarfTag

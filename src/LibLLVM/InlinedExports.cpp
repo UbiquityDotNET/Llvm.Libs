@@ -1,4 +1,4 @@
-#include <llvm-c/Target.h>
+#include <cstdint>
 #include <llvm-c/Remarks.h>
 
 extern "C"

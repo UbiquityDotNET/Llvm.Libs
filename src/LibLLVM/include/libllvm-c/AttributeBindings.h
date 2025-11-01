@@ -13,11 +13,11 @@
 
 #ifndef LLVM_BINDINGS_LLVM_ATTRIBUTEBINDINGS_H
 #define LLVM_BINDINGS_LLVM_ATTRIBUTEBINDINGS_H
+#include <cstdint>
 
-#include <llvm-c/Core.h>
 #include <llvm-c/Types.h>
-
-#include <stdint.h>
+#include <llvm-c/Error.h>
+#include <llvm-c/ExternC.h>
 
 LLVM_C_EXTERN_C_BEGIN
     enum LibLLVMAttributeArgKind

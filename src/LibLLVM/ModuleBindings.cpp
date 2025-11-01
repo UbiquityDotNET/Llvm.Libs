@@ -1,5 +1,21 @@
-#include <type_traits>
+#include <cstdint>
+#include <iterator>
+
+#include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/StringMap.h>
 #include <llvm/IR/Module.h>
+#include <llvm/IR/Metadata.h>
+#include <llvm/IR/Comdat.h>
+#include <llvm/IR/DerivedTypes.h>
+#include <llvm/IR/Type.h>
+#include <llvm/IR/Value.h>
+#include <llvm/IR/GlobalAlias.h>
+#include <llvm/Support/Casting.h>
+#include <llvm/Support/CBindingWrapping.h>
+
+#include <llvm-c/Types.h>
+#include <llvm-c/Comdat.h>
+
 #include "libllvm-c/ModuleBindings.h"
 
 using namespace llvm;

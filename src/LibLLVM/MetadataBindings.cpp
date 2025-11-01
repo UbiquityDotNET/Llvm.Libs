@@ -1,13 +1,31 @@
+#include <string>
+#include <cstdint>
+
 #include <llvm-c/Core.h>
-#include <llvm/IR/DIBuilder.h>
-#include <llvm/IR/Module.h>
-#include <llvm/Support/CBindingWrapping.h>
+#include <llvm-c/Types.h>
+#include <llvm-c/DebugInfo.h>
 
 #include "libllvm-c/MetadataBindings.h"
 
+#include <llvm/IR/DIBuilder.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/Metadata.h>
+#include <llvm/IR/DebugInfoMetadata.h>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Constant.h>
+#include <llvm/IR/Value.h>
+#include <llvm/IR/Instruction.h>
+#include <llvm/IR/Constants.h>
+#include <llvm/Support/CBindingWrapping.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/Casting.h>
+
 using namespace llvm;
 
-DEFINE_SIMPLE_CONVERSION_FUNCTIONS( MDOperand, LibLLVMMDOperandRef )
+namespace
+{
+    DEFINE_SIMPLE_CONVERSION_FUNCTIONS( MDOperand, LibLLVMMDOperandRef )
+}
 
 template <typename DIT> DIT* unwrapDI( LLVMMetadataRef Ref )
 {

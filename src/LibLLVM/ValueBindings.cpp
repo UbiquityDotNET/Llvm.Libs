@@ -1,13 +1,21 @@
-#include "libllvm-c/ValueBindings.h"
-#include <llvm/IR/Constant.h>
-#include <llvm/IR/Comdat.h>
-#include <llvm/IR/Module.h>
-#include <llvm/IR/GlobalVariable.h>
-#include <llvm/IR/GlobalObject.h>
-#include <llvm/IR/GlobalAlias.h>
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/Support/CBindingWrapping.h>
+#include <cstdint>
 
+#include <llvm/ADT/StringRef.h>
+#include <llvm/IR/Constant.h>
+#include <llvm/IR/Argument.h>
+#include <llvm/IR/BasicBlock.h>
+#include <llvm/IR/Function.h>
+#include <llvm/IR/Instruction.h>
+#include <llvm/IR/Metadata.h>
+#include <llvm/IR/GlobalVariable.h>
+#include <llvm/IR/GlobalAlias.h>
+#include <llvm/IR/Constants.h>
+#include <llvm/IR/Value.h>
+#include <llvm/IR/DebugInfoMetadata.h>
+#include <llvm/Support/Casting.h>
+
+#include <llvm-c/Types.h>
+#include "libllvm-c/ValueBindings.h"
 
 using namespace llvm;
 

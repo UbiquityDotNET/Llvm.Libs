@@ -14,8 +14,8 @@
 #ifndef LLVM_BINDINGS_LLVM_IRBINDINGS_H
 #define LLVM_BINDINGS_LLVM_IRBINDINGS_H
 
-#include <llvm-c/Core.h>
-#include <llvm-c/ExecutionEngine.h>
+#include <llvm-c/ExternC.h>
+#include <llvm-c/Types.h>
 
 LLVM_C_EXTERN_C_BEGIN
     LLVMBool LibLLVMHasUnwindDest( LLVMValueRef Invoke );

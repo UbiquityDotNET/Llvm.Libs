@@ -1,11 +1,16 @@
 #include <string>
 #include <optional>
-#include <llvm/Target/CodeGenCWrappers.h>
+
+#include <llvm-c/TargetMachine.h>
+#include <llvm-c/Types.h>
+
+#include "libllvm-c/TargetMachineBindings.h"
+
+#include <llvm/Config/llvm-config.h>
+#include <llvm/Support/CodeGen.h>
 #include <llvm/Support/CBindingWrapping.h>
 #include <llvm/Target/TargetMachine.h>
-
-#include <llvm-c/Target.h>
-#include "libllvm-c/TargetMachineBindings.h"
+#include <llvm/Target/TargetOptions.h>
 
 // cloned from llvm/lib/Target/TargetMachineC.cpp
 namespace llvm {
@@ -28,6 +33,7 @@ namespace llvm {
 #endif
 
 using namespace llvm;
+
 namespace
 {
     TargetMachine* unwrap(LLVMTargetMachineRef P)

@@ -1,15 +1,17 @@
+#include <algorithm>
+#include <array>
+#include <cstdint>
+#include <iterator>
 #include <string_view>
-#include <limits>
 
-#include <llvm/Support/Error.h>
 #include <llvm/Config/llvm-config.h>
+
+#include <llvm-c/Error.h>
 #include <llvm-c/Target.h>
-#include <llvm-c/Core.h>
 
 #include "libllvm-c/TargetRegistrationBindings.h"
 #include "CSemVer.h"
 
-using namespace llvm;
 using namespace std::string_view_literals;
 
 // THESE targets are apparently "experimental";
@@ -352,6 +354,10 @@ namespace
     void RegisterTargetAArch64(LibLLVMTargetRegistrationKind registrations = TargetRegistration_All)
     {
 #if LLVM_HAS_AARCH64_TARGET
+        // For reasons unknown, VS IDE thinks these are declared in the .def file and
+        // Happily "suggests" that it should add an include of `llvm/Config/Targets.def`
+        // But that's not a valid header to include and requires parameters and Multiple inclusion.
+        // So - Just say NO!
         if (has_flag(registrations, TargetRegistration_Target))
         {
             LLVMInitializeAArch64Target();

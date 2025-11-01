@@ -1,7 +1,8 @@
 #ifndef _CONTEXT_BINDINGS_H_
 #define _CONTEXT_BINDINGS_H_
 
-#include "llvm-c/Core.h"
+#include <llvm-c/ExternC.h>
+#include <llvm-c/Types.h>
 
 LLVM_C_EXTERN_C_BEGIN
     LLVMBool LibLLVMContextGetIsODRUniquingDebugTypes( LLVMContextRef context );

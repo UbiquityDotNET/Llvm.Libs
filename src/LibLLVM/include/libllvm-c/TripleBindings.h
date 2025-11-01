@@ -1,6 +1,8 @@
 #ifndef LLVM_TRIPLE_BINDINGS_H
 #define LLVM_TRIPLE_BINDINGS_H
-#include <llvm-c\Types.h>
+
+#include <llvm-c/ExternC.h>
+#include <llvm-c/Types.h>
 
 LLVM_C_EXTERN_C_BEGIN
     enum LibLLVMTripleArchType
