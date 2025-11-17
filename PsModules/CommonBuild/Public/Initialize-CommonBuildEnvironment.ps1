@@ -89,7 +89,7 @@ function Initialize-CommonBuildEnvironment
 
         # On Windows setup the equivalent of a Developer prompt.
         #
-        # other platform runners may have different defaulted paths etc...
+        # Other platform runners may have different defaulted paths etc...
         # to account for here.
         if ($IsWindows)
         {
@@ -102,7 +102,7 @@ function Initialize-CommonBuildEnvironment
             # "profile" and the actual command is exposed.
             if($null -eq (Find-OnPath vswhere))
             {
-                # NOTE: automated builds in Github do NOT include winget (for reasons unknown)
+                # NOTE: automated builds in GitHub do NOT include WinGet (for reasons unknown)
                 # However, they do contain VSWHERE so should not hit this.
                 winget install Microsoft.VisualStudio.Locator | Out-Null
 
@@ -110,19 +110,22 @@ function Initialize-CommonBuildEnvironment
                 $env:PATH +=';%ProgramFiles(x86)%\Microsoft Visual Studio\Installer'
             }
 
-            $vsShellModulePath = vswhere.exe -find **\Microsoft.VisualStudio.DevShell.dll
+            # explicitly blocks VS2026, VS2022 tools are required for the native LLVM builds.
+            $validVsVersionRange = "[17.0,18.0)"
+            $vsShellModulePath = vswhere -version $validVsVersionRange -find **\Microsoft.VisualStudio.DevShell.dll
             $vsToolsArch = Get-VsArchitecture
             if(!$vsShellModulePath)
             {
                 throw "VS shell module not found!"
             }
 
+            Write-Information "Loading VS Shell Component from: '$vsShellModulePath'"
             Import-Module $vsShellModulePath | Out-Null
-            $vsInstanceId = vswhere.exe -format value -property InstanceId
+            $vsInstanceId = vswhere -version $validVsVersionRange -format value -property InstanceId
             Enter-VsDevShell $vsInstanceId -SkipAutomaticLocation -DevCmdArguments "-arch=$vsToolsArch -host_arch=$vsToolsArch" | Out-Null
         }
 
-        #Start with standard build paths then add additional values to the hashtable
+        #Start with standard build paths then add additional values to the hash-table
         $buildInfo = Get-DefaultBuildPaths $repoRoot
         $buildInfo['CurrentBuildKind'] = $currentBuildKind
         $buildInfo['VersionTag'] = Get-BuildVersionTag $buildInfo
@@ -130,6 +133,11 @@ function Initialize-CommonBuildEnvironment
     }
     catch
     {
+        # everything from the official docs to the various articles in the blog-sphere says this isn't needed
+        # and in fact it is redundant - They're all WRONG! By re-throwing the exception the original location
+        # information is retained and the error reported will include the correct source file and line number
+        # data for the error. Without this, only the error message is retained and the location information is
+        # Line 1, Column 1, of the outer most script file, or the calling location neither of which is useful.
         throw
     }
 }
