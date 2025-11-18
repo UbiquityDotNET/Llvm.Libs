@@ -3,7 +3,7 @@ using module "PSModules/RepoBuild/RepoBuild.psd1"
 
 <#
 .SYNOPSIS
-    Script to build all of the LLvm.NET Interop code base.
+    Script to build all of the LLvm.NET native code base.
 
 .PARAMETER Configuration
     This sets the build configuration to use, default is "Release" though for inner loop development this
@@ -20,7 +20,7 @@ using module "PSModules/RepoBuild/RepoBuild.psd1"
 
 .DESCRIPTION
     This script is NOT used by the automated build to perform the actual build. Instead this
-    is used to automate local builds and validate stages before committing changes to the repo.
+    is used to automate local builds and validate stages before committing changes to the repository.
     It will serialize the build for the current RID. (The automated build can run
     various stages in parallel, including each RID)
 
