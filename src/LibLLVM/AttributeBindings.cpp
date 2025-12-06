@@ -71,10 +71,8 @@ extern "C"
 // VS IDE will see an error E0289 on the definition of AllKnownAttributeNames that is NOT anything
 // that can be suppressed. It's JUST the IDE in editor experience for this declaration. (Hover, over
 // the `AllKnownAttributeNames` in `LibLLVMGetNumKnownAttribs` below and it sees ALL the values.
-// So it's just a problem with the in editor parsing not handling the #include for this limited
-// case. Hopefully this is fixed with:
-// https://developercommunity.visualstudio.com/t/CC-IntelliSense-reports-E0289-no-ins/10618237
-// Though it does not appear to be...
+// So it's just a problem with the in editor parsing/error reporting not handling the #include for
+// this limited case.
 
     constexpr std::array AllKnownAttributeNames = {
 #define GET_ATTR_NAMES

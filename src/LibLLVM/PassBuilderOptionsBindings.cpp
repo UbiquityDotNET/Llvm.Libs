@@ -12,7 +12,7 @@
 using namespace llvm;
 
 // Lifted from llvm/lib/Passes/PassBuilderBindings.cpp as it is not in any headers.
-// it is theoretically supposed to be an internal detail but they didn't
+// It is theoretically supposed to be an internal detail but they didn't
 // provide ANY getter functions for the properties of the class. Thus, this
 // set of extensions is to provide that. The shape of this **MUST** match
 // what is in LLVM and can only be verified by inspection. The version checks

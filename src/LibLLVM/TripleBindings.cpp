@@ -10,7 +10,10 @@
 
 using namespace llvm;
 
-DEFINE_SIMPLE_CONVERSION_FUNCTIONS( Triple, LibLLVMTripleRef )
+namespace
+{
+    DEFINE_SIMPLE_CONVERSION_FUNCTIONS( Triple, LibLLVMTripleRef )
+}
 
 extern "C"
 {

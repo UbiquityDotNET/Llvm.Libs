@@ -13,7 +13,12 @@
 
 #ifndef LLVM_BINDINGS_LLVM_ATTRIBUTEBINDINGS_H
 #define LLVM_BINDINGS_LLVM_ATTRIBUTEBINDINGS_H
+
+#if __cplusplus
 #include <cstdint>
+#else
+#include <stdint.h>
+#endif
 
 #include <llvm-c/Types.h>
 #include <llvm-c/Error.h>

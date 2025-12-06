@@ -1,7 +1,13 @@
 #ifndef _TARGETREGISTRATION_H_
 #define _TARGETREGISTRATION_H_
+
+#if __cplusplus
 #include <cstdint>
 #include <climits>
+#else
+#include <stdint.h>
+#include <limits.h>
+#endif
 
 #include <llvm-c/Error.h>
 #include <llvm-c/ExternC.h>
