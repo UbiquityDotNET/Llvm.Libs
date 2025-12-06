@@ -1,7 +1,11 @@
 #ifndef _MODULE_BINDINGS_H_
 #define _MODULE_BINDINGS_H_
 
+#if __cplusplus
 #include <cstdint>
+#else
+#include <stdint.h>
+#endif
 
 #include <llvm-c/Comdat.h>
 #include <llvm-c/ExternC.h>

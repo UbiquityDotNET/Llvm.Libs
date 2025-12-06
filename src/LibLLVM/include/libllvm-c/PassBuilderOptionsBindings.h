@@ -1,7 +1,11 @@
 #ifndef _LIBLLVM_PASSBUILDEROPTIONS_BINDINGS_H
 #define _LIBLLVM_PASSBUILDEROPTIONS_BINDINGS_H
 
+#if __cplusplus
 #include <cstdint>
+#else
+#include <stdint.h>
+#endif
 
 #include <llvm-c/ExternC.h>
 #include <llvm-c/Transforms/PassBuilder.h>

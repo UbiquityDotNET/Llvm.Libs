@@ -355,11 +355,16 @@ namespace
     {
 #if LLVM_HAS_AARCH64_TARGET
         // For reasons unknown, VS IDE thinks these are declared in the .def file and
-        // Happily "suggests" that it should add an include of `llvm/Config/Targets.def`
+        // The IDE will then happily "suggest" that it should add an include of `llvm/Config/Targets.def`
         // But that's not a valid header to include and requires parameters and Multiple inclusion.
         // So - Just say NO!
         if (has_flag(registrations, TargetRegistration_Target))
         {
+            // In VS IDE (2022/2026) - the following line generates the a warning
+            //     VCIC001 : Content from #include <llvm/Config/Targets.def> is used in this file and transitively included
+            // It is COMPLETE BS - see https://developercommunity.visualstudio.com/t/Add-support-for-inline-suppressions-for/10992416
+            // There are 2 issues here, 1) apparently it is supposed to ignore .def files and isn't and 2) That there is no
+            // way to silence it in this specific instance (Not ALL up, just this one case)
             LLVMInitializeAArch64Target();
         }
 
@@ -375,16 +380,22 @@ namespace
 
         if (has_flag(registrations, TargetRegistration_AsmPrinter))
         {
+            // ditto
+            // VCIC001 : Content from #include <llvm/Config/Targets.def> is used in this file and transitively included
             LLVMInitializeAArch64AsmPrinter();
         }
 
         if (has_flag(registrations, TargetRegistration_Disassembler))
         {
+            // ditto
+            // VCIC001 : Content from #include <llvm/Config/Targets.def> is used in this file and transitively included
             LLVMInitializeAArch64Disassembler();
         }
 
         if (has_flag(registrations, TargetRegistration_AsmParser))
         {
+            // ditto
+            // VCIC001 : Content from #include <llvm/Config/Targets.def> is used in this file and transitively included
             LLVMInitializeAArch64AsmParser();
         }
 #endif

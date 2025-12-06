@@ -71,6 +71,9 @@
     <ClCompile Include="TargetMachineBindings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DiBuilderBindings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">
@@ -134,6 +137,9 @@
     </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\libllvm-c\DiBuilderBindings.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -12,10 +12,18 @@
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
 
-// cloned from llvm/lib/Target/TargetMachineC.cpp
-namespace llvm {
+// Lifted from llvm/lib/Target/TargetMachineC.cpp as it is not in any headers.
+// It is theoretically supposed to be an internal detail but they didn't
+// provide ANY getter functions for the properties of the class. Thus, this
+// set of extensions is to provide that. The shape of this **MUST** match
+// what is in LLVM and can only be verified by inspection. The version checks
+// below will enforce that.
+
+namespace llvm
+{
     /// Options for LLVMCreateTargetMachine().
-    struct LLVMTargetMachineOptions {
+    struct LLVMTargetMachineOptions
+    {
         std::string CPU;
         std::string Features;
         std::string ABI;

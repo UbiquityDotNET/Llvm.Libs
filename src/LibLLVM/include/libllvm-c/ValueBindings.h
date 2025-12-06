@@ -1,16 +1,20 @@
 #ifndef _VALUE_BINDINGS_H_
 #define _VALUE_BINDINGS_H_
 
+#if __cplusplus
 #include <cstdint>
+#else
+#include <stdint.h>
+#endif
 
 #include <llvm-c/ExternC.h>
 #include <llvm-c/Types.h>
 
 LLVM_C_EXTERN_C_BEGIN
-    // ordering matters, all distinct values are generated first, then any derived values (e.g. foo = bar + 1), to ensure the
-    // values match expectations of underlying C++ code and don't alter the sequencing as C++ numbers enum values without an
-    // initializer as automatic +1 of the previous value, thus sticking the derived values in at arbitrary locations in the
-    // declaration order would reset the values.
+    // Ordering matters, all distinct values are generated first, then any derived values (e.g. foo = bar + 1), to ensure the
+    // values match expectations of underlying implementation code and don't alter the sequencing as C/C++ numbers enum values
+    // without an initializer as automatic +1 of the previous value, thus sticking the derived values in at arbitrary locations
+    // in the declaration order would reset the values.
 
     typedef enum LibLLVMValueKind
     {
@@ -22,7 +26,7 @@ LLVM_C_EXTERN_C_BEGIN
 #undef HANDLE_MEMORY_VALUE
 #undef HANDLE_INSTRUCTION
 
-// VS IDE will thinks that this is a type instead of a preprocessor token pasting
+// VS IDE will think that `Instruction` is a type instead of a preprocessor token pasting
 // It will "suggest" "resolving" it with an include of `llvm\IR\Instruction.h` which
 // is an absurd thing to do. Just say NO!.
 #define HANDLE_INST(N, OPC, CLASS) OPC##Kind = Instruction##Kind + N,

@@ -1,7 +1,11 @@
 #ifndef LLVM_BINDINGS_LLVM_METADATABINDINGS_H
 #define LLVM_BINDINGS_LLVM_METADATABINDINGS_H
 
+#if __cplusplus
 #include <cstdint>
+#else
+#include <stdint.h>
+#endif
 
 #include <llvm-c/DebugInfo.h>
 #include <llvm-c/ExternC.h>
